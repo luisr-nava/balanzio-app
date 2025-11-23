@@ -3,11 +3,12 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 import { useShopStore } from "@/app/(private)/store/shops.slice";
 import { saleApi } from "@/lib/api/sale.api";
-import { productApi } from "@/lib/api/product.api";
+import { productApi } from "@/app/(private)/dashboard/products/services/product.api";
 import type { CreateSaleDto, Sale, SaleItem } from "@/lib/types/sale";
-import type { Product } from "@/lib/types/product";
+import type { Product } from "@/app/(private)/dashboard/products/interfaces/product";
 import {
   Card,
   CardContent,
@@ -20,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { ShoppingCart, ChevronDown, ChevronUp } from "lucide-react";
+import { expandableRowVariants } from "@/lib/animations";
 
 const normalize = <T,>(value: T[] | { data: T[] } | undefined): T[] => {
   if (!value) return [];
@@ -74,11 +76,7 @@ export default function VentasPage() {
   );
 
   const total = useMemo(
-    () =>
-      items.reduce(
-        (acc, item) => acc + Number(item.subtotal || 0),
-        0,
-      ),
+    () => items.reduce((acc, item) => acc + Number(item.subtotal || 0), 0),
     [items],
   );
 
@@ -190,7 +188,9 @@ export default function VentasPage() {
       <div className="flex items-center justify-center min-h-[50vh]">
         <div className="flex flex-col items-center gap-3">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
-          <p className="text-muted-foreground">Cargando datos de la tienda...</p>
+          <p className="text-muted-foreground">
+            Cargando datos de la tienda...
+          </p>
         </div>
       </div>
     );
@@ -213,7 +213,9 @@ export default function VentasPage() {
       <Card>
         <CardHeader>
           <CardTitle>POS</CardTitle>
-          <CardDescription>Registra una venta rápida con productos de la tienda.</CardDescription>
+          <CardDescription>
+            Registra una venta rápida con productos de la tienda.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3 md:grid-cols-2">
@@ -228,7 +230,9 @@ export default function VentasPage() {
             <div className="flex items-end justify-end">
               <div className="text-right">
                 <p className="text-sm text-muted-foreground">Total estimado</p>
-                <p className="text-2xl font-semibold">${total.toLocaleString("es-AR")}</p>
+                <p className="text-2xl font-semibold">
+                  ${total.toLocaleString("es-AR")}
+                </p>
               </div>
             </div>
           </div>
@@ -251,16 +255,19 @@ export default function VentasPage() {
               </div>
             </div>
             {productsLoading ? (
-              <p className="text-sm text-muted-foreground">Cargando productos...</p>
+              <p className="text-sm text-muted-foreground">
+                Cargando productos...
+              </p>
             ) : products.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No hay productos cargados.</p>
+              <p className="text-sm text-muted-foreground">
+                No hay productos cargados.
+              </p>
             ) : (
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {products.map((product) => (
                   <div
                     key={(product as any).id}
-                    className="rounded-lg border bg-muted/40 p-3 text-left transition hover:border-primary"
-                  >
+                    className="rounded-lg border bg-muted/40 p-3 text-left transition hover:border-primary">
                     {Number((product as any).stock ?? 0) <= 0 && (
                       <span className="mb-2 inline-flex rounded-full bg-destructive/10 px-2 py-0.5 text-[11px] font-medium text-destructive">
                         Sin stock
@@ -294,15 +301,13 @@ export default function VentasPage() {
                           onClick={(e) => {
                             e.stopPropagation();
                             decrementProduct((product as any).id);
-                          }}
-                        >
+                          }}>
                           −
                         </Button>
                         <span className="text-sm font-semibold">
-                          {
-                            items.find((i) => i.shopProductId === (product as any).id)
-                              ?.quantity ?? 0
-                          }
+                          {items.find(
+                            (i) => i.shopProductId === (product as any).id,
+                          )?.quantity ?? 0}
                         </span>
                         <Button
                           type="button"
@@ -311,16 +316,16 @@ export default function VentasPage() {
                           onClick={(e) => {
                             e.stopPropagation();
                             incrementProduct((product as any).id);
-                          }}
-                        >
+                          }}>
                           +
                         </Button>
                       </div>
                       <span className="text-sm text-muted-foreground">
                         Subtotal: $
                         {(
-                          (items.find((i) => i.shopProductId === (product as any).id)
-                            ?.subtotal ?? 0) as number
+                          (items.find(
+                            (i) => i.shopProductId === (product as any).id,
+                          )?.subtotal ?? 0) as number
                         ).toLocaleString("es-AR")}
                       </span>
                     </div>
@@ -333,8 +338,7 @@ export default function VentasPage() {
           <div className="flex justify-end">
             <Button
               onClick={handleSubmit}
-              disabled={createMutation.isPending || items.length === 0}
-            >
+              disabled={createMutation.isPending || items.length === 0}>
               {createMutation.isPending ? "Guardando..." : "Registrar venta"}
             </Button>
           </div>
@@ -366,10 +370,11 @@ export default function VentasPage() {
                   const isOpen = expandedRow === sale.id;
                   return (
                     <div key={sale.id}>
-                      <button
-                        className="grid w-full grid-cols-4 items-center px-4 py-3 text-left hover:bg-muted/80"
-                        onClick={() => setExpandedRow(isOpen ? null : sale.id)}
-                      >
+                      <motion.button
+                        whileHover={{ backgroundColor: "rgba(0, 0, 0, 0.05)" }}
+                        whileTap={{ scale: 0.995 }}
+                        className="grid w-full grid-cols-4 items-center px-4 py-3 text-left transition-colors"
+                        onClick={() => setExpandedRow(isOpen ? null : sale.id)}>
                         <span className="text-sm text-muted-foreground">
                           {sale.createdAt
                             ? new Date(sale.createdAt).toLocaleString()
@@ -382,31 +387,50 @@ export default function VentasPage() {
                           {sale.items?.length ?? 0} ítems
                         </span>
                         <span className="flex justify-end text-sm text-primary">
-                          {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                          <motion.div
+                            animate={{ rotate: isOpen ? 180 : 0 }}
+                            transition={{ duration: 0.3 }}>
+                            <ChevronDown className="h-4 w-4" />
+                          </motion.div>
                         </span>
-                      </button>
-                      {isOpen && (
-                        <div className="space-y-2 bg-muted/40 px-4 py-3 text-sm">
-                          {sale.notes && (
-                            <p className="text-muted-foreground">Notas: {sale.notes}</p>
-                          )}
-                          <div className="space-y-1">
-                            {sale.items?.map((item, idx) => (
-                              <div
-                                key={item.id || idx}
-                                className="rounded-md border bg-background px-3 py-2"
-                              >
-                                <p className="font-medium">
-                                  {item.productName || item.shopProductId}
+                      </motion.button>
+                      <AnimatePresence initial={false}>
+                        {isOpen && (
+                          <motion.div
+                            initial="collapsed"
+                            animate="expanded"
+                            exit="collapsed"
+                            variants={expandableRowVariants}
+                            className="overflow-hidden">
+                            <div className="space-y-2 bg-muted/40 px-4 py-3 text-sm">
+                              {sale.notes && (
+                                <p className="text-muted-foreground">
+                                  Notas: {sale.notes}
                                 </p>
-                                <p className="text-xs text-muted-foreground">
-                                  Cantidad: {item.quantity} · Precio: ${item.unitPrice} · Subtotal: ${item.subtotal}
-                                </p>
+                              )}
+                              <div className="space-y-1">
+                                {sale.items?.map((item, idx) => (
+                                  <motion.div
+                                    key={item.id || idx}
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: idx * 0.05 }}
+                                    className="rounded-md border bg-background px-3 py-2">
+                                    <p className="font-medium">
+                                      {item.productName || item.shopProductId}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      Cantidad: {item.quantity} · Precio: $
+                                      {item.unitPrice} · Subtotal: $
+                                      {item.subtotal}
+                                    </p>
+                                  </motion.div>
+                                ))}
                               </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   );
                 })}
@@ -418,3 +442,4 @@ export default function VentasPage() {
     </div>
   );
 }
+

@@ -1,5 +1,5 @@
 import { kioscoApi } from "@/lib/kioscoApi";
-import type { Product, CreateProductDto } from "@/lib/types/product";
+import { CreateProductDto, Product } from "../interfaces";
 
 const PRODUCT_BASE_PATH = "/product";
 
@@ -22,3 +22,4 @@ export const productApi = {
     return (data as any)?.data ?? data;
   },
 };
+

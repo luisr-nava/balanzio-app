@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { useResetPassword } from "../hooks/useResetPassword";
@@ -45,9 +45,8 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="password">Nueva Contraseña</Label>
-            <Input
+            <PasswordInput
               id="password"
-              type="password"
               placeholder="••••••••"
               {...register("password", {
                 required: "La contraseña es requerida",
@@ -67,9 +66,8 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
-            <Input
+            <PasswordInput
               id="confirmPassword"
-              type="password"
               placeholder="••••••••"
               {...register("confirmPassword", {
                 required: "Debes confirmar la contraseña",

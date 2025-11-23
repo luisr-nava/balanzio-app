@@ -25,52 +25,52 @@ export const menuItems = [
   },
   {
     label: "Productos",
-    href: "/dashboard/productos",
+    href: "/dashboard/products",
     icon: Package,
   },
   {
     label: "Categorías",
-    href: "/dashboard/categorias",
+    href: "/dashboard/category",
     icon: FolderTree,
   },
   {
     label: "Ventas",
-    href: "/dashboard/ventas",
+    href: "/dashboard/sales",
     icon: ShoppingCart,
   },
   {
     label: "Empleados",
-    href: "/dashboard/empleados",
+    href: "/dashboard/employees",
     icon: Users,
   },
   {
     label: "Clientes",
-    href: "/dashboard/clientes",
+    href: "/dashboard/clients",
     icon: UserCircle,
   },
   {
     label: "Proveedores",
-    href: "/dashboard/proveedores",
+    href: "/dashboard/suppliers",
     icon: Truck,
   },
   {
     label: "Compras",
-    href: "/dashboard/compras",
+    href: "/dashboard/purchases",
     icon: Receipt,
   },
   {
     label: "Ingresos",
-    href: "/dashboard/ingresos",
+    href: "/dashboard/incomes",
     icon: TrendingUp,
   },
   {
     label: "Egresos",
-    href: "/dashboard/egresos",
+    href: "/dashboard/expenses",
     icon: TrendingDown,
   },
   {
     label: "Ajustes",
-    href: "/dashboard/ajustes",
+    href: "/dashboard/settings",
     icon: Settings,
   },
 ];
