@@ -30,6 +30,7 @@ model Shop {
   shopProducts ShopProduct[]
   supplierShop SupplierShop[]
   categories   Category[]
+  supplierCategories SupplierCategory[]
   saleReturns  SaleReturn[]
   purchaseReturns PurchaseReturn[]
   creditNotes  CreditNote[]
@@ -75,9 +76,11 @@ model SupplierShop {
 }
 
 model SupplierCategory {
-  id      String @id @default(uuid())
-  name    String
-  ownerId String
+  id     String @id @default(uuid())
+  name   String
+  shopId String
+
+  shop Shop @relation(fields: [shopId], references: [id])
 
   // Auditoría
   createdAt DateTime @default(now())
@@ -92,7 +95,7 @@ model SupplierCategory {
 
   suppliers Supplier[]
 
-  @@unique([name, ownerId])
+  @@unique([name, shopId])
 }
 
 model Sale {

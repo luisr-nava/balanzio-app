@@ -104,18 +104,18 @@ export class SupplierService {
 
   private async validateCategoryOwnership(
     categoryId: string | null | undefined,
-    ownerId: string,
+    shopIds: string[],
   ) {
     if (!categoryId) return;
 
     const category = await this.prisma.supplierCategory.findUnique({
       where: { id: categoryId },
-      select: { id: true, ownerId: true, isActive: true },
+      select: { id: true, shopId: true, isActive: true },
     });
 
-    if (!category || category.ownerId !== ownerId)
+    if (!category || !shopIds.includes(category.shopId))
       throw new BadRequestException(
-        'La categoría de proveedor no existe o no pertenece al propietario.',
+        'La categoría de proveedor no existe o no pertenece a las tiendas seleccionadas.',
       );
 
     if (!category.isActive)
@@ -182,13 +182,13 @@ export class SupplierService {
 
     await this.checkUniqueSupplier(dto, ownerId);
 
-    await this.validateCategoryOwnership(dto.categoryId, ownerId);
-
     const shopIds = this.resolveShopIdsForAction(dto.shopIds, user, shopId);
     if (shopIds.length === 0)
       throw new BadRequestException('Debe asignar al menos una tienda.');
 
     await this.validateShopsExist(shopIds);
+
+    await this.validateCategoryOwnership(dto.categoryId, shopIds);
 
     // 🔥 Extraer shopIds para que NO vaya a Prisma
     const { shopIds: _, ...supplierData } = dto;
@@ -222,9 +222,6 @@ export class SupplierService {
 
     await this.checkUniqueSupplier(dto, ownerId, id);
 
-    if (dto.categoryId !== undefined)
-      await this.validateCategoryOwnership(dto.categoryId, ownerId);
-
     const newShopIds = this.resolveShopIdsForAction(dto.shopIds, user, shopId);
     if (newShopIds.length === 0)
       throw new BadRequestException(
@@ -232,6 +229,9 @@ export class SupplierService {
       );
 
     await this.validateShopsExist(newShopIds);
+
+    if (dto.categoryId !== undefined)
+      await this.validateCategoryOwnership(dto.categoryId, newShopIds);
 
     for (const sId of (
       supplier as SupplierWithRelationsAndPurchases

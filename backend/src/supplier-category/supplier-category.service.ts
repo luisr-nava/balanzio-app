@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -13,6 +14,7 @@ interface SupplierCategoryQuery {
   search?: string;
   page?: number;
   limit?: number;
+  shopId?: string;
   includeInactive?: boolean;
 }
 
@@ -25,62 +27,120 @@ export class SupplierCategoryService {
     user: JwtPayload,
   ) {
     const { id: userId, role } = user;
+    const { shopIds, name } = createSupplierCategoryDto;
 
-    // Solo los OWNER pueden crear categorías de proveedores
-    if (role !== 'OWNER') {
-      throw new ForbiddenException(
-        'Solo los propietarios pueden crear categorías de proveedores',
-      );
+    let targetShopIds: string[] = [];
+    let ownerShopNames = new Map<string, string>();
+
+    if (role === 'OWNER') {
+      if (!shopIds || shopIds.length === 0)
+        throw new BadRequestException('Debe especificar al menos una tienda');
+
+      const uniqueIds = Array.from(new Set(shopIds));
+      const ownerShops = await this.prisma.shop.findMany({
+        where: { ownerId: userId, id: { in: uniqueIds } },
+        select: { id: true, name: true },
+      });
+
+      if (ownerShops.length !== uniqueIds.length) {
+        throw new ForbiddenException('Alguna tienda no pertenece al propietario');
+      }
+
+      ownerShopNames = new Map(ownerShops.map((s) => [s.id, s.name]));
+      targetShopIds = uniqueIds;
+    } else {
+      const employee = await this.prisma.employee.findFirst({
+        where: { email: user.email },
+        select: { shopId: true },
+      });
+
+      if (!employee) {
+        throw new ForbiddenException('No tenés permiso para crear categorías de proveedores');
+      }
+
+      targetShopIds = [employee.shopId];
     }
 
-    // Verificar que no exista una categoría con el mismo nombre para este owner
-    const existingCategory = await this.prisma.supplierCategory.findUnique({
+    // Verificar que no exista una categoría con el mismo nombre en la tienda
+    const existingCategory = await this.prisma.supplierCategory.findMany({
       where: {
-        name_ownerId: {
-          name: createSupplierCategoryDto.name,
-          ownerId: userId,
-        },
+        name,
+        shopId: { in: targetShopIds },
       },
+      include: { shop: { select: { name: true } } },
     });
 
-    if (existingCategory) {
+    if (existingCategory.length) {
+      const shopNames = existingCategory.map((c) => c.shop.name).join(', ');
       throw new ConflictException(
-        `Ya existe una categoría de proveedor con el nombre "${createSupplierCategoryDto.name}"`,
+        `Ya existe una categoría de proveedor con el nombre "${name}" en: ${shopNames}`,
       );
     }
 
-    const category = await this.prisma.supplierCategory.create({
-      data: {
-        name: createSupplierCategoryDto.name,
-        ownerId: userId,
-        createdBy: userId,
-      },
+    const created = await Promise.all(
+      targetShopIds.map((id) =>
+        this.prisma.supplierCategory.create({
+          data: { name, shopId: id, createdBy: userId },
+          include: { shop: { select: { name: true } } },
+        }),
+      ),
+    );
+
+    const message =
+      created.length === 1
+        ? 'Categoría de proveedor creada correctamente'
+        : `Categoría de proveedor creada en ${created.length} tienda(s)`;
+
+    const format = (cat: (typeof created)[number]) => ({
+      id: cat.id,
+      name: cat.name,
+      shopId: cat.shopId,
+      shopName: cat.shop.name ?? ownerShopNames.get(cat.shopId),
+      createdAt: cat.createdAt,
+      isActive: cat.isActive,
     });
 
     return {
-      message: 'Categoría de proveedor creada correctamente',
-      data: {
-        id: category.id,
-        name: category.name,
-        createdAt: category.createdAt,
-        isActive: category.isActive,
-      },
+      message,
+      data: created.length === 1 ? format(created[0]) : created.map(format),
     };
   }
 
   async findAll(user: JwtPayload, query: SupplierCategoryQuery) {
-    const { search, page = 1, limit = 20, includeInactive = false } = query;
-    const { id: userId, role } = user;
+    const { search, page = 1, limit = 20, shopId, includeInactive = false } = query;
 
-    // Solo los OWNER pueden ver categorías de proveedores
-    if (role !== 'OWNER') {
-      throw new ForbiddenException(
-        'Solo los propietarios pueden ver categorías de proveedores',
-      );
+    let accessibleShopIds: string[] = [];
+    if (user.role === 'OWNER') {
+      const shops = await this.prisma.shop.findMany({
+        where: { ownerId: user.id },
+        select: { id: true },
+      });
+      accessibleShopIds = shops.map((s) => s.id);
+    } else {
+      const employee = await this.prisma.employee.findFirst({
+        where: { email: user.email },
+        select: { shopId: true },
+      });
+
+      if (!employee) {
+        throw new ForbiddenException('No se encontró información del empleado');
+      }
+
+      accessibleShopIds = [employee.shopId];
+    }
+
+    if (shopId && !accessibleShopIds.includes(shopId)) {
+      throw new ForbiddenException('No tenés acceso a esta tienda');
+    }
+
+    const targetShopIds = shopId ? [shopId] : accessibleShopIds;
+
+    if (targetShopIds.length === 0) {
+      throw new ForbiddenException('No tenés tiendas asignadas');
     }
 
     const filters: any = {
-      ownerId: userId,
+      shopId: { in: targetShopIds },
     };
 
     if (!includeInactive) {
@@ -95,6 +155,7 @@ export class SupplierCategoryService {
       this.prisma.supplierCategory.findMany({
         where: filters,
         include: {
+          shop: { select: { name: true } },
           _count: { select: { suppliers: true } },
         },
         orderBy: { createdAt: 'desc' },
@@ -105,7 +166,9 @@ export class SupplierCategoryService {
     ]);
 
     return {
-      message: 'Categorías de proveedores',
+      message: user.role === 'OWNER'
+        ? 'Categorías de proveedores de todas tus tiendas'
+        : 'Categorías de proveedores de tu tienda asignada',
       pagination: {
         total,
         page,
@@ -115,6 +178,8 @@ export class SupplierCategoryService {
       data: categories.map((cat) => ({
         id: cat.id,
         name: cat.name,
+        shopId: cat.shopId,
+        shopName: cat.shop.name,
         suppliersCount: cat._count.suppliers,
         isActive: cat.isActive,
         createdAt: cat.createdAt,
@@ -124,18 +189,10 @@ export class SupplierCategoryService {
   }
 
   async findOne(id: string, user: JwtPayload) {
-    const { id: userId, role } = user;
-
-    // Solo los OWNER pueden ver categorías de proveedores
-    if (role !== 'OWNER') {
-      throw new ForbiddenException(
-        'Solo los propietarios pueden ver categorías de proveedores',
-      );
-    }
-
     const category = await this.prisma.supplierCategory.findUnique({
       where: { id },
       include: {
+        shop: { select: { name: true, ownerId: true } },
         suppliers: {
           select: {
             id: true,
@@ -150,19 +207,28 @@ export class SupplierCategoryService {
     });
 
     if (!category) {
-      throw new NotFoundException('La categoría no existe');
+      throw new NotFoundException('La categoría de proveedor no existe');
     }
 
-    // Verificar que pertenece al owner
-    if (category.ownerId !== userId) {
+    // Verificar permisos
+    if (user.role === 'OWNER' && category.shop.ownerId !== user.id) {
       throw new ForbiddenException('No tenés permiso para ver esta categoría');
+    } else if (user.role === 'EMPLOYEE') {
+      const employee = await this.prisma.employee.findFirst({
+        where: { email: user.email, shopId: category.shopId },
+      });
+      if (!employee) {
+        throw new ForbiddenException('No tenés permiso para ver esta categoría');
+      }
     }
 
     return {
-      message: 'Categoría encontrada',
+      message: 'Categoría de proveedor encontrada',
       data: {
         id: category.id,
         name: category.name,
+        shopId: category.shopId,
+        shopName: category.shop.name,
         isActive: category.isActive,
         suppliersCount: category._count.suppliers,
         sampleSuppliers: category.suppliers,
@@ -177,28 +243,29 @@ export class SupplierCategoryService {
     updateSupplierCategoryDto: UpdateSupplierCategoryDto,
     user: JwtPayload,
   ) {
-    const { id: userId, role } = user;
-
-    // Solo los OWNER pueden actualizar categorías
-    if (role !== 'OWNER') {
-      throw new ForbiddenException(
-        'Solo los propietarios pueden actualizar categorías de proveedores',
-      );
-    }
+    const { id: userId } = user;
 
     const category = await this.prisma.supplierCategory.findUnique({
       where: { id },
+      include: {
+        shop: { select: { ownerId: true } },
+      },
     });
 
     if (!category) {
-      throw new NotFoundException('La categoría no existe');
+      throw new NotFoundException('La categoría de proveedor no existe');
     }
 
-    // Verificar que pertenece al owner
-    if (category.ownerId !== userId) {
-      throw new ForbiddenException(
-        'No tenés permiso para actualizar esta categoría',
-      );
+    // Verificar permisos
+    if (user.role === 'OWNER' && category.shop.ownerId !== userId) {
+      throw new ForbiddenException('No tenés permiso para actualizar esta categoría');
+    } else if (user.role === 'EMPLOYEE') {
+      const employee = await this.prisma.employee.findFirst({
+        where: { email: user.email, shopId: category.shopId },
+      });
+      if (!employee) {
+        throw new ForbiddenException('No tenés permiso para actualizar esta categoría');
+      }
     }
 
     // Si se está cambiando el nombre, verificar que no exista otra con ese nombre
@@ -208,16 +275,16 @@ export class SupplierCategoryService {
     ) {
       const existingCategory = await this.prisma.supplierCategory.findUnique({
         where: {
-          name_ownerId: {
+          name_shopId: {
             name: updateSupplierCategoryDto.name,
-            ownerId: userId,
+            shopId: category.shopId,
           },
         },
       });
 
       if (existingCategory) {
         throw new ConflictException(
-          `Ya existe una categoría con el nombre "${updateSupplierCategoryDto.name}"`,
+          `Ya existe una categoría de proveedor con el nombre "${updateSupplierCategoryDto.name}" en esta tienda`,
         );
       }
     }
@@ -231,10 +298,11 @@ export class SupplierCategoryService {
     });
 
     return {
-      message: 'Categoría actualizada correctamente',
+      message: 'Categoría de proveedor actualizada correctamente',
       data: {
         id: updated.id,
         name: updated.name,
+        shopId: updated.shopId,
         isActive: updated.isActive,
         updatedAt: updated.updatedAt,
       },
@@ -242,28 +310,20 @@ export class SupplierCategoryService {
   }
 
   async toggleActive(id: string, user: JwtPayload) {
-    const { id: userId, role } = user;
-
-    // Solo los OWNER pueden cambiar estado
-    if (role !== 'OWNER') {
-      throw new ForbiddenException(
-        'Solo los propietarios pueden cambiar el estado de categorías de proveedores',
-      );
-    }
-
     const category = await this.prisma.supplierCategory.findUnique({
       where: { id },
       include: {
+        shop: { select: { name: true, ownerId: true } },
         _count: { select: { suppliers: true } },
       },
     });
 
     if (!category) {
-      throw new NotFoundException('La categoría no existe');
+      throw new NotFoundException('La categoría de proveedor no existe');
     }
 
-    // Verificar que pertenece al owner
-    if (category.ownerId !== userId) {
+    // Solo los owners pueden desactivar/activar
+    if (user.role !== 'OWNER' || category.shop.ownerId !== user.id) {
       throw new ForbiddenException(
         'No tenés permiso para cambiar el estado de esta categoría',
       );
@@ -276,15 +336,16 @@ export class SupplierCategoryService {
       data: {
         isActive: newStatus,
         disabledAt: newStatus ? null : new Date(),
-        disabledBy: newStatus ? null : userId,
+        disabledBy: newStatus ? null : user.id,
       },
     });
 
     return {
-      message: `Categoría ${newStatus ? 'activada' : 'desactivada'} correctamente`,
+      message: `Categoría de proveedor ${newStatus ? 'activada' : 'desactivada'} correctamente`,
       data: {
         id: updated.id,
         name: updated.name,
+        shop: category.shop.name,
         isActive: updated.isActive,
         suppliersCount: category._count.suppliers,
       },
@@ -292,31 +353,21 @@ export class SupplierCategoryService {
   }
 
   async remove(id: string, user: JwtPayload) {
-    const { id: userId, role } = user;
-
-    // Solo los OWNER pueden eliminar
-    if (role !== 'OWNER') {
-      throw new ForbiddenException(
-        'Solo los propietarios pueden eliminar categorías de proveedores',
-      );
-    }
-
     const category = await this.prisma.supplierCategory.findUnique({
       where: { id },
       include: {
+        shop: { select: { ownerId: true } },
         _count: { select: { suppliers: true } },
       },
     });
 
     if (!category) {
-      throw new NotFoundException('La categoría no existe');
+      throw new NotFoundException('La categoría de proveedor no existe');
     }
 
-    // Verificar que pertenece al owner
-    if (category.ownerId !== userId) {
-      throw new ForbiddenException(
-        'No tenés permiso para eliminar esta categoría',
-      );
+    // Solo los owners pueden eliminar
+    if (user.role !== 'OWNER' || category.shop.ownerId !== user.id) {
+      throw new ForbiddenException('No tenés permiso para eliminar esta categoría');
     }
 
     // No permitir eliminar si tiene proveedores asociados
@@ -331,7 +382,7 @@ export class SupplierCategoryService {
     });
 
     return {
-      message: 'Categoría eliminada correctamente',
+      message: 'Categoría de proveedor eliminada correctamente',
       data: {
         id: category.id,
         name: category.name,
