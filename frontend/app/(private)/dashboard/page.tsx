@@ -29,12 +29,9 @@ export default function Dashboard() {
 
   if (!activeShopId) {
     return (
-      <div className="space-y-4">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Selecciona una tienda para ver sus métricas.
-        </p>
-      </div>
+      <p className="text-muted-foreground">
+        Selecciona una tienda para ver sus métricas.
+      </p>
     );
   }
 
@@ -51,12 +48,9 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Resumen de {activeShop?.name} — {user?.fullName}
-        </p>
-      </div>
+      <p className="text-sm text-muted-foreground">
+        Resumen de {activeShop?.name} — {user?.fullName}
+      </p>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>

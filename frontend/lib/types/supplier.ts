@@ -4,7 +4,11 @@ export interface Supplier {
   contactName?: string | null;
   phone?: string | null;
   email?: string | null;
-  shopId: string;
+  address?: string | null;
+  notes?: string | null;
+  categoryId?: string | null;
+  shopId?: string;
+  shopIds?: string[];
   createdAt?: string;
   updatedAt?: string;
 }
@@ -14,5 +18,8 @@ export interface CreateSupplierDto {
   contactName?: string | null;
   phone?: string | null;
   email?: string | null;
-  shopId: string;
+  address?: string | null;
+  notes?: string | null;
+  categoryId?: string | null;
+  shopIds?: string[];
 }

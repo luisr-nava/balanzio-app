@@ -1,40 +1,41 @@
 import { useShopStore } from "@/app/(private)/store/shops.slice";
-import { usePaginationParams } from "@/app/(private)/hooks/useQueryParams";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { GetAllProductAction } from "../actions/get-all.product.action";
 
-export const useProductQuery = () => {
-  const { activeShopId, activeShopLoading } = useShopStore();
-  const {
-    page,
-    limit,
-    search,
-    debouncedSearch,
-    setSearch,
-    setPage,
-    setLimit,
-  } = usePaginationParams(300);
-  const { data, isLoading: productsLoading } = useQuery({
-    queryKey: ["products", activeShopId, debouncedSearch, page, limit],
-    queryFn: () =>
+interface UseProductQueryParams {
+  search: string;
+  limit?: number;
+}
+
+export const useProductQuery = ({ search, limit = 10 }: UseProductQueryParams) => {
+  const { activeShopId } = useShopStore();
+
+  const query = useInfiniteQuery({
+    queryKey: ["products", activeShopId, search, limit],
+    queryFn: ({ pageParam = 1 }) =>
       GetAllProductAction(activeShopId || "", {
-        search: debouncedSearch,
-        page,
+        search,
+        page: Number(pageParam) || 1,
         limit,
       }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const nextPage = lastPage.pagination.page + 1;
+      return nextPage <= lastPage.pagination.totalPages ? nextPage : undefined;
+    },
     enabled: Boolean(activeShopId),
   });
 
+  const products = query.data?.pages.flatMap((page) => page.products) || [];
+  const pagination = query.data?.pages.at(-1)?.pagination;
+
   return {
-    products: data?.products || [],
-    pagination: data?.pagination,
-    productsLoading,
-    page,
-    limit,
-    setPage,
-    setLimit,
-    search,
-    setSearch,
-    debouncedSearch,
+    products,
+    pagination,
+    productsLoading: query.isLoading,
+    fetchNextPage: query.fetchNextPage,
+    hasNextPage: query.hasNextPage ?? false,
+    isFetchingNextPage: query.isFetchingNextPage,
+    refetch: query.refetch,
   };
 };

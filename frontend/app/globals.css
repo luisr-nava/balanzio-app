@@ -118,5 +118,26 @@
   body {
     @apply bg-background text-foreground;
   }
-}
 
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    @apply w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-70;
+    color: var(--foreground);
+  }
+
+  select {
+    appearance: none;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background-position: right 0.6rem center;
+    background-repeat: no-repeat;
+    background-size: 0.65rem;
+  }
+
+  select option {
+    border-radius: var(--radius);
+    background-color: var(--card);
+    color: var(--foreground);
+  }
+}

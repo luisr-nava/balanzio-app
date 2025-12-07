@@ -1,27 +1,23 @@
 import { useProductQuery } from "./product.query";
 
-export const useProducts = () => {
+export const useProducts = (search: string, limit: number = 10) => {
   const {
     products,
     productsLoading,
     pagination,
-    page,
-    limit,
-    setPage,
-    setLimit,
-    search,
-    setSearch,
-  } = useProductQuery();
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useProductQuery({ search, limit });
 
   return {
     products,
     productsLoading,
     pagination,
-    page,
-    limit,
-    setPage,
-    setLimit,
-    search,
-    setSearch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
   };
 };

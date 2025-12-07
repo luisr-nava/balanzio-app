@@ -158,12 +158,9 @@ export default function ComprasPage() {
 
   if (!activeShopId) {
     return (
-      <div className="space-y-4">
-        <h1 className="text-3xl font-bold">Compras</h1>
-        <p className="text-muted-foreground">
-          Selecciona una tienda para ver y registrar compras.
-        </p>
-      </div>
+      <p className="text-muted-foreground">
+        Selecciona una tienda para ver y registrar compras.
+      </p>
     );
   }
 
@@ -182,18 +179,6 @@ export default function ComprasPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="rounded-lg bg-primary/10 p-3">
-          <Receipt className="h-6 w-6 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-bold">Compras</h1>
-          <p className="text-muted-foreground">
-            Registra compras de productos y lleva el historial por tienda.
-          </p>
-        </div>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle>Nueva compra</CardTitle>
@@ -479,4 +464,3 @@ export default function ComprasPage() {
     </div>
   );
 }
-

@@ -13,35 +13,28 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AlertTriangle, ShieldAlert, Truck } from "lucide-react";
-import { Supplier, CreateSupplierDto } from "@/lib/types/supplier";
-import { SupplierForm, SupplierFormValues } from "./components/supplier-form";
-import { SupplierTable } from "./components/supplier-table";
-import { useSuppliers } from "./hooks/useSuppliers";
-import { useSupplierMutations } from "./hooks/useSupplierMutations";
+import { AlertTriangle, ShieldAlert, Users } from "lucide-react";
+import { Employee, CreateEmployeeDto } from "./interfaces";
+import { useEmployees } from "./hooks/useEmployees";
+import { useEmployeeMutations } from "./hooks/useEmployeeMutations";
+import { EmployeeForm, EmployeeFormValues } from "./components/employee-form";
+import { EmployeeTable } from "./components/employee-table";
 import { toast } from "sonner";
-import { Modal } from "@/components/ui/modal";
 import { ShopLoading } from "@/components/shop-loading";
-import { useCategorySuppliersQuery } from "../category/hooks/category.query";
+import { Modal } from "@/components/ui/modal";
 
-export default function ProveedoresPage() {
+export default function EmployeesPage() {
   const { user } = useAuth();
   const isOwner = user?.role === "OWNER";
-  const { activeShopId, activeShop, activeShopLoading, shops } = useShopStore();
+  const { activeShopId, activeShop, activeShopLoading } = useShopStore();
 
-  const { suppliers, isLoading, isFetching } = useSuppliers();
+  const { employees, isLoading, isFetching } = useEmployees(isOwner);
   const { createMutation, updateMutation, deleteMutation } =
-    useSupplierMutations();
-  const {
-    categorySuppliers,
-    categorySuppliersLoading,
-    fetchNextSupplierCategories,
-    hasMoreSupplierCategories,
-  } = useCategorySuppliersQuery();
+    useEmployeeMutations();
 
-  const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<Supplier | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Employee | null>(null);
   const [search, setSearch] = useState("");
 
   const deletingId = useMemo(
@@ -49,78 +42,107 @@ export default function ProveedoresPage() {
     [deleteMutation.variables],
   );
 
-  const filteredSuppliers = useMemo(() => {
-    if (!search.trim()) return suppliers;
-    const term = search.toLowerCase();
-    return suppliers.filter(
-      (s) =>
-        s.name.toLowerCase().includes(term) ||
-        (s.contactName || "").toLowerCase().includes(term) ||
-        (s.email || "").toLowerCase().includes(term),
-    );
-  }, [search, suppliers]);
-
-  const handleSubmit = (values: SupplierFormValues) => {
+  const handleSubmit = (values: EmployeeFormValues) => {
     if (!activeShopId) {
-      toast.error("Selecciona una tienda para gestionar proveedores.");
+      toast.error("Selecciona una tienda para gestionar empleados.");
       return;
     }
 
-    const payload: CreateSupplierDto = {
-      name: values.name,
-      contactName: values.contactName || null,
-      phone: values.phone || null,
-      email: values.email || null,
-      address: values.address || null,
-      notes: values.notes || null,
-      categoryId: values.categoryId || null,
-      shopIds:
-        isOwner && values.shopIds.length
-          ? values.shopIds
-          : activeShopId
-          ? [activeShopId]
-          : [],
-    };
+    const salaryValue = values.salary;
+    const normalizedSalary =
+      salaryValue === undefined ||
+      salaryValue === null ||
+      Number.isNaN(Number(salaryValue))
+        ? null
+        : Number(salaryValue);
 
-    if (editingSupplier) {
+    if (editingEmployee) {
+      const updatePayload: Partial<CreateEmployeeDto> = {
+        fullName: values.fullName,
+        email: values.email,
+        dni: values.dni,
+        phone: values.phone || null,
+        address: values.address || null,
+        hireDate: values.hireDate || null,
+        salary: normalizedSalary,
+        notes: values.notes || null,
+        profileImage: values.profileImage || null,
+        emergencyContact: values.emergencyContact || null,
+        role: "EMPLOYEE",
+        shopId: activeShopId,
+      };
+      // Solo enviar password si se ingresó en edición
+      if (values.password) {
+        updatePayload.password = values.password;
+      }
+
       updateMutation.mutate(
-        { id: editingSupplier.id, payload },
+        { id: editingEmployee.id, payload: updatePayload },
         {
           onSuccess: () => {
-            setEditingSupplier(null);
+            setEditingEmployee(null);
             setIsModalOpen(false);
           },
         },
       );
     } else {
-      createMutation.mutate(payload, {
+      const createPayload: CreateEmployeeDto = {
+        fullName: values.fullName,
+        email: values.email,
+        password: values.password,
+        dni: values.dni,
+        phone: values.phone || null,
+        address: values.address || null,
+        hireDate: values.hireDate || null,
+        salary: normalizedSalary,
+        notes: values.notes || null,
+        profileImage: values.profileImage || null,
+        emergencyContact: values.emergencyContact || null,
+        role: "EMPLOYEE",
+        shopId: activeShopId,
+      };
+
+      createMutation.mutate(createPayload, {
         onSuccess: () => {
-          setEditingSupplier(null);
+          setEditingEmployee(null);
           setIsModalOpen(false);
         },
       });
     }
   };
 
-  const handleDelete = (supplier: Supplier) => {
-    setDeleteTarget(supplier);
+  const handleDelete = (employee: Employee) => {
+    setDeleteTarget(employee);
   };
+
+  const handleCancelEdit = () => {
+    setEditingEmployee(null);
+    setIsModalOpen(false);
+  };
+  const isSubmitting = createMutation.isPending || updateMutation.isPending;
+  const isDeleting = deleteMutation.isPending;
+
+  const filteredEmployees = useMemo(() => {
+    if (!search.trim()) return employees;
+    const term = search.toLowerCase();
+    return employees.filter(
+      (emp) =>
+        emp.fullName.toLowerCase().includes(term) ||
+        emp.email.toLowerCase().includes(term) ||
+        (emp.phone || "").toLowerCase().includes(term),
+    );
+  }, [employees, search]);
 
   const confirmDelete = () => {
     if (!deleteTarget) return;
     deleteMutation.mutate(deleteTarget.id, {
       onSuccess: () => {
-        if (editingSupplier?.id === deleteTarget.id) {
-          setEditingSupplier(null);
+        if (editingEmployee?.id === deleteTarget.id) {
+          setEditingEmployee(null);
         }
         setDeleteTarget(null);
       },
     });
-  };
-
-  const handleCancelEdit = () => {
-    setEditingSupplier(null);
-    setIsModalOpen(false);
   };
 
   if (!isOwner) {
@@ -154,7 +176,7 @@ export default function ProveedoresPage() {
         <CardHeader>
           <CardTitle>Selecciona una tienda</CardTitle>
           <CardDescription>
-            Debes elegir una tienda activa para gestionar los proveedores.
+            Debes elegir una tienda activa para gestionar los empleados.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -184,43 +206,27 @@ export default function ProveedoresPage() {
           <Button
             className="w-full sm:w-auto"
             onClick={() => {
-              setEditingSupplier(null);
+              setEditingEmployee(null);
               setIsModalOpen(true);
             }}>
-            Nuevo proveedor
+            Nuevo empleado
           </Button>
         </div>
         <div className="rounded-lg border bg-muted/50 px-3 py-2 text-sm text-muted-foreground flex items-center gap-2">
-          <Truck className="h-4 w-4" />
+          <Users className="h-4 w-4" />
           <div className="text-right leading-tight">
             <p className="font-medium">{activeShop?.name || "Tienda activa"}</p>
-            <p>Proveedores: {suppliers.length}</p>
+            <p>Empleados: {employees.length}</p>
           </div>
         </div>
       </div>
 
-      <div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
-          {isFetching && (
-            <span className="flex items-center gap-1">
-              <div className="h-3 w-3 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-              Actualizando
-            </span>
-          )}
-          {(createMutation.isPending || updateMutation.isPending) && (
-            <span className="flex items-center gap-1">
-              <AlertTriangle className="h-3 w-3 text-amber-500" />
-              Guardando cambios
-            </span>
-          )}
-        </div>
-      </div>
-      <SupplierTable
-        suppliers={filteredSuppliers}
+      <EmployeeTable
+        employees={filteredEmployees}
         isLoading={isLoading}
         isFetching={isFetching}
-        onEdit={(supplier) => {
-          setEditingSupplier(supplier);
+        onEdit={(employee) => {
+          setEditingEmployee(employee);
           setIsModalOpen(true);
         }}
         onDelete={handleDelete}
@@ -228,55 +234,46 @@ export default function ProveedoresPage() {
       />
       {deleteMutation.isError && (
         <p className="mt-3 text-xs text-destructive">
-          No se pudo eliminar el proveedor, intenta nuevamente.
+          No se pudo eliminar el empleado, intenta nuevamente.
         </p>
       )}
 
       <Modal
         isOpen={isModalOpen}
         onClose={handleCancelEdit}
-        title={editingSupplier ? "Editar proveedor" : "Nuevo proveedor"}
+        title={editingEmployee ? "Editar empleado" : "Nuevo empleado"}
         description={`Tienda: ${activeShop?.name || activeShopId}`}>
-        <SupplierForm
+        <EmployeeForm
           onSubmit={handleSubmit}
-          isSubmitting={createMutation.isPending || updateMutation.isPending}
-          editingSupplier={editingSupplier}
+          isSubmitting={isSubmitting}
+          editingEmployee={editingEmployee}
           onCancelEdit={handleCancelEdit}
-          shops={shops}
-          isOwner={isOwner}
-          activeShopId={activeShopId}
-          categories={categorySuppliers}
-          loadMoreCategories={fetchNextSupplierCategories}
-          hasMoreCategories={hasMoreSupplierCategories}
-          isLoadingCategories={categorySuppliersLoading}
         />
       </Modal>
 
       <Modal
         isOpen={Boolean(deleteTarget)}
         onClose={() => setDeleteTarget(null)}
-        title="Eliminar proveedor"
+        title="Eliminar empleado"
         description="Esta acción es permanente y no podrás recuperar el registro.">
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
             ¿Seguro que deseas eliminar a{" "}
-            <span className="font-semibold">{deleteTarget?.name}</span>? Esta
-            acción no se puede deshacer.
+            <span className="font-semibold">{deleteTarget?.fullName}</span>?
+            Esta acción no se puede deshacer.
           </p>
           <div className="flex justify-end gap-2">
             <Button
               variant="outline"
               onClick={() => setDeleteTarget(null)}
-              disabled={deleteMutation.isPending}>
+              disabled={isDeleting}>
               Cancelar
             </Button>
             <Button
               variant="destructive"
               onClick={confirmDelete}
-              disabled={deleteMutation.isPending}>
-              {deleteMutation.isPending
-                ? "Eliminando..."
-                : "Eliminar definitivamente"}
+              disabled={isDeleting}>
+              {isDeleting ? "Eliminando..." : "Eliminar definitivamente"}
             </Button>
           </div>
         </div>

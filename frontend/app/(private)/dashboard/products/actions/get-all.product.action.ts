@@ -18,7 +18,12 @@ export const GetAllProductAction = async (
   pagination: GetAllProductResponse["pagination"];
 }> => {
   const { data } = await kioscoApi.get<GetAllProductResponse>(`/product`, {
-    params,
+    params: {
+      shopId: shopId || undefined,
+      ...params,
+      page: params.page ?? 1,
+      limit: params.limit ?? 10,
+    },
   });
 
   return {
@@ -26,4 +31,3 @@ export const GetAllProductAction = async (
     pagination: data.pagination,
   };
 };
-
