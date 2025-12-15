@@ -31,11 +31,11 @@ export class ShopService {
     const shop = await this.prisma.shop.create({
       data: {
         name: dto.name,
-        address: dto.address,
         ownerId: user.id,
         projectId: user.projectId,
-        phone: dto.phone,
-        isActive: dto.isActive,
+        ...(dto.address !== undefined ? { address: dto.address } : {}),
+        ...(dto.phone !== undefined ? { phone: dto.phone } : {}),
+        ...(dto.isActive !== undefined ? { isActive: dto.isActive } : {}),
       },
     });
 
