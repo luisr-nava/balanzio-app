@@ -12,6 +12,7 @@ import {
   ReportPeriod,
 } from './dto/cash-register-report-filters.dto';
 import type { JwtPayload } from '../auth-client/interfaces/jwt-payload.interface';
+import type { Prisma } from '@prisma/client';
 import { CashMovementType } from '@prisma/client';
 
 @Injectable()
@@ -66,46 +67,64 @@ export class CashRegisterService {
     });
   }
 
-  async close(id: string, dto: CloseCashRegisterDto, user: JwtPayload) {
-    const cashRegister = await this.prisma.cashRegister.findUnique({
-      where: { id },
-      include: {
-        shop: true,
-        movements: true,
-      },
+  async close(cashRegisterId: string, dto: CloseCashRegisterDto, user: JwtPayload) {
+    const cashRegister = await this.getCashRegisterWithAccess(cashRegisterId, user, {
+      movements: true,
     });
-
-    if (!cashRegister) {
-      throw new NotFoundException('Caja no encontrada');
-    }
-
-    if (cashRegister.shop.projectId !== user.projectId) {
-      throw new ForbiddenException('No tenés acceso a esta caja');
-    }
 
     if (cashRegister.status !== 'OPEN') {
       throw new BadRequestException('La caja ya está cerrada');
     }
 
-    // Calcular monto esperado (apertura + movimientos)
+    // Calcular montos totales por tipo de movimiento
+    const totals = {
+      sales: 0,
+      incomes: 0,
+      purchases: 0,
+      expenses: 0,
+      returns: 0,
+      withdrawals: 0,
+      deposits: 0,
+    };
+
     const totalMovements = cashRegister.movements.reduce((sum, mov) => {
-      // Ingresos (+): SALE, INCOME, DEPOSIT
-      if (['SALE', 'INCOME', 'DEPOSIT'].includes(mov.type)) {
-        return sum + mov.amount;
+      switch (mov.type) {
+        case 'SALE':
+          totals.sales += mov.amount;
+          return sum + mov.amount;
+        case 'INCOME':
+          totals.incomes += mov.amount;
+          return sum + mov.amount;
+        case 'DEPOSIT':
+          totals.deposits += mov.amount;
+          return sum + mov.amount;
+        case 'PURCHASE':
+          totals.purchases += mov.amount;
+          return sum - mov.amount;
+        case 'RETURN':
+          totals.returns += mov.amount;
+          return sum - mov.amount;
+        case 'EXPENSE':
+          totals.expenses += mov.amount;
+          return sum - mov.amount;
+        case 'WITHDRAWAL':
+          totals.withdrawals += mov.amount;
+          return sum - mov.amount;
+        default:
+          return sum;
       }
-      // Egresos (-): PURCHASE, RETURN, EXPENSE, WITHDRAWAL
-      if (['PURCHASE', 'RETURN', 'EXPENSE', 'WITHDRAWAL'].includes(mov.type)) {
-        return sum - mov.amount;
-      }
-      return sum;
     }, 0);
 
     const closingAmount = cashRegister.openingAmount + totalMovements;
     const difference = dto.actualAmount - closingAmount;
+    const totalIncome = totals.sales + totals.incomes + totals.deposits;
+    const totalExpense =
+      totals.purchases + totals.expenses + totals.returns + totals.withdrawals;
+    const netIncome = totalIncome - totalExpense;
 
     // Cerrar caja
     const closedCashRegister = await this.prisma.cashRegister.update({
-      where: { id },
+      where: { id: cashRegisterId },
       data: {
         status: 'CLOSED',
         closingAmount,
@@ -123,29 +142,33 @@ export class CashRegisterService {
         ...closedCashRegister,
         differenceStatus:
           difference > 0 ? 'SOBRANTE' : difference < 0 ? 'FALTANTE' : 'EXACTO',
+        totals: {
+          sales: totals.sales,
+          incomes: totals.incomes,
+          purchases: totals.purchases,
+          expenses: totals.expenses,
+          returns: totals.returns,
+          withdrawals: totals.withdrawals,
+          deposits: totals.deposits,
+          totalIncome,
+          totalExpense,
+          netIncome,
+        },
       },
     };
   }
 
-  async getCurrentCashRegister(shopId: string, user: JwtPayload) {
-    await this.validateShopAccess(shopId, user);
-
-    const cashRegister = await this.prisma.cashRegister.findFirst({
-      where: {
-        shopId,
-        status: 'OPEN',
-      },
-      include: {
-        movements: {
-          orderBy: { createdAt: 'desc' },
-          take: 50,
-        },
+  async getCurrentCashRegister(cashRegisterId: string, user: JwtPayload) {
+    const cashRegister = await this.getCashRegisterWithAccess(cashRegisterId, user, {
+      movements: {
+        orderBy: { createdAt: 'desc' },
+        take: 50,
       },
     });
 
-    if (!cashRegister) {
+    if (cashRegister.status !== 'OPEN') {
       return {
-        message: 'No hay caja abierta',
+        message: 'La caja no está abierta',
         data: null,
       };
     }
@@ -173,74 +196,71 @@ export class CashRegisterService {
   }
 
   async getCashRegisterHistory(
-    shopId: string,
+    cashRegisterId: string,
     user: JwtPayload,
     startDate?: string,
     endDate?: string,
   ) {
-    await this.validateShopAccess(shopId, user);
+    await this.getCashRegisterWithAccess(cashRegisterId, user);
 
-    const where: any = { shopId };
+    const where: any = { cashRegisterId };
 
     if (startDate || endDate) {
-      where.openedAt = {};
-      if (startDate) where.openedAt.gte = new Date(startDate);
-      if (endDate) where.openedAt.lte = new Date(endDate);
+      where.createdAt = {};
+      if (startDate) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        where.createdAt.gte = start;
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        where.createdAt.lte = end;
+      }
     }
 
-    const cashRegisters = await this.prisma.cashRegister.findMany({
+    const movements = await this.prisma.cashMovement.findMany({
       where,
-      orderBy: { openedAt: 'desc' },
+      orderBy: { createdAt: 'desc' },
       take: 100,
     });
 
     return {
-      message: 'Historial de cajas',
-      data: cashRegisters,
+      message: 'Historial de movimientos de la caja',
+      data: movements,
     };
   }
 
-  async getCashRegisterById(id: string, user: JwtPayload) {
-    const cashRegister = await this.prisma.cashRegister.findUnique({
-      where: { id },
-      include: {
-        shop: true,
-        movements: {
-          orderBy: { createdAt: 'asc' },
-          include: {
-            sale: {
-              select: {
-                id: true,
-                totalAmount: true,
-                customer: { select: { fullName: true } },
-              },
+  async getCashRegisterById(cashRegisterId: string, user: JwtPayload) {
+    const cashRegister = await this.getCashRegisterWithAccess(cashRegisterId, user, {
+      shop: true,
+      movements: {
+        orderBy: { createdAt: 'asc' },
+        include: {
+          sale: {
+            select: {
+              id: true,
+              totalAmount: true,
+              customer: { select: { fullName: true } },
             },
-            purchase: {
-              select: {
-                id: true,
-                totalAmount: true,
-                supplier: { select: { name: true } },
-              },
+          },
+          purchase: {
+            select: {
+              id: true,
+              totalAmount: true,
+              supplier: { select: { name: true } },
             },
-            saleReturn: {
-              select: {
-                id: true,
-                refundAmount: true,
-                reason: true,
-              },
+          },
+          saleReturn: {
+            select: {
+              id: true,
+              refundAmount: true,
+              reason: true,
             },
           },
         },
       },
     });
-
-    if (!cashRegister) {
-      throw new NotFoundException('Caja no encontrada');
-    }
-
-    if (cashRegister.shop.projectId !== user.projectId) {
-      throw new ForbiddenException('No tenés acceso a esta caja');
-    }
 
     return {
       message: 'Detalle de caja',
@@ -268,18 +288,18 @@ export class CashRegisterService {
   }
 
   async getReport(
-    shopId: string,
+    cashRegisterId: string,
     filters: CashRegisterReportFiltersDto,
     user: JwtPayload,
   ) {
-    await this.validateShopAccess(shopId, user);
+    const cashRegister = await this.getCashRegisterWithAccess(cashRegisterId, user);
 
     const { startDate, endDate } = this.calculateDateRange(filters);
 
     // Obtener todos los movimientos del período
     const movements = await this.prisma.cashMovement.findMany({
       where: {
-        shopId,
+        cashRegisterId,
         createdAt: {
           gte: startDate,
           lte: endDate,
@@ -368,7 +388,7 @@ export class CashRegisterService {
     totals.balance = totals.totalIncome - totals.totalExpense;
 
     // Obtener producto más vendido del mes en curso
-    const topProduct = await this.getTopProductOfCurrentMonth(shopId);
+    const topProduct = await this.getTopProductOfCurrentMonth(cashRegister.shopId);
 
     return {
       message: 'Reporte de caja registradora',
@@ -429,18 +449,18 @@ export class CashRegisterService {
     };
   }
 
-  async getAvailableYears(shopId: string, user: JwtPayload) {
-    await this.validateShopAccess(shopId, user);
+  async getAvailableYears(cashRegisterId: string, user: JwtPayload) {
+    await this.getCashRegisterWithAccess(cashRegisterId, user);
 
     // Obtener el primer y último movimiento de caja
     const [firstMovement, lastMovement] = await Promise.all([
       this.prisma.cashMovement.findFirst({
-        where: { shopId },
+        where: { cashRegisterId },
         orderBy: { createdAt: 'asc' },
         select: { createdAt: true },
       }),
       this.prisma.cashMovement.findFirst({
-        where: { shopId },
+        where: { cashRegisterId },
         orderBy: { createdAt: 'desc' },
         select: { createdAt: true },
       }),
@@ -473,6 +493,33 @@ export class CashRegisterService {
         lastMovementDate: lastMovement.createdAt,
       },
     };
+  }
+
+  private async getCashRegisterWithAccess<
+    TInclude extends Prisma.CashRegisterInclude | undefined,
+  >(
+    cashRegisterId: string,
+    user: JwtPayload,
+    include?: TInclude,
+  ): Promise<
+    Prisma.CashRegisterGetPayload<
+      TInclude extends Prisma.CashRegisterInclude ? { include: TInclude } : {}
+    >
+  > {
+    const cashRegister = await this.prisma.cashRegister.findUnique({
+      where: { id: cashRegisterId },
+      include: include ?? undefined,
+    });
+
+    if (!cashRegister) {
+      throw new NotFoundException('Caja no encontrada');
+    }
+
+    await this.validateShopAccess(cashRegister.shopId, user);
+
+    return cashRegister as Prisma.CashRegisterGetPayload<
+      TInclude extends Prisma.CashRegisterInclude ? { include: TInclude } : {}
+    >;
   }
 
   private calculateDateRange(filters: CashRegisterReportFiltersDto): {

@@ -9,6 +9,7 @@ import { UpdateShopDto } from './dto/update-shop.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { Shop } from './entities/shop.entity';
 import { JwtPayload } from '../auth-client/interfaces/jwt-payload.interface';
+import { DEFAULT_CURRENCY_CODE } from '../common/constants/currencies';
 
 @Injectable()
 export class ShopService {
@@ -18,6 +19,11 @@ export class ShopService {
     if (user.role !== 'OWNER') {
       throw new ForbiddenException('Solo un Dueño puede crear tiendas');
     }
+    const countryCode = dto.countryCode.toUpperCase();
+    const currencyCode = dto.currencyCode
+      ? dto.currencyCode.toUpperCase()
+      : DEFAULT_CURRENCY_CODE;
+
     const shopCount = await this.prisma.shop.count({
       where: { ownerId: user.id },
     });
@@ -36,6 +42,8 @@ export class ShopService {
         ...(dto.address !== undefined ? { address: dto.address } : {}),
         ...(dto.phone !== undefined ? { phone: dto.phone } : {}),
         ...(dto.isActive !== undefined ? { isActive: dto.isActive } : {}),
+        countryCode,
+        currencyCode,
       },
     });
 
@@ -98,6 +106,8 @@ export class ShopService {
             address: shop.address,
             phone: shop.phone,
             isActive: shop.isActive,
+            countryCode: shop.countryCode,
+            currencyCode: shop.currencyCode,
             createdAt: shop.createdAt,
             // Datos fiscales (solo OWNER)
             taxIdNumber: shop.taxIdNumber,
@@ -162,6 +172,8 @@ export class ShopService {
             address: shop.address,
             phone: shop.phone,
             isActive: shop.isActive,
+            countryCode: shop.countryCode,
+            currencyCode: shop.currencyCode,
             // Información básica del empleado
             myRole: employee.role,
             myHireDate: employee.hireDate,
@@ -283,6 +295,8 @@ export class ShopService {
           address: shop.address,
           phone: shop.phone,
           isActive: shop.isActive,
+          countryCode: shop.countryCode,
+          currencyCode: shop.currencyCode,
           createdAt: shop.createdAt,
           // Datos fiscales (solo OWNER)
           taxIdNumber: shop.taxIdNumber,
@@ -393,6 +407,8 @@ export class ShopService {
           address: shop.address,
           phone: shop.phone,
           isActive: shop.isActive,
+          countryCode: shop.countryCode,
+          currencyCode: shop.currencyCode,
           // Mi información como empleado
           myInfo: {
             id: employee.id,
@@ -449,6 +465,12 @@ export class ShopService {
         address: updateShopDto.address ?? shop.address,
         isActive: updateShopDto.isActive ?? shop.isActive,
         phone: updateShopDto.phone ?? shop.phone,
+        countryCode: updateShopDto.countryCode
+          ? updateShopDto.countryCode.toUpperCase()
+          : shop.countryCode,
+        currencyCode: updateShopDto.currencyCode
+          ? updateShopDto.currencyCode.toUpperCase()
+          : shop.currencyCode,
       },
     });
 

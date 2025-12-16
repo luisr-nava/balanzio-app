@@ -1,4 +1,12 @@
-import { IsBoolean, IsOptional, IsString, Length } from 'class-validator';
+import {
+  IsBoolean,
+  IsIn,
+  IsOptional,
+  IsString,
+  IsISO31661Alpha2,
+  Length,
+} from 'class-validator';
+import { CURRENCY_CODES } from '../../common/constants/currencies';
 export class CreateShopDto {
   @IsString({
     message: 'Name must be a string',
@@ -22,6 +30,15 @@ export class CreateShopDto {
     message: 'Phone must be a string',
   })
   phone: string;
+
+  @IsISO31661Alpha2({
+    message: 'countryCode must be a valid ISO 3166-1 alpha-2 code',
+  })
+  countryCode: string;
+
+  @IsString()
+  @IsIn(CURRENCY_CODES, { message: 'currencyCode must be a valid ISO 4217 code' })
+  currencyCode: string;
 
   @IsOptional()
   @IsBoolean({

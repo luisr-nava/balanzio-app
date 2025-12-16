@@ -12,6 +12,7 @@ import {
   useCategorySupplierUpdateMutation,
 } from "./category.mutation";
 import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/error-handler";
 
 type CategoryFormValues = { name: string; shopIds: string[]; editingId?: string | null };
 
@@ -66,9 +67,11 @@ export const useCategoryForm = () => {
             toast.success("Categoría actualizada");
             resetFn({ name: "", shopIds: defaultShopIds, editingId: null });
           },
-          onError: (error: any) => {
-            const message =
-              error?.response?.data?.message || "No se pudo actualizar la categoría";
+          onError: (error: unknown) => {
+            const { message } = getErrorMessage(
+              error,
+              "No se pudo actualizar la categoría",
+            );
             toast.error("Error", { description: message });
           },
         },
@@ -76,14 +79,16 @@ export const useCategoryForm = () => {
     } else {
       const mutation =
         type === "product" ? productCreateMutation : supplierCreateMutation;
-      mutation.mutate(payload as any, {
+      mutation.mutate(payload, {
         onSuccess: () => {
           toast.success("Categoría creada");
           resetFn({ name: "", shopIds: defaultShopIds, editingId: null });
         },
-        onError: (error: any) => {
-          const message =
-            error?.response?.data?.message || "No se pudo crear la categoría";
+        onError: (error: unknown) => {
+          const { message } = getErrorMessage(
+            error,
+            "No se pudo crear la categoría",
+          );
           toast.error("Error", { description: message });
         },
       });
@@ -112,7 +117,7 @@ export const useCategoryForm = () => {
   const handleEditProduct = (category: CategoryProduct) => {
     productForm.reset({
       name: category.name,
-      shopIds: [category.shopId],
+      shopIds: category.shopIds && category.shopIds.length > 0 ? category.shopIds : [category.shopId],
       editingId: category.id,
     });
   };

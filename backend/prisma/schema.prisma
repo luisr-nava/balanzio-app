@@ -22,6 +22,8 @@ model Shop {
   taxAddress   String?
   taxCondition String?
   taxIdNumber  String?
+  countryCode  String         @default("US")
+  currencyCode String         @default("USD")
 
   // Configuración de alertas de stock
   lowStockThreshold Int?       @default(10) // Umbral de stock bajo
@@ -501,7 +503,7 @@ model ShopProduct {
   stock            Int?
   createdAt        DateTime         @default(now())
   createdBy        String?
-  currency         String           @default("ARS")
+  currency         String           @default("USD")
   isActive         Boolean          @default(true)
   productHistories ProductHistory[]
   purchaseItems    PurchaseItem[]

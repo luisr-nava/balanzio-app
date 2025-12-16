@@ -10,6 +10,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { Supplier } from '@prisma/client';
 import { JwtPayload } from '../auth-client/interfaces/jwt-payload.interface';
+import { DEFAULT_CURRENCY_CODE } from '../common/constants/currencies';
 
 interface ProductQuery {
   search?: string;
@@ -87,6 +88,7 @@ export class ProductService {
         salePrice: createProductDto.salePrice,
         stock: createProductDto.stock ?? 0,
         createdBy: userId,
+        currency: shop.currencyCode || DEFAULT_CURRENCY_CODE,
       },
     });
 

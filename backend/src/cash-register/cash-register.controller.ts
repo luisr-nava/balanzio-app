@@ -26,57 +26,60 @@ export class CashRegisterController {
     return this.cashRegisterService.open(dto, user);
   }
 
-  @Patch(':id/close')
+  @Patch(':cashRegisterId/close')
   close(
-    @Param('id') id: string,
+    @Param('cashRegisterId') cashRegisterId: string,
     @Body() dto: CloseCashRegisterDto,
     @GetUser() user: JwtPayload,
   ) {
-    return this.cashRegisterService.close(id, dto, user);
+    return this.cashRegisterService.close(cashRegisterId, dto, user);
   }
 
-  @Get('report/:shopId')
+  @Get(':cashRegisterId/report')
   getReport(
-    @Param('shopId') shopId: string,
+    @Param('cashRegisterId') cashRegisterId: string,
     @Query() filters: CashRegisterReportFiltersDto,
     @GetUser() user: JwtPayload,
   ) {
-    return this.cashRegisterService.getReport(shopId, filters, user);
+    return this.cashRegisterService.getReport(cashRegisterId, filters, user);
   }
 
-  @Get('available-years/:shopId')
+  @Get(':cashRegisterId/available-years')
   getAvailableYears(
-    @Param('shopId') shopId: string,
+    @Param('cashRegisterId') cashRegisterId: string,
     @GetUser() user: JwtPayload,
   ) {
-    return this.cashRegisterService.getAvailableYears(shopId, user);
+    return this.cashRegisterService.getAvailableYears(cashRegisterId, user);
   }
 
-  @Get('current/:shopId')
+  @Get(':cashRegisterId/current')
   getCurrentCashRegister(
-    @Param('shopId') shopId: string,
+    @Param('cashRegisterId') cashRegisterId: string,
     @GetUser() user: JwtPayload,
   ) {
-    return this.cashRegisterService.getCurrentCashRegister(shopId, user);
+    return this.cashRegisterService.getCurrentCashRegister(cashRegisterId, user);
   }
 
-  @Get('history/:shopId')
+  @Get(':cashRegisterId/history')
   getCashRegisterHistory(
-    @Param('shopId') shopId: string,
+    @Param('cashRegisterId') cashRegisterId: string,
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
     @GetUser() user: JwtPayload,
   ) {
     return this.cashRegisterService.getCashRegisterHistory(
-      shopId,
+      cashRegisterId,
       user,
       startDate,
       endDate,
     );
   }
 
-  @Get(':id')
-  getCashRegisterById(@Param('id') id: string, @GetUser() user: JwtPayload) {
-    return this.cashRegisterService.getCashRegisterById(id, user);
+  @Get(':cashRegisterId')
+  getCashRegisterById(
+    @Param('cashRegisterId') cashRegisterId: string,
+    @GetUser() user: JwtPayload,
+  ) {
+    return this.cashRegisterService.getCashRegisterById(cashRegisterId, user);
   }
 }
