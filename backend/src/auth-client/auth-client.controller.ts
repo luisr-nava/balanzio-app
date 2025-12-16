@@ -8,15 +8,11 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
-  Query,
-  Redirect,
   Req,
-  Res,
   UseGuards,
   UnauthorizedException,
 } from '@nestjs/common';
 
-import type { Response } from 'express';
 import { AuthClientService } from './auth-client.service';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from './dto/create.dto';
@@ -32,14 +28,9 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
-import { Verify2FADto } from './dto/verify-2fa.dto';
-import { Disable2FADto } from './dto/disable-2fa.dto';
-import { Verify2FALoginDto } from './dto/verify-2fa-login.dto';
 import { TokenBlacklistService } from './services/token-blacklist.service';
 import { FailedAttemptsGuard } from '../common/guards/failed-attempts.guard';
 import { CustomLoggerService } from '../common/logger/logger.service';
-import { ExtractJwt } from 'passport-jwt';
 
 @Controller('auth-client')
 export class AuthClientController {
@@ -223,20 +214,6 @@ export class AuthClientController {
     return this.authClientService.updateUser(userId, updateUserDto);
   }
 
-  @Get('google')
-  async googleAuth(@Res() res: Response) {
-    const googleAuthUrl = this.authClientService.getGoogleAuthUrl();
-    return res.redirect(googleAuthUrl);
-  }
-
-  @Get('google/callback')
-  async googleAuthCallback(
-    @Query('code') code: string,
-    @Query('state') state?: string,
-  ) {
-    return this.authClientService.handleGoogleCallback(code, state);
-  }
-
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
@@ -247,56 +224,5 @@ export class AuthClientController {
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     return this.authClientService.resetPassword(resetPasswordDto);
-  }
-
-  //! TODO:  solicitar explicacion
-  @Post('refresh')
-  @HttpCode(HttpStatus.OK)
-  async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
-    return this.authClientService.refreshToken(refreshTokenDto);
-  }
-
-  //! TODO:  solicitar explicacion
-  @UseGuards(JwtAuthGuard)
-  @Post('2fa/enable')
-  async enable2FA(@Req() req) {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      throw new UnauthorizedException('Token de autorización no proporcionado');
-    }
-    const token = authHeader.split(' ')[1];
-    return this.authClientService.enable2FA(token);
-  }
-
-  //! TODO:  solicitar explicacion
-
-  @UseGuards(JwtAuthGuard)
-  @Post('2fa/verify')
-  async verify2FA(@Body() verify2FADto: Verify2FADto, @Req() req) {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      throw new UnauthorizedException('Token de autorización no proporcionado');
-    }
-    const token = authHeader.split(' ')[1];
-    return this.authClientService.verify2FA(verify2FADto, token);
-  }
-
-  //! TODO:  solicitar explicacion
-  @UseGuards(JwtAuthGuard)
-  @Post('2fa/disable')
-  async disable2FA(@Body() disable2FADto: Disable2FADto, @Req() req) {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      throw new UnauthorizedException('Token de autorización no proporcionado');
-    }
-    const token = authHeader.split(' ')[1];
-    return this.authClientService.disable2FA(disable2FADto, token);
-  }
-
-  //! TODO:  solicitar explicacion
-  @Post('2fa/verify-login')
-  @HttpCode(HttpStatus.OK)
-  async verify2FALogin(@Body() verify2FALoginDto: Verify2FALoginDto) {
-    return this.authClientService.verify2FALogin(verify2FALoginDto);
   }
 }

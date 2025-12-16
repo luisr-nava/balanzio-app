@@ -1,15 +1,9 @@
-import { HttpModule, HttpService } from '@nestjs/axios';
-import {
-  ForbiddenException,
-  HttpException,
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from './dto/create.dto';
 import { envs } from '../config/envs';
-import type { JwtPayload } from './interfaces/jwt-payload.interface';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { VerifyCodeDto } from './dto/verify-code.dto';
 import { ResendVerificationCodeDto } from './dto/resend-verification-code.dto';
@@ -17,10 +11,6 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
-import { Verify2FADto } from './dto/verify-2fa.dto';
-import { Disable2FADto } from './dto/disable-2fa.dto';
-import { Verify2FALoginDto } from './dto/verify-2fa-login.dto';
 
 @Injectable()
 export class AuthClientService {
@@ -64,7 +54,10 @@ export class AuthClientService {
         return data;
       }
 
-      return { ...data, user: { ...user, stripeCustomerId: user.stripeCustomerId } };
+      return {
+        ...data,
+        user: { ...user, stripeCustomerId: user.stripeCustomerId },
+      };
     } catch (error) {
       this.handleError(error, 'Error al registrar usuario');
     }
@@ -80,7 +73,10 @@ export class AuthClientService {
       const user = this.extractUserFromResponse(data);
 
       return user
-        ? { ...data, user: { ...user, stripeCustomerId: user.stripeCustomerId } }
+        ? {
+            ...data,
+            user: { ...user, stripeCustomerId: user.stripeCustomerId },
+          }
         : data;
     } catch (error) {
       this.handleError(error, 'Error al iniciar sesión');
@@ -221,25 +217,6 @@ export class AuthClientService {
     }
   }
 
-  // Google OAuth - Redirect URL
-  getGoogleAuthUrl(): string {
-    return `${this.baseUrl}/google`;
-  }
-
-  async handleGoogleCallback(code: string, state?: string) {
-    try {
-      const { data } = await this.http.axiosRef.get(
-        `${this.baseUrl}/google/callback`,
-        {
-          params: { code, state },
-        },
-      );
-      return data;
-    } catch (error) {
-      this.handleError(error, 'Error en autenticación con Google');
-    }
-  }
-
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
     try {
       const { data } = await this.http.axiosRef.post(
@@ -275,75 +252,6 @@ export class AuthClientService {
         { message: 'Error al resetear la contraseña' },
         500,
       );
-    }
-  }
-
-  async refreshToken(refreshTokenDto: RefreshTokenDto) {
-    try {
-      const { data } = await this.http.axiosRef.post(
-        `${this.baseUrl}/refresh`,
-        refreshTokenDto,
-      );
-      return data;
-    } catch (error) {
-      this.handleError(error, 'Error al renovar el token');
-    }
-  }
-
-  async enable2FA(token: string) {
-    try {
-      const { data } = await this.http.axiosRef.post(
-        `${this.baseUrl}/2fa/enable`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
-      return data;
-    } catch (error) {
-      this.handleError(
-        error,
-        'Error al habilitar autenticación de dos factores',
-      );
-    }
-  }
-
-  async verify2FA(verify2FADto: Verify2FADto, token: string) {
-    try {
-      const { data } = await this.http.axiosRef.post(
-        `${this.baseUrl}/2fa/verify`,
-        verify2FADto,
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
-      return data;
-    } catch (error) {
-      this.handleError(error, 'Error al verificar código 2FA');
-    }
-  }
-
-  async disable2FA(disable2FADto: Disable2FADto, token: string) {
-    try {
-      const { data } = await this.http.axiosRef.post(
-        `${this.baseUrl}/2fa/disable`,
-        disable2FADto,
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
-      return data;
-    } catch (error) {
-      this.handleError(
-        error,
-        'Error al desactivar autenticación de dos factores',
-      );
-    }
-  }
-
-  async verify2FALogin(verify2FALoginDto: Verify2FALoginDto) {
-    try {
-      const { data } = await this.http.axiosRef.post(
-        `${this.baseUrl}/2fa/verify-login`,
-        verify2FALoginDto,
-      );
-      return data;
-    } catch (error) {
-      this.handleError(error, 'Error al verificar código 2FA durante login');
     }
   }
 
