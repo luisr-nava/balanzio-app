@@ -115,7 +115,13 @@ export class CustomerService {
     const customer = await this.prisma.customer.findUnique({
       where: { id },
       include: {
-        shop: true,
+        shop: {
+          select: {
+            name: true,
+            id: true,
+            projectId: true,
+          },
+        },
         sales: {
           where: { paymentStatus: { in: ['PENDING', 'PARTIAL', 'OVERDUE'] } },
           select: {
@@ -216,6 +222,47 @@ export class CustomerService {
       where: { id },
       data: { isActive: !customer.isActive },
     });
+  }
+
+  async remove(id: string, user: JwtPayload) {
+    const customer = await this.prisma.customer.findUnique({
+      where: { id },
+      include: {
+        shop: true,
+        _count: {
+          select: {
+            sales: true,
+            payments: true,
+            accountMovements: true,
+          },
+        },
+      },
+    });
+
+    if (!customer) {
+      throw new NotFoundException('Cliente no encontrado');
+    }
+
+    if (customer.shop.projectId !== user.projectId) {
+      throw new ForbiddenException('No ten�s acceso a este cliente');
+    }
+
+    if (
+      customer._count.sales > 0 ||
+      customer._count.payments > 0 ||
+      customer._count.accountMovements > 0
+    ) {
+      throw new BadRequestException(
+        'No se puede eliminar un cliente con ventas, pagos o movimientos registrados',
+      );
+    }
+
+    await this.prisma.customer.delete({ where: { id } });
+
+    return {
+      message: 'Cliente eliminado correctamente',
+      data: { id: customer.id, fullName: customer.fullName },
+    };
   }
 
   // PAGOS DE CUENTA CORRIENTE

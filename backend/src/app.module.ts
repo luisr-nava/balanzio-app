@@ -9,13 +9,12 @@ import { EmployeeModule } from './employee/employee.module';
 import { ProductModule } from './product/product.module';
 import { SupplierModule } from './supplier/supplier.module';
 import { PurchaseModule } from './purchase/purchase.module';
-import { CategoryModule } from './category/category.module';
+import { ProductCategoryModule } from './product-category/product-category.module';
 import { SupplierCategoryModule } from './supplier-category/supplier-category.module';
 import { IncomeModule } from './income/income.module';
 import { ExpenseModule } from './expense/expense.module';
 import { SaleReturnModule } from './sale-return/sale-return.module';
 import { PurchaseReturnModule } from './purchase-return/purchase-return.module';
-import { CreditNoteModule } from './credit-note/credit-note.module';
 import { CustomerModule } from './customer/customer.module';
 import { SaleModule } from './sale/sale.module';
 import { ReportsModule } from './reports/reports.module';
@@ -45,13 +44,12 @@ import { WebhookModule } from './webhook/webhook.module';
     ProductModule,
     SupplierModule,
     PurchaseModule,
-    CategoryModule,
+    ProductCategoryModule,
     SupplierCategoryModule,
     IncomeModule,
     ExpenseModule,
     SaleReturnModule,
     PurchaseReturnModule,
-    CreditNoteModule,
     CustomerModule,
     SaleModule,
     ReportsModule,

@@ -5,7 +5,7 @@ import {
   IsUUID,
 } from 'class-validator';
 
-export class CreateCategoryDto {
+export class CreateProductCategoryDto {
   @IsString()
   name: string;
 

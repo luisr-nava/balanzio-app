@@ -5,6 +5,7 @@ import {
   Body,
   Patch,
   Param,
+  Delete,
   Query,
   UseGuards,
   ParseUUIDPipe,
@@ -67,6 +68,14 @@ export class CustomerController {
     @GetUser() user: JwtPayload,
   ) {
     return this.customerService.toggleActive(id, user);
+  }
+
+  @Delete(':id')
+  remove(
+    @Param('id', ParseUUIDPipe) id: string,
+    @GetUser() user: JwtPayload,
+  ) {
+    return this.customerService.remove(id, user);
   }
 
   // PAGOS

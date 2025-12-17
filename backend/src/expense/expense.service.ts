@@ -39,29 +39,52 @@ export class ExpenseService {
     // Validar método de pago
     await this.validatePaymentMethod(createExpenseDto.paymentMethodId, createExpenseDto.shopId);
 
-    const expense = await this.prisma.expense.create({
-      data: {
-        description: createExpenseDto.description,
-        amount: createExpenseDto.amount,
-        shopId: createExpenseDto.shopId,
-        paymentMethodId: createExpenseDto.paymentMethodId,
-        date: createExpenseDto.date ? new Date(createExpenseDto.date) : new Date(),
-      },
-      include: {
-        shop: {
-          select: {
-            id: true,
-            name: true,
+    // Validar que la caja esté abierta y sea de la tienda
+    await this.validateOpenCashRegister(
+      createExpenseDto.cashRegisterId,
+      createExpenseDto.shopId,
+    );
+
+    const expense = await this.prisma.$transaction(async (tx) => {
+      const createdExpense = await tx.expense.create({
+        data: {
+          description: createExpenseDto.description,
+          amount: createExpenseDto.amount,
+          shopId: createExpenseDto.shopId,
+          paymentMethodId: createExpenseDto.paymentMethodId,
+          date: createExpenseDto.date ? new Date(createExpenseDto.date) : new Date(),
+          createdBy: user.id,
+        },
+        include: {
+          shop: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          paymentMethod: {
+            select: {
+              id: true,
+              name: true,
+              code: true,
+            },
           },
         },
-        paymentMethod: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-          },
+      });
+
+      await tx.cashMovement.create({
+        data: {
+          cashRegisterId: createExpenseDto.cashRegisterId,
+          shopId: createExpenseDto.shopId,
+          type: 'EXPENSE',
+          amount: createdExpense.amount,
+          description: createExpenseDto.description,
+          userId: user.id,
+          expenseId: createdExpense.id,
         },
-      },
+      });
+
+      return createdExpense;
     });
 
     return {
@@ -220,45 +243,87 @@ export class ExpenseService {
           projectId: user.projectId,
         },
       },
+      include: {
+        cashMovement: {
+          select: {
+            id: true,
+            cashRegisterId: true,
+          },
+        },
+      },
     });
 
     if (!expense) {
       throw new NotFoundException('Gasto no encontrado');
     }
 
-    // Si se intenta cambiar de tienda, verificar que sea del mismo owner
     if (updateExpenseDto.shopId && updateExpenseDto.shopId !== expense.shopId) {
-      const newShop = await this.prisma.shop.findFirst({
-        where: {
-          id: updateExpenseDto.shopId,
-          ownerId: user.id,
-          projectId: user.projectId,
+      throw new BadRequestException(
+        'No se puede cambiar la tienda de un gasto ya registrado',
+      );
+    }
+
+    const targetCashRegisterId =
+      updateExpenseDto.cashRegisterId ?? expense.cashMovement?.cashRegisterId;
+
+    if (!targetCashRegisterId) {
+      throw new BadRequestException(
+        'Debe especificar una caja abierta para el gasto',
+      );
+    }
+
+    // Validar nueva caja si se quiere cambiar
+    if (
+      updateExpenseDto.cashRegisterId &&
+      updateExpenseDto.cashRegisterId !== expense.cashMovement?.cashRegisterId
+    ) {
+      await this.validateOpenCashRegister(targetCashRegisterId, expense.shopId);
+    }
+
+    const updatedExpense = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.expense.update({
+        where: { id },
+        data: {
+          description: updateExpenseDto.description ?? expense.description,
+          amount: updateExpenseDto.amount ?? expense.amount,
+          shopId: expense.shopId,
+          date: updateExpenseDto.date ? new Date(updateExpenseDto.date) : expense.date,
+        },
+        include: {
+          shop: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
       });
 
-      if (!newShop) {
-        throw new ForbiddenException(
-          'No tienes permiso para asignar el gasto a esta tienda',
-        );
-      }
-    }
-
-    const updatedExpense = await this.prisma.expense.update({
-      where: { id },
-      data: {
-        description: updateExpenseDto.description ?? expense.description,
-        amount: updateExpenseDto.amount ?? expense.amount,
-        shopId: updateExpenseDto.shopId ?? expense.shopId,
-        date: updateExpenseDto.date ? new Date(updateExpenseDto.date) : expense.date,
-      },
-      include: {
-        shop: {
-          select: {
-            id: true,
-            name: true,
+      if (expense.cashMovement) {
+        await tx.cashMovement.update({
+          where: { id: expense.cashMovement.id },
+          data: {
+            cashRegisterId: targetCashRegisterId,
+            shopId: updated.shopId,
+            amount: updated.amount,
+            description: updateExpenseDto.description ?? expense.description,
           },
-        },
-      },
+        });
+      } else {
+        await tx.cashMovement.create({
+          data: {
+            cashRegisterId: targetCashRegisterId,
+            shopId: updated.shopId,
+            type: 'EXPENSE',
+            amount: updated.amount,
+            description: updateExpenseDto.description ?? updated.description,
+            userId: user.id,
+            expenseId: updated.id,
+          },
+        });
+      }
+
+      return updated;
     });
 
     return {
@@ -290,8 +355,9 @@ export class ExpenseService {
       throw new NotFoundException('Gasto no encontrado');
     }
 
-    await this.prisma.expense.delete({
-      where: { id },
+    await this.prisma.$transaction(async (tx) => {
+      await tx.cashMovement.deleteMany({ where: { expenseId: id } });
+      await tx.expense.delete({ where: { id } });
     });
 
     return {
@@ -311,6 +377,22 @@ export class ExpenseService {
     if (!paymentMethod) {
       throw new BadRequestException(
         'El método de pago no existe o no está activo en esta tienda.',
+      );
+    }
+  }
+
+  private async validateOpenCashRegister(cashRegisterId: string, shopId: string) {
+    const cashRegister = await this.prisma.cashRegister.findFirst({
+      where: {
+        id: cashRegisterId,
+        shopId,
+        status: 'OPEN',
+      },
+    });
+
+    if (!cashRegister) {
+      throw new BadRequestException(
+        'La caja seleccionada no está abierta en esta tienda.',
       );
     }
   }

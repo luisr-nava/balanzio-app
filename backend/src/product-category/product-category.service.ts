@@ -5,12 +5,12 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
+import { CreateProductCategoryDto } from './dto/create-product-category.dto';
+import { UpdateProductCategoryDto } from './dto/update-product-category.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtPayload } from '../auth-client/interfaces/jwt-payload.interface';
 
-interface CategoryQuery {
+interface ProductCategoryQuery {
   search?: string;
   page?: number;
   limit?: number;
@@ -19,12 +19,15 @@ interface CategoryQuery {
 }
 
 @Injectable()
-export class CategoryService {
+export class ProductCategoryService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createCategoryDto: CreateCategoryDto, user: JwtPayload) {
+  async create(
+    createProductCategoryDto: CreateProductCategoryDto,
+    user: JwtPayload,
+  ) {
     const { id: userId, role } = user;
-    const { shopIds, name } = createCategoryDto;
+    const { shopIds, name } = createProductCategoryDto;
 
     let targetShopIds: string[] = [];
     let ownerShopNames = new Map<string, string>();
@@ -103,7 +106,7 @@ export class CategoryService {
     };
   }
 
-  async findAll(user: JwtPayload, query: CategoryQuery) {
+  async findAll(user: JwtPayload, query: ProductCategoryQuery) {
     const { search, page = 1, limit = 20, shopId, includeInactive = false } = query;
 
     let accessibleShopIds: string[] = [];
@@ -234,7 +237,11 @@ export class CategoryService {
     };
   }
 
-  async update(id: string, updateCategoryDto: UpdateCategoryDto, user: JwtPayload) {
+  async update(
+    id: string,
+    updateProductCategoryDto: UpdateProductCategoryDto,
+    user: JwtPayload,
+  ) {
     const { id: userId } = user;
 
     const category = await this.prisma.category.findUnique({
@@ -261,11 +268,14 @@ export class CategoryService {
     }
 
     // Si se está cambiando el nombre, verificar que no exista otra con ese nombre
-    if (updateCategoryDto.name && updateCategoryDto.name !== category.name) {
+    if (
+      updateProductCategoryDto.name &&
+      updateProductCategoryDto.name !== category.name
+    ) {
       const existingCategory = await this.prisma.category.findUnique({
         where: {
           name_shopId: {
-            name: updateCategoryDto.name,
+            name: updateProductCategoryDto.name,
             shopId: category.shopId,
           },
         },
@@ -273,7 +283,7 @@ export class CategoryService {
 
       if (existingCategory) {
         throw new ConflictException(
-          `Ya existe una categoría con el nombre "${updateCategoryDto.name}" en esta tienda`,
+          `Ya existe una categoría con el nombre "${updateProductCategoryDto.name}" en esta tienda`,
         );
       }
     }
@@ -281,7 +291,7 @@ export class CategoryService {
     const updated = await this.prisma.category.update({
       where: { id },
       data: {
-        name: updateCategoryDto.name,
+        name: updateProductCategoryDto.name,
         updatedBy: userId,
       },
     });

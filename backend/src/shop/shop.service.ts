@@ -109,10 +109,6 @@ export class ShopService {
             countryCode: shop.countryCode,
             currencyCode: shop.currencyCode,
             createdAt: shop.createdAt,
-            // Datos fiscales (solo OWNER)
-            taxIdNumber: shop.taxIdNumber,
-            taxCondition: shop.taxCondition,
-            taxAddress: shop.taxAddress,
             // Estadísticas
             employeesCount: shop._count.employees,
             productsCount: shop._count.shopProducts,
@@ -298,10 +294,6 @@ export class ShopService {
           countryCode: shop.countryCode,
           currencyCode: shop.currencyCode,
           createdAt: shop.createdAt,
-          // Datos fiscales (solo OWNER)
-          taxIdNumber: shop.taxIdNumber,
-          taxCondition: shop.taxCondition,
-          taxAddress: shop.taxAddress,
           // Empleados completos con salarios
           employees: shop.employees,
           employeesCount: shop._count.employees,

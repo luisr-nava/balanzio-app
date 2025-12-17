@@ -1,6 +1,6 @@
 import {
   IsBoolean,
-  IsDate,
+  IsDateString,
   IsEmail,
   IsEnum,
   IsNotEmpty,
@@ -55,7 +55,7 @@ export class CreateUserDto {
   @Length(5, 200, { message: 'La dirección debe tener entre 5 y 200 caracteres' })
   address?: string;
 
-  @IsDate()
+  @IsDateString()
   @IsOptional()
   hireDate?: string;
 

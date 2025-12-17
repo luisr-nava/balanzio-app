@@ -105,22 +105,13 @@ export class ProductService {
       },
     });
 
-    let finalSalePrice = createProductDto.salePrice;
-    if (
-      shop.taxCondition === 'Responsable Inscripto' &&
-      createProductDto.taxRate
-    ) {
-      finalSalePrice =
-        createProductDto.salePrice * (1 + createProductDto.taxRate / 100);
-    }
-
     return {
       message: 'Producto creado correctamente',
       data: {
         product,
         shopProduct: {
           ...shopProduct,
-          finalSalePrice,
+          finalSalePrice: createProductDto.salePrice,
           supplier: supplier ? supplier.name : null,
         },
       },
@@ -227,21 +218,13 @@ export class ProductService {
       },
     });
 
-    let finalSalePrice = updatedShopProduct.salePrice;
-    if (
-      shop.taxCondition === 'Responsable Inscripto' &&
-      updatedProduct.taxRate
-    ) {
-      finalSalePrice =
-        updatedShopProduct.salePrice * (1 + updatedProduct.taxRate / 100);
-    }
     return {
       message: 'Producto actualizado correctamente',
       data: {
         product: updatedProduct,
         shopProduct: {
           ...updatedShopProduct,
-          finalSalePrice,
+          finalSalePrice: updatedShopProduct.salePrice,
         },
       },
     };

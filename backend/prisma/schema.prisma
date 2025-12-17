@@ -19,9 +19,6 @@ model Shop {
   projectId    String
   isActive     Boolean        @default(true)
   phone        String?
-  taxAddress   String?
-  taxCondition String?
-  taxIdNumber  String?
   countryCode  String         @default("US")
   currencyCode String         @default("USD")
 
