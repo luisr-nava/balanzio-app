@@ -64,7 +64,7 @@ export function Modal({
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="absolute inset-0 bg-black/60"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={(e) => {
               if (closeOnOverlayClick && e.target === e.currentTarget) {
                 onClose();
