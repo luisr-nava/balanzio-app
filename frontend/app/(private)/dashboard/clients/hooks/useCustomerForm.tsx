@@ -1,19 +1,23 @@
-import { useEffect } from "react";
 import { useShopStore } from "@/app/(private)/store/shops.slice";
 import { useShallow } from "zustand/react/shallow";
 import {
   useCustomerCreateMutation,
+  useCustomerDeleteMutation,
   useCustomerUpdateMutation,
 } from "./customer.mutation";
 import type { CreateCustomerDto, Customer } from "../interfaces";
 import { useForm } from "react-hook-form";
 import { useModal } from "@/app/(private)/hooks/useModal";
+import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/error-handler";
 
 const initialForm: CreateCustomerDto = {
   fullName: "",
   email: "",
   phone: "",
+  dni: "",
   address: "",
+  creditLimit: undefined,
   notes: "",
   shopId: "",
 };
@@ -25,10 +29,13 @@ export const useCustomerForm = () => {
       activeShopLoading: state.activeShopLoading,
     })),
   );
-  const createMutation = useCustomerCreateMutation();
-  const updateMutation = useCustomerUpdateMutation();
   const customerModal = useModal("createCustomer");
   const editCustomerModal = useModal("editCustomer");
+
+  const createMutation = useCustomerCreateMutation();
+  const updateMutation = useCustomerUpdateMutation();
+  const deleteMutation = useCustomerDeleteMutation();
+
   const {
     register,
     handleSubmit,
@@ -43,11 +50,21 @@ export const useCustomerForm = () => {
     },
   });
 
-  useEffect(() => {
-    if (activeShopId) {
-      setValue("shopId", activeShopId);
-    }
-  }, [activeShopId, setValue]);
+  const resetForm = () =>
+    reset({
+      ...initialForm,
+      shopId: activeShopId || "",
+    });
+
+  const closeModals = () => {
+    customerModal.close();
+    editCustomerModal.close();
+  };
+
+  const handleSuccess = () => {
+    resetForm();
+    closeModals();
+  };
 
   const onSubmit = handleSubmit((values) => {
     if (!activeShopId) return;
@@ -56,74 +73,104 @@ export const useCustomerForm = () => {
       fullName: values.fullName.trim(),
       email: values.email?.trim() || null,
       phone: values.phone?.trim() || null,
+      dni: values.dni?.toString().trim(),
       address: values.address?.trim() || null,
+      creditLimit: values.creditLimit ||0 ,
       notes: values.notes?.trim() || null,
       shopId: activeShopId,
     };
 
     if (editCustomerModal.isOpen && editCustomerModal.data) {
-      updateMutation.mutate({
-        id: String(editCustomerModal.data),
-        payload,
-      });
+      updateMutation.mutate(
+        {
+          id: String(editCustomerModal.data),
+          payload,
+        },
+        {
+          onSuccess: () => {
+            toast.success("Cliente actualizado");
+            handleSuccess();
+          },
+          onError: (error) => {
+            const { message } = getErrorMessage(
+              error,
+              "No se pudo actualizar el cliente",
+            );
+            toast.error("Error", { description: message });
+          },
+        },
+      );
     } else {
-      // En creación no enviamos isActive explícitamente
-      createMutation.mutate({ ...payload });
+      createMutation.mutate(
+        { ...payload },
+        {
+          onSuccess: () => {
+            toast.success("Cliente creado");
+            handleSuccess();
+          },
+          onError: (error) => {
+            const { message } = getErrorMessage(
+              error,
+              "No se pudo crear el cliente",
+            );
+            toast.error("Error", { description: message });
+          },
+        },
+      );
     }
   });
 
   const handleEdit = (customer: Customer) => {
-    reset({
-      fullName: customer.fullName,
-      email: customer.email || "",
-      phone: customer.phone || "",
-      address: customer.address || "",
-      notes: customer.notes || "",
-      shopId: customer.shopId,
-    });
     editCustomerModal.open(customer.id);
+    reset({
+      fullName: customer.fullName || "",
+      email: customer.email ?? "",
+      phone: customer.phone ?? "",
+      dni: customer.dni ?? "",
+      address: customer.address ?? "",
+      creditLimit: customer.creditLimit ?? undefined,
+      notes: customer.notes ?? "",
+      shopId: customer.shopId || activeShopId || "",
+    });
   };
 
   const handleOpenCreate = () => {
-    reset({
-      ...initialForm,
-      shopId: activeShopId || "",
-    });
+    resetForm();
     customerModal.open();
   };
 
-  useEffect(() => {
-    if (!createMutation.isSuccess) return;
-    reset({
-      ...initialForm,
-      shopId: activeShopId || "",
-    });
-    customerModal.close();
-    editCustomerModal.close();
-    createMutation.reset();
-  }, [activeShopId, createMutation, customerModal, editCustomerModal, reset]);
-
-  useEffect(() => {
-    if (!updateMutation.isSuccess) return;
-    reset({
-      ...initialForm,
-      shopId: activeShopId || "",
-    });
-    customerModal.close();
-    editCustomerModal.close();
-    updateMutation.reset();
-  }, [activeShopId, updateMutation, customerModal, editCustomerModal, reset]);
+  const handleDelete = (id: string, onSuccess?: () => void) => {
+    deleteMutation.mutate(
+      { id },
+      {
+        onSuccess: () => {
+          toast.success("Cliente eliminado");
+          handleSuccess();
+          onSuccess?.();
+        },
+        onError: (error) => {
+          const { message } = getErrorMessage(
+            error,
+            "No se pudo eliminar el cliente",
+          );
+          toast.error("Error", { description: message });
+        },
+      },
+    );
+  };
 
   return {
     activeShopId,
     activeShopLoading,
     createMutation,
     updateMutation,
+    deleteMutation,
     register,
     onSubmit,
     reset,
     handleEdit,
     handleOpenCreate,
+    handleDelete,
     customerModal,
     editCustomerModal,
     initialForm,
@@ -134,4 +181,3 @@ export const useCustomerForm = () => {
 };
 
 export type UseCustomerFormReturn = ReturnType<typeof useCustomerForm>;
-

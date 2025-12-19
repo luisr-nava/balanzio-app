@@ -39,3 +39,11 @@ export interface GetAllCustomerResponse {
   };
   data: Customer[];
 }
+
+export interface DeleteCustomerResponse {
+  message: string;
+  data: {
+    id: string;
+    fullName: string;
+  };
+}

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useShopStore } from "@/app/(private)/store/shops.slice";
 import { usePaginationParams } from "../../hooks/useQueryParams";
 import { useCustomers } from "./hooks/useCustomers";
@@ -10,6 +10,8 @@ import { ShopEmpty } from "@/components/shop-emty";
 import { ShopLoading } from "@/components/shop-loading";
 import { Empty, Loading } from "../../components";
 import { Pagination } from "@/app/(private)/components";
+import { Button } from "@/components/ui/button";
+import type { Customer } from "./interfaces";
 
 export default function ClientesPage() {
   const { activeShopId, activeShopLoading } = useShopStore();
@@ -28,6 +30,19 @@ export default function ClientesPage() {
 
   const form = useCustomerForm();
   const { customerModal, editCustomerModal, initialForm, reset } = form;
+  const [deleteTarget, setDeleteTarget] = useState<Customer | null>(null);
+
+  const deletingId =
+    form.deleteMutation.isPending &&
+    form.deleteMutation.variables &&
+    "id" in form.deleteMutation.variables
+      ? (form.deleteMutation.variables.id as string)
+      : null;
+
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    form.handleDelete(deleteTarget.id, () => setDeleteTarget(null));
+  };
 
   useEffect(() => {
     if (!pagination) return;
@@ -54,7 +69,12 @@ export default function ClientesPage() {
         <Empty description="No hay clientes cargados." />
       ) : (
         <div className="p-5 space-y-4">
-          <TableCustomers customers={customers} handleEdit={form.handleEdit} />
+          <TableCustomers
+            customers={customers}
+            handleEdit={form.handleEdit}
+            handleDelete={(customer) => setDeleteTarget(customer)}
+            deletingId={deletingId}
+          />
           <Pagination
             page={page}
             totalPages={pagination?.totalPages ?? 1}
@@ -65,6 +85,7 @@ export default function ClientesPage() {
             }}
             onLimitChange={(nextLimit) => setLimit(nextLimit)}
             isLoading={isFetching}
+            totalItems={pagination?.total ?? 0}
           />
         </div>
       )}
@@ -92,6 +113,36 @@ export default function ClientesPage() {
           control={form.control}
           errors={form.errors}
         />
+      </Modal>
+
+      <Modal
+        isOpen={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        title="Eliminar cliente"
+        description="Esta acción es permanente y no podrás recuperar el registro.">
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            ¿Seguro que deseas eliminar a{" "}
+            <span className="font-semibold">{deleteTarget?.fullName}</span>? Esta
+            acción no se puede deshacer.
+          </p>
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteTarget(null)}
+              disabled={form.deleteMutation.isPending}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDelete}
+              disabled={form.deleteMutation.isPending}>
+              {form.deleteMutation.isPending
+                ? "Eliminando..."
+                : "Eliminar definitivamente"}
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

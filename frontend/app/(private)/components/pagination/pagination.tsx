@@ -7,6 +7,7 @@ interface PaginationProps {
   page: number;
   totalPages: number;
   limit: number;
+  totalItems?: number;
   onPageChange: (page: number) => void;
   onLimitChange: (limit: number) => void;
   isLoading?: boolean;
@@ -18,6 +19,7 @@ export function Pagination({
   page,
   totalPages,
   limit,
+  totalItems,
   onPageChange,
   onLimitChange,
   isLoading = false,
@@ -27,6 +29,8 @@ export function Pagination({
   const safeTotalPages = Math.max(totalPages || 1, 1);
   const prevDisabled = page <= 1 || isLoading;
   const nextDisabled = page >= safeTotalPages || isLoading;
+  const disableLimitSelect =
+    isLoading || (totalItems !== undefined ? totalItems <= limit : safeTotalPages <= 1);
 
   const pagesToRender = useMemo(() => {
     if (safeTotalPages <= 7) {
@@ -120,7 +124,7 @@ export function Pagination({
           className="h-9 rounded-md border bg-background px-3 text-sm w-1/2 max-w-[220px] sm:w-44 sm:min-w-[170px]"
           value={limit}
           onChange={(e) => onLimitChange(Number(e.target.value))}
-          disabled={isLoading}>
+          disabled={disableLimitSelect}>
           {limitOptions.map((option) => (
             <option key={option} value={option}>
               {option}
@@ -131,4 +135,3 @@ export function Pagination({
     </div>
   );
 }
-
