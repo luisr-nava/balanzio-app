@@ -32,6 +32,7 @@ import { TokenBlacklistService } from './services/token-blacklist.service';
 import { FailedAttemptsGuard } from '../common/guards/failed-attempts.guard';
 import { CustomLoggerService } from '../common/logger/logger.service';
 import { CashRegisterService } from '../cash-register/cash-register.service';
+import { SubscriptionService } from '../subscription/subscription.service';
 
 @Controller('auth-client')
 export class AuthClientController {
@@ -42,6 +43,7 @@ export class AuthClientController {
     private readonly failedAttemptsGuard: FailedAttemptsGuard,
     private readonly logger: CustomLoggerService,
     private readonly cashRegisterService: CashRegisterService,
+    private readonly subscriptionService: SubscriptionService,
   ) {}
 
   @Post('register')
@@ -188,6 +190,9 @@ export class AuthClientController {
     const token = authHeader.split(' ')[1];
     const userData = await this.authClientService.validateToken(token);
     const shopsResponse = await this.shopsService.getMyShops(user);
+    const subscription = await this.subscriptionService.getSubscriptionForProject(
+      user.projectId,
+    );
 
     const minimalShops = shopsResponse.data.map((shop) => ({
       id: shop.id,
@@ -197,6 +202,7 @@ export class AuthClientController {
     return {
       user: userData,
       shops: minimalShops,
+      subscription,
     };
   }
 

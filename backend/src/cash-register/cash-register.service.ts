@@ -14,10 +14,30 @@ import {
 import type { JwtPayload } from '../auth-client/interfaces/jwt-payload.interface';
 import type { Prisma } from '@prisma/client';
 import { CashMovementType } from '@prisma/client';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { fromZonedTime, toZonedTime } from 'date-fns-tz';
+import type { CashMovement } from '@prisma/client';
 
 @Injectable()
 export class CashRegisterService {
+  private isAutoClosing = false;
+
   constructor(private readonly prisma: PrismaService) {}
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async handleAutoCloseCashRegisters() {
+    if (this.isAutoClosing) {
+      return;
+    }
+
+    this.isAutoClosing = true;
+
+    try {
+      await this.closeExpiredCashRegisters();
+    } finally {
+      this.isAutoClosing = false;
+    }
+  }
 
   async open(dto: OpenCashRegisterDto, user: JwtPayload) {
     // Verificar acceso a la tienda
@@ -123,51 +143,11 @@ export class CashRegisterService {
       throw new BadRequestException('La caja ya está cerrada');
     }
 
-    // Calcular montos totales por tipo de movimiento
-    const totals = {
-      sales: 0,
-      incomes: 0,
-      purchases: 0,
-      expenses: 0,
-      returns: 0,
-      withdrawals: 0,
-      deposits: 0,
-    };
-
-    const totalMovements = cashRegister.movements.reduce((sum, mov) => {
-      switch (mov.type) {
-        case 'SALE':
-          totals.sales += mov.amount;
-          return sum + mov.amount;
-        case 'INCOME':
-          totals.incomes += mov.amount;
-          return sum + mov.amount;
-        case 'DEPOSIT':
-          totals.deposits += mov.amount;
-          return sum + mov.amount;
-        case 'PURCHASE':
-          totals.purchases += mov.amount;
-          return sum - mov.amount;
-        case 'RETURN':
-          totals.returns += mov.amount;
-          return sum - mov.amount;
-        case 'EXPENSE':
-          totals.expenses += mov.amount;
-          return sum - mov.amount;
-        case 'WITHDRAWAL':
-          totals.withdrawals += mov.amount;
-          return sum - mov.amount;
-        default:
-          return sum;
-      }
-    }, 0);
-
-    const closingAmount = cashRegister.openingAmount + totalMovements;
+    const { closingAmount, totals } = this.calculateClosingFromMovements(
+      cashRegister.openingAmount,
+      cashRegister.movements,
+    );
     const difference = dto.actualAmount - closingAmount;
-    const totalIncome = totals.sales + totals.incomes + totals.deposits;
-    const totalExpense =
-      totals.purchases + totals.expenses + totals.returns + totals.withdrawals;
-    const netIncome = totalIncome - totalExpense;
 
     // Cerrar caja
     const closedCashRegister = await this.prisma.cashRegister.update({
@@ -189,18 +169,7 @@ export class CashRegisterService {
         ...closedCashRegister,
         differenceStatus:
           difference > 0 ? 'SOBRANTE' : difference < 0 ? 'FALTANTE' : 'EXACTO',
-        totals: {
-          sales: totals.sales,
-          incomes: totals.incomes,
-          purchases: totals.purchases,
-          expenses: totals.expenses,
-          returns: totals.returns,
-          withdrawals: totals.withdrawals,
-          deposits: totals.deposits,
-          totalIncome,
-          totalExpense,
-          netIncome,
-        },
+        totals,
       },
     };
   }
@@ -744,6 +713,144 @@ export class CashRegisterService {
         endDate: endOfMonth,
       },
     };
+  }
+
+  private calculateClosingFromMovements(
+    openingAmount: number,
+    movements: Pick<CashMovement, 'type' | 'amount'>[],
+  ) {
+    const totals = {
+      sales: 0,
+      incomes: 0,
+      purchases: 0,
+      expenses: 0,
+      returns: 0,
+      withdrawals: 0,
+      deposits: 0,
+      totalIncome: 0,
+      totalExpense: 0,
+      netIncome: 0,
+    };
+
+    const totalMovements = movements.reduce((sum, mov) => {
+      switch (mov.type) {
+        case 'SALE':
+          totals.sales += mov.amount;
+          return sum + mov.amount;
+        case 'INCOME':
+          totals.incomes += mov.amount;
+          return sum + mov.amount;
+        case 'DEPOSIT':
+          totals.deposits += mov.amount;
+          return sum + mov.amount;
+        case 'PURCHASE':
+          totals.purchases += mov.amount;
+          return sum - mov.amount;
+        case 'RETURN':
+          totals.returns += mov.amount;
+          return sum - mov.amount;
+        case 'EXPENSE':
+          totals.expenses += mov.amount;
+          return sum - mov.amount;
+        case 'WITHDRAWAL':
+          totals.withdrawals += mov.amount;
+          return sum - mov.amount;
+        default:
+          return sum;
+      }
+    }, 0);
+
+    totals.totalIncome = totals.sales + totals.incomes + totals.deposits;
+    totals.totalExpense =
+      totals.purchases + totals.expenses + totals.returns + totals.withdrawals;
+    totals.netIncome = totals.totalIncome - totals.totalExpense;
+
+    const closingAmount = openingAmount + totalMovements;
+
+    return { closingAmount, totals };
+  }
+
+  private getAutoClosingDeadline(openedAt: Date, timezone: string) {
+    const openingLocal = toZonedTime(openedAt, timezone);
+    const closingLocal = new Date(openingLocal);
+    closingLocal.setHours(0, 1, 0, 0);
+    closingLocal.setDate(closingLocal.getDate() + 1);
+
+    return fromZonedTime(closingLocal, timezone);
+  }
+
+  private async closeExpiredCashRegisters() {
+    const openRegisters = await this.prisma.cashRegister.findMany({
+      where: { status: 'OPEN' },
+      include: {
+        shop: {
+          select: { timezone: true },
+        },
+      },
+    });
+
+    if (!openRegisters.length) {
+      return;
+    }
+
+    const now = new Date();
+    const registerIds = openRegisters.map((reg) => reg.id);
+
+    const movements = await this.prisma.cashMovement.findMany({
+      where: { cashRegisterId: { in: registerIds } },
+      select: {
+        cashRegisterId: true,
+        type: true,
+        amount: true,
+      },
+    });
+
+    const movementsByRegister = new Map<string, Pick<CashMovement, 'type' | 'amount'>[]>();
+
+    movements.forEach((movement) => {
+      const list = movementsByRegister.get(movement.cashRegisterId) ?? [];
+      list.push(movement);
+      movementsByRegister.set(movement.cashRegisterId, list);
+    });
+
+    for (const register of openRegisters) {
+      const timezone = register.shop?.timezone || 'UTC';
+      const closingDeadline = this.getAutoClosingDeadline(register.openedAt, timezone);
+
+      if (now < closingDeadline) {
+        continue;
+      }
+
+      const registerMovements = movementsByRegister.get(register.id) ?? [];
+      const { closingAmount } = this.calculateClosingFromMovements(
+        register.openingAmount,
+        registerMovements,
+      );
+
+      await this.prisma.$transaction(async (tx) => {
+        const current = await tx.cashRegister.findUnique({
+          where: { id: register.id },
+          select: { status: true },
+        });
+
+        if (current?.status !== 'OPEN') {
+          return;
+        }
+
+        await tx.cashRegister.update({
+          where: { id: register.id },
+          data: {
+            status: 'CLOSED',
+            closingAmount,
+            actualAmount: closingAmount,
+            difference: 0,
+            closedAt: new Date(),
+            closedBy: register.employeeId,
+            closingNotes: 'Cierre automático por cambio de día',
+          },
+        });
+      });
+    }
   }
 
   private async validateShopAccess(shopId: string, user: JwtPayload) {

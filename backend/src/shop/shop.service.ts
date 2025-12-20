@@ -30,6 +30,15 @@ export class ShopService {
       : DEFAULT_CURRENCY_CODE;
     const timezone = getTimezoneForCountry(countryCode);
 
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { projectId: user.projectId },
+      select: { status: true },
+    });
+
+    const hasActiveSubscription =
+      subscription && ['ACTIVE', 'TRIALING'].includes(subscription.status);
+    const maxShopsAllowed = hasActiveSubscription ? 3 : 1;
+
     if (!timezone) {
       throw new BadRequestException(
         'No se pudo determinar la zona horaria para el país seleccionado',
@@ -37,12 +46,14 @@ export class ShopService {
     }
 
     const shopCount = await this.prisma.shop.count({
-      where: { ownerId: user.id },
+      where: { ownerId: user.id, projectId: user.projectId },
     });
 
-    if (shopCount >= 3) {
+    if (shopCount >= maxShopsAllowed) {
       throw new ForbiddenException(
-        'Ya alcanzaste el límite de 3 tiendas permitidas',
+        hasActiveSubscription
+          ? 'Ya alcanzaste el límite de 3 tiendas permitidas con tu suscripción'
+          : 'Con el plan gratuito solo puedes crear 1 tienda. Contrata una suscripción para crear más.',
       );
     }
 

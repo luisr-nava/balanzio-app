@@ -25,6 +25,8 @@ import { SecurityHeadersMiddleware } from './common/middleware/security-headers.
 import { PaymentMethodModule } from './payment-method/payment-method.module';
 import { CashRegisterModule } from './cash-register/cash-register.module';
 import { WebhookModule } from './webhook/webhook.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { SubscriptionModule } from './subscription/subscription.module';
 
 @Module({
   imports: [
@@ -37,6 +39,7 @@ import { WebhookModule } from './webhook/webhook.module';
         limit: 10, // 10 requests
       },
     ]),
+    ScheduleModule.forRoot(),
     AuthClientModule,
     ShopModule,
     PrismaModule,
@@ -56,6 +59,7 @@ import { WebhookModule } from './webhook/webhook.module';
     PaymentMethodModule,
     CashRegisterModule,
     WebhookModule,
+    SubscriptionModule,
   ],
   controllers: [AppController],
   providers: [

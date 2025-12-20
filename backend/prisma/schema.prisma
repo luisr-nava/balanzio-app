@@ -787,6 +787,14 @@ enum CashMovementType {
   ADJUSTMENT    // Ajuste manual
 }
 
+enum SubscriptionStatus {
+  FREE
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
 // Webhooks para notificaciones
 model Webhook {
   id          String        @id @default(uuid())
@@ -854,6 +862,23 @@ model StockAlert {
 
   @@index([shopId, isResolved])
   @@index([shopProductId, isResolved])
+}
+
+model Subscription {
+  id                   String              @id @default(uuid())
+  projectId            String              @unique
+  ownerId              String
+  plan                 String              @default("FREE")
+  status               SubscriptionStatus  @default(FREE)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  currentPeriodEnd     DateTime?
+  cancelAt             DateTime?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  @@index([ownerId])
+  @@index([status])
 }
 
 enum WebhookEvent {
