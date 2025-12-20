@@ -18,6 +18,7 @@ export class CustomLoggerService implements NestLoggerService {
     const transports: winston.transport[] = [
       // Console output (solo en desarrollo)
       new winston.transports.Console({
+        level: 'error',
         format: winston.format.combine(
           winston.format.colorize(),
           winston.format.printf(({ timestamp, level, message, context, trace, ...meta }) => {
@@ -61,14 +62,14 @@ export class CustomLoggerService implements NestLoggerService {
     }
 
     this.logger = winston.createLogger({
-      level: envs.nodeEnv === 'production' ? 'info' : 'debug',
+      level: 'error', // Solo errores
       format: logFormat,
       transports,
     });
   }
 
   log(message: string, context?: string, meta?: any) {
-    this.logger.info(message, { context, ...meta });
+    // Silenciado
   }
 
   error(message: string, trace?: string, context?: string, meta?: any) {
@@ -76,34 +77,24 @@ export class CustomLoggerService implements NestLoggerService {
   }
 
   warn(message: string, context?: string) {
-    this.logger.warn(message, { context });
+    // Silenciado
   }
 
   debug(message: string, context?: string) {
-    this.logger.debug(message, { context });
+    // Silenciado
   }
 
   verbose(message: string, context?: string) {
-    this.logger.verbose(message, { context });
+    // Silenciado
   }
 
   // Método específico para eventos de seguridad
   security(event: string, details: any, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium') {
-    this.logger.warn(`SECURITY EVENT: ${event}`, {
-      context: 'Security',
-      severity,
-      ...details,
-      timestamp: new Date().toISOString(),
-    });
+    // Silenciado para evitar logs no deseados
   }
 
   // Método para auditoría de acciones sensibles
   audit(action: string, userId: string, details: any) {
-    this.logger.info(`AUDIT: ${action}`, {
-      context: 'Audit',
-      userId,
-      ...details,
-      timestamp: new Date().toISOString(),
-    });
+    // Silenciado para evitar logs no deseados
   }
 }

@@ -71,6 +71,8 @@ export class ShopService {
       },
     });
 
+    await this.ensureDefaultPaymentMethods(shop.id);
+
     return {
       message: 'Tienda creada correctamente',
       shop,
@@ -552,5 +554,26 @@ export class ShopService {
       message: `Tienda ${updated.isActive ? 'habilitada' : 'deshabilitada'} correctamente`,
       shop: updated,
     };
+  }
+
+  private async ensureDefaultPaymentMethods(shopId: string) {
+    await this.prisma.paymentMethod.upsert({
+      where: {
+        shopId_code: {
+          shopId,
+          code: 'CASH',
+        },
+      },
+      update: {
+        name: 'Cash / Efectivo',
+        isActive: true,
+      },
+      create: {
+        shopId,
+        name: 'Cash / Efectivo',
+        code: 'CASH',
+        description: 'Método de pago en efectivo (creado automáticamente)',
+      },
+    });
   }
 }

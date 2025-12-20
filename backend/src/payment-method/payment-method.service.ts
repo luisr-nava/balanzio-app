@@ -50,6 +50,8 @@ export class PaymentMethodService {
   ) {
     await this.validateShopAccess(shopId, user);
 
+    await this.ensureDefaultCash(shopId);
+
     const skip = (page - 1) * limit;
     const where = { shopId, isActive: true };
 
@@ -227,5 +229,26 @@ export class PaymentMethodService {
         throw new ForbiddenException('No tienes permiso para esta tienda');
       }
     }
+  }
+
+  private async ensureDefaultCash(shopId: string) {
+    await this.prisma.paymentMethod.upsert({
+      where: {
+        shopId_code: {
+          shopId,
+          code: 'CASH',
+        },
+      },
+      update: {
+        name: 'Cash / Efectivo',
+        isActive: true,
+      },
+      create: {
+        shopId,
+        name: 'Cash / Efectivo',
+        code: 'CASH',
+        description: 'Método de pago en efectivo (creado automáticamente)',
+      },
+    });
   }
 }
