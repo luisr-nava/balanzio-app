@@ -12,6 +12,7 @@ import { ShopModule } from '../shop/shop.module';
 import { FailedAttemptsGuard } from '../common/guards/failed-attempts.guard';
 import { envs } from '../config/envs';
 import { CashRegisterModule } from '../cash-register/cash-register.module';
+import { SubscriptionModule } from '../subscription/subscription.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { CashRegisterModule } from '../cash-register/cash-register.module';
     HttpModule,
     ShopModule,
     CashRegisterModule,
+    SubscriptionModule,
   ],
   controllers: [AuthClientController],
   providers: [

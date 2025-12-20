@@ -780,16 +780,24 @@ export class CashRegisterService {
   }
 
   private async closeExpiredCashRegisters() {
-    const openRegisters = await this.prisma.cashRegister.findMany({
-      where: { status: 'OPEN' },
-      include: {
-        shop: {
-          select: { timezone: true },
+    const openRegisters = await this.prisma.cashRegister
+      .findMany({
+        where: { status: 'OPEN' },
+        include: {
+          shop: {
+            select: { timezone: true },
+          },
         },
-      },
-    });
+      })
+      .catch((error) => {
+        // Si la tabla aún no existe (DB sin migrar), evitar que el cron reviente
+        if (error?.code === 'P2021') {
+          return [];
+        }
+        throw error;
+      });
 
-    if (!openRegisters.length) {
+    if (!openRegisters?.length) {
       return;
     }
 

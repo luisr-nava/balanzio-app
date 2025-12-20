@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { envs } from './config/envs';
 import helmet from 'helmet';
 import { CustomLoggerService } from './common/logger/logger.service';
@@ -8,13 +8,7 @@ import { RequestIdInterceptor } from './common/interceptors/request-id.intercept
 import { SanitizeInputInterceptor } from './common/interceptors/sanitize-input.interceptor';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    logger: ['error', 'warn', 'log'],
-  });
-
-  // Usar logger personalizado
-  const customLogger = app.get(CustomLoggerService);
-  app.useLogger(customLogger);
+  const app = await NestFactory.create(AppModule, { logger: ['error'] });
 
   // Seguridad: Headers HTTP con Helmet (configuración mejorada)
   app.use(
@@ -41,9 +35,6 @@ async function bootstrap() {
     }),
   );
 
-  // Request ID Interceptor para trazabilidad
-  app.useGlobalInterceptors(new RequestIdInterceptor(customLogger));
-
   // Sanitización de inputs para prevenir XSS
   app.useGlobalInterceptors(new SanitizeInputInterceptor());
 
@@ -62,8 +53,6 @@ async function bootstrap() {
     maxAge: 3600,
   });
 
-  customLogger.log(`🔒 CORS configurado para: ${envs.nodeEnv === 'development' ? 'CUALQUIER ORIGEN (desarrollo)' : envs.allowedOrigins}`, 'Bootstrap');
-
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, // ❌ elimina propiedades que no están en el DTO
@@ -72,19 +61,9 @@ async function bootstrap() {
     }),
   );
 
-  try {
-    await app.listen(envs.port);
-
-    customLogger.log(`🚀 Servidor ejecutándose en http://localhost:${envs.port}`, 'Bootstrap');
-    customLogger.log(`🔒 Ambiente: ${envs.nodeEnv}`, 'Bootstrap');
-    customLogger.log(`🛡️ Rate limiting: 10 req/min`, 'Bootstrap');
-    customLogger.log(`⏱️ Token expiration: 15 minutos`, 'Bootstrap');
-  } catch (error) {
-    if (error.code === 'EADDRINUSE') {
-      customLogger.error(`❌ El puerto ${envs.port} ya está en uso!`, '', 'Bootstrap');
-    } else {
-      customLogger.error('❌ Error inesperado:', error.stack, 'Bootstrap');
-    }
-  }
+  await app.listen(envs.port);
+  // Único log informativo: app arriba
+  // eslint-disable-next-line no-console
+  console.log(`🚀 Servidor ejecutándose en http://localhost:${envs.port}`);
 }
 bootstrap();

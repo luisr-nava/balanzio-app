@@ -1,9 +1,13 @@
-import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import {
+  Module,
+  NestModule,
+  MiddlewareConsumer,
+  RequestMethod,
+} from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AuthClientModule } from './auth-client/auth-client.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { ShopModule } from './shop/shop.module';
-import { PrismaService } from './prisma/prisma.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { EmployeeModule } from './employee/employee.module';
 import { ProductModule } from './product/product.module';
@@ -71,6 +75,9 @@ import { SubscriptionModule } from './subscription/subscription.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(SecurityHeadersMiddleware).forRoutes('*'); // Aplicar a todas las rutas
+    // Aplicar middleware a todas las rutas evitando comodines legacy
+    consumer
+      .apply(SecurityHeadersMiddleware)
+      .forRoutes({ path: '(.*)', method: RequestMethod.ALL });
   }
 }
