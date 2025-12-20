@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { usePaginationParams, useQueryParams } from "@/app/(private)/hooks/useQueryParams";
 import { useExpenses } from "./useExpenses";
 import { useExpenseMutations } from "./useExpenseMutations";
 import type { CreateExpenseDto, Expense } from "../interfaces";
+import { cashRegisterApi } from "@/lib/api/cash-register.api";
 
 interface UseExpenseParams {
   isOwner: boolean;
@@ -43,6 +45,18 @@ export const useExpense = ({ isOwner, activeShopId }: UseExpenseParams) => {
   const { createMutation, updateMutation, deleteMutation } =
     useExpenseMutations();
 
+  const {
+    data: openCashRegister,
+    isLoading: openCashLoading,
+    isFetching: openCashFetching,
+  } = useQuery({
+    queryKey: ["cash-register-open", activeShopId],
+    queryFn: () => cashRegisterApi.getOpenCashRegister(activeShopId || ""),
+    enabled: Boolean(activeShopId),
+    staleTime: 1000 * 30,
+    placeholderData: (prev) => prev,
+  });
+
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null);
@@ -58,8 +72,8 @@ export const useExpense = ({ isOwner, activeShopId }: UseExpenseParams) => {
   const handleSubmit = (values: {
     description: string;
     amount: number;
-    date: string;
-    paymentMethodId?: string;
+    date?: string;
+    paymentMethodId: string;
     category?: string | null;
   }) => {
     if (!activeShopId) {
@@ -67,13 +81,31 @@ export const useExpense = ({ isOwner, activeShopId }: UseExpenseParams) => {
       return;
     }
 
+    const amountValue = Number(values.amount);
+    if (!Number.isFinite(amountValue) || amountValue <= 0) {
+      toast.error("El monto debe ser mayor a 0.");
+      return;
+    }
+
+    if (!values.paymentMethodId) {
+      toast.error("Selecciona un método de pago.");
+      return;
+    }
+
+    if (!openCashRegister?.id) {
+      toast.error("Necesitas una caja abierta para registrar gastos.");
+      return;
+    }
+
+    const today = new Date().toISOString().split("T")[0];
     const payload: CreateExpenseDto = {
       description: values.description.trim(),
-      amount: Number(values.amount),
-      date: values.date,
-      paymentMethodId: values.paymentMethodId?.trim() || null,
+      amount: amountValue,
+      date: values.date?.trim() || today,
+      paymentMethodId: values.paymentMethodId.trim(),
       category: values.category?.trim() || null,
       shopId: activeShopId,
+      cashRegisterId: openCashRegister.id,
     };
 
     if (editingExpense) {
@@ -207,5 +239,8 @@ export const useExpense = ({ isOwner, activeShopId }: UseExpenseParams) => {
     createMutation,
     updateMutation,
     deleteMutation,
+    // cash register
+    openCashLoading,
+    openCashFetching,
   };
 };

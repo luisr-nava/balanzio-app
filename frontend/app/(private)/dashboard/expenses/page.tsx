@@ -9,6 +9,7 @@ import {
   Pagination,
   SelectShopCard,
 } from "@/app/(private)/components";
+import { usePaymentMethods } from "@/app/(private)/settings/payment-method/hooks";
 import { ExpenseHeader, ExpenseForm, ExpenseTable } from "./components";
 import { useExpense } from "./hooks/useExpense";
 import { Button } from "@/components/ui/button";
@@ -48,7 +49,15 @@ export default function ExpensesPage() {
     setStartDate,
     setEndDate,
     dateError,
+    openCashLoading,
+    openCashFetching,
   } = useExpense({ isOwner, activeShopId });
+
+  const {
+    paymentMethods,
+    isLoading: paymentMethodsLoading,
+    isFetching: paymentMethodsFetching,
+  } = usePaymentMethods();
 
   if (!isOwner) {
     return <AccessRestrictedCard />;
@@ -110,9 +119,17 @@ export default function ExpensesPage() {
         description={`Tienda: ${activeShop?.name || activeShopId}`}>
         <ExpenseForm
           onSubmit={handleSubmit}
-          isSubmitting={createMutation.isPending || updateMutation.isPending}
+          isSubmitting={
+            createMutation.isPending ||
+            updateMutation.isPending ||
+            openCashLoading ||
+            openCashFetching
+          }
           editingExpense={editingExpense}
           onCancelEdit={handleCancelEdit}
+          paymentMethods={paymentMethods}
+          paymentMethodsLoading={paymentMethodsLoading}
+          paymentMethodsFetching={paymentMethodsFetching}
         />
       </Modal>
 

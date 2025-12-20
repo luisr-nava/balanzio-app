@@ -3,6 +3,7 @@ export interface Expense {
   shopId: string;
   amount: number;
   description: string;
+  cashRegisterId?: string | null;
   category?: string | null;
   date: string;
   paymentMethodId?: string | null;
@@ -19,7 +20,8 @@ export interface CreateExpenseDto {
   description: string;
   amount: number;
   shopId: string;
-  paymentMethodId?: string | null;
+  paymentMethodId: string;
+  cashRegisterId: string;
   category?: string | null;
   date: string;
 }
