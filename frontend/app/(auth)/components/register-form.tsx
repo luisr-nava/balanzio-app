@@ -4,11 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Chrome } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useRegister } from "../hooks/useRegister";
-import { useGoogleAuth } from "../hooks/useGoogleAuth";
 
 interface RegisterFormData {
   fullName: string;
@@ -19,7 +16,6 @@ interface RegisterFormData {
 
 export default function RegisterForm() {
   const { register: registerUser, isLoading } = useRegister();
-  const googleAuth = useGoogleAuth();
 
   const {
     register,
@@ -44,10 +40,6 @@ export default function RegisterForm() {
       password: data.password,
       projectId: process.env.NEXT_PUBLIC_PROJECT_ID!,
     });
-  };
-
-  const handleGoogleSignIn = () => {
-    googleAuth.signInWithGoogle();
   };
 
   return (
@@ -146,34 +138,11 @@ export default function RegisterForm() {
           <Button
             type="submit"
             className="w-full"
-            disabled={isLoading || googleAuth.isLoading}>
+            disabled={isLoading}>
             {isLoading ? "Creando cuenta..." : "Crear Cuenta"}
-          </Button>
-
-          {/* Google Sign In */}
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <Separator />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">O</span>
-            </div>
-          </div>
-
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={handleGoogleSignIn}
-            disabled={isLoading || googleAuth.isLoading}>
-            <Chrome className="mr-2 h-4 w-4" />
-            {googleAuth.isLoading
-              ? "Redirigiendo a Google..."
-              : "Continuar con Google"}
           </Button>
         </form>
       </CardContent>
     </Card>
   );
 }
-

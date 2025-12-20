@@ -15,6 +15,7 @@ interface OpenCashRegisterModalProps {
   shopId: string | null;
   shopName?: string | null;
   onOpened: () => void;
+  onClose?: () => void;
 }
 
 export function OpenCashRegisterModal({
@@ -22,17 +23,19 @@ export function OpenCashRegisterModal({
   shopId,
   shopName,
   onOpened,
+  onClose,
 }: OpenCashRegisterModalProps) {
   const queryClient = useQueryClient();
-  const [openingAmount, setOpeningAmount] = useState<string>("0");
+  const [openingAmount, setOpeningAmount] = useState<string>("");
 
   useEffect(() => {
     if (isOpen) {
-      setOpeningAmount("0");
+      setOpeningAmount("");
     }
   }, [isOpen, shopId]);
 
   const parsedAmount = useMemo(() => {
+    if (openingAmount.trim() === "") return NaN;
     const value = Number(openingAmount);
     return Number.isNaN(value) ? NaN : value;
   }, [openingAmount]);
@@ -69,7 +72,7 @@ export function OpenCashRegisterModal({
   return (
     <Modal
       isOpen={isOpen}
-      onClose={() => {}}
+      onClose={onClose || (() => {})}
       title="Abrir caja"
       description="No encontramos una caja abierta para esta tienda. Ingresa el monto inicial para continuar."
       size="md"
@@ -91,6 +94,7 @@ export function OpenCashRegisterModal({
             min={0}
             step={0.01}
             value={openingAmount}
+            placeholder="Ingresa el monto inicial"
             onChange={(e) => setOpeningAmount(e.target.value)}
             autoFocus
           />

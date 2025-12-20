@@ -75,10 +75,10 @@ export function StoreSetupGuard({ children }: StoreSetupGuardProps) {
 
   // Actualizar tienda activa cuando el detalle llega
   useEffect(() => {
-    if (shopDetailQuery.data && shopDetailQuery.data.id !== activeShop?.id) {
+    if (shopDetailQuery.data) {
       setActiveShop(shopDetailQuery.data);
     }
-  }, [shopDetailQuery.data, activeShop?.id, setActiveShop]);
+  }, [shopDetailQuery.data, setActiveShop]);
 
   // Manejar errores al obtener tienda activa
   useEffect(() => {
@@ -159,6 +159,7 @@ export function StoreSetupGuard({ children }: StoreSetupGuardProps) {
       queryClient.invalidateQueries({
         queryKey: ["cash-register-open", activeShopId],
       });
+      queryClient.invalidateQueries({ queryKey: ["shop", activeShopId] });
     }
     if (activeShop) {
       setActiveShop({ ...activeShop, hasOpenCashRegister: true });
@@ -225,4 +226,3 @@ export function StoreSetupGuard({ children }: StoreSetupGuardProps) {
     </>
   );
 }
-

@@ -10,9 +10,6 @@ import {
   Users,
   UserCircle,
   Truck,
-  Receipt,
-  TrendingUp,
-  TrendingDown,
   Settings,
   LayoutDashboard,
   Menu,
@@ -20,6 +17,10 @@ import {
   ChevronDown,
   ChevronRight,
   FileText,
+  FolderKanban,
+  Receipt,
+  TrendingDown,
+  TrendingUp,
 } from "lucide-react";
 
 export const menuItems = [
@@ -42,46 +43,10 @@ export const menuItems = [
     description: "Punto de venta rápido para la tienda activa.",
   },
   {
-    label: "Ventas",
-    href: "/dashboard/sales/history",
-    icon: FileText,
-    description: "Historial y detalle de ventas realizadas.",
-  },
-  {
     label: "Empleados",
     href: "/dashboard/employees",
     icon: Users,
     description: "Administra el equipo de trabajo.",
-  },
-  {
-    label: "Clientes",
-    href: "/dashboard/clients",
-    icon: UserCircle,
-    description: "Gestiona los clientes de tu negocio.",
-  },
-  {
-    label: "Proveedores",
-    href: "/dashboard/suppliers",
-    icon: Truck,
-    description: "Organiza proveedores y relaciones de compra.",
-  },
-  {
-    label: "Compras",
-    href: "/dashboard/purchases",
-    icon: Receipt,
-    description: "Controla y registra las compras realizadas.",
-  },
-  {
-    label: "Ingresos",
-    href: "/dashboard/incomes",
-    icon: TrendingUp,
-    description: "Registra ingresos adicionales de la tienda.",
-  },
-  {
-    label: "Egresos",
-    href: "/dashboard/expenses",
-    icon: TrendingDown,
-    description: "Administra y registra los gastos.",
   },
 ];
 
@@ -89,9 +54,54 @@ export function Sidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [movementsOpen, setMovementsOpen] = useState(false);
+  const [contactsOpen, setContactsOpen] = useState(false);
 
   const isInSettings = pathname.startsWith("/settings");
   const showSettingsExpanded = settingsOpen || (!collapsed && isInSettings);
+  const movementItems = [
+    {
+      label: "Ventas",
+      href: "/dashboard/sales/history",
+      icon: FileText,
+    },
+    {
+      label: "Compras",
+      href: "/dashboard/purchases",
+      icon: Receipt,
+    },
+    {
+      label: "Ingresos",
+      href: "/dashboard/incomes",
+      icon: TrendingUp,
+    },
+    {
+      label: "Egresos",
+      href: "/dashboard/expenses",
+      icon: TrendingDown,
+    },
+  ];
+  const isInMovements = movementItems.some((item) =>
+    pathname.startsWith(item.href),
+  );
+  const showMovementsExpanded = movementsOpen || (!collapsed && isInMovements);
+
+  const contactItems = [
+    {
+      label: "Proveedores",
+      href: "/dashboard/suppliers",
+      icon: Truck,
+    },
+    {
+      label: "Clientes",
+      href: "/dashboard/clients",
+      icon: UserCircle,
+    },
+  ];
+  const isInContacts = contactItems.some((item) =>
+    pathname.startsWith(item.href),
+  );
+  const showContactsExpanded = contactsOpen || (!collapsed && isInContacts);
 
   return (
     <aside
@@ -154,6 +164,146 @@ export function Sidebar() {
               </Link>
             );
           })}
+
+          <div className="space-y-1">
+            <button
+              type="button"
+              onClick={() => setMovementsOpen((prev) => !prev)}
+              className={cn(
+                "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                collapsed
+                  ? "justify-center group-hover:justify-start"
+                  : "justify-start",
+                isInMovements
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+              )}>
+              <FolderKanban className="h-5 w-5 shrink-0" />
+              <span
+                className={cn(
+                  "block overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200",
+                  collapsed
+                    ? "max-w-0 opacity-0 group-hover:max-w-[200px] group-hover:opacity-100"
+                    : "max-w-[200px] opacity-100",
+                )}>
+                Movimientos
+              </span>
+              <ChevronDown
+                className={cn(
+                  "ml-auto h-4 w-4 shrink-0 transition-transform",
+                  showMovementsExpanded ? "rotate-180" : "",
+                  collapsed ? "hidden group-hover:inline-block" : "",
+                )}
+              />
+            </button>
+            {showMovementsExpanded && (
+              <div
+                className={cn(
+                  "flex flex-col gap-1 pl-3",
+                  collapsed ? "group-hover:flex" : "flex",
+                )}>
+                {movementItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = pathname.startsWith(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={cn(
+                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                        collapsed
+                          ? "justify-center group-hover:justify-start"
+                          : "justify-start",
+                        isActive
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                      )}>
+                      <Icon className="h-4 w-4 shrink-0" />
+                      <span
+                        className={cn(
+                          "block overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200",
+                          collapsed
+                            ? "max-w-0 opacity-0 group-hover:max-w-[200px] group-hover:opacity-100"
+                            : "max-w-[200px] opacity-100",
+                        )}>
+                        {item.label}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-1">
+            <button
+              type="button"
+              onClick={() => setContactsOpen((prev) => !prev)}
+              className={cn(
+                "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                collapsed
+                  ? "justify-center group-hover:justify-start"
+                  : "justify-start",
+                isInContacts
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+              )}>
+              <Users className="h-5 w-5 shrink-0" />
+              <span
+                className={cn(
+                  "block overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200",
+                  collapsed
+                    ? "max-w-0 opacity-0 group-hover:max-w-[200px] group-hover:opacity-100"
+                    : "max-w-[200px] opacity-100",
+                )}>
+                Contactos
+              </span>
+              <ChevronDown
+                className={cn(
+                  "ml-auto h-4 w-4 shrink-0 transition-transform",
+                  showContactsExpanded ? "rotate-180" : "",
+                  collapsed ? "hidden group-hover:inline-block" : "",
+                )}
+              />
+            </button>
+            {showContactsExpanded && (
+              <div
+                className={cn(
+                  "flex flex-col gap-1 pl-3",
+                  collapsed ? "group-hover:flex" : "flex",
+                )}>
+                {contactItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = pathname.startsWith(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={cn(
+                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                        collapsed
+                          ? "justify-center group-hover:justify-start"
+                          : "justify-start",
+                        isActive
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                      )}>
+                      <Icon className="h-4 w-4 shrink-0" />
+                      <span
+                        className={cn(
+                          "block overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200",
+                          collapsed
+                            ? "max-w-0 opacity-0 group-hover:max-w-[200px] group-hover:opacity-100"
+                            : "max-w-[200px] opacity-100",
+                        )}>
+                        {item.label}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
           <div className="space-y-1">
             <Link

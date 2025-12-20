@@ -1,10 +1,9 @@
-export interface Expense {
+export interface Income {
   id: string;
   shopId: string;
   amount: number;
   description: string;
   cashRegisterId?: string | null;
-  category?: string | null;
   date: string;
   paymentMethodId?: string | null;
   paymentMethod?: {
@@ -21,7 +20,7 @@ export interface Expense {
   updatedAt?: string;
 }
 
-export interface CreateExpenseDto {
+export interface CreateIncomeDto {
   description: string;
   amount: number;
   shopId: string;
@@ -30,9 +29,9 @@ export interface CreateExpenseDto {
   date: string;
 }
 
-export interface GetExpensesResponse {
+export interface GetIncomesResponse {
   message?: string;
-  data: Expense[];
+  data: Income[];
   meta: {
     total: number;
     page: number;

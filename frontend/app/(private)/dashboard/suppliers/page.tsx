@@ -22,7 +22,7 @@ import { useSupplierMutations } from "./hooks/useSupplierMutations";
 import { toast } from "sonner";
 import { Modal } from "@/components/ui/modal";
 import { ShopLoading } from "@/components/shop-loading";
-import { useCategorySuppliersQuery } from "../category/hooks/category.query";
+import { useCategorySuppliersQuery } from "@/app/(private)/settings/category/hooks";
 
 export default function ProveedoresPage() {
   const { user } = useAuth();
@@ -284,4 +284,3 @@ export default function ProveedoresPage() {
     </div>
   );
 }
-

@@ -1,41 +1,43 @@
 import { useShopStore } from "@/app/(private)/store/shops.slice";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { GetAllProductAction } from "../actions/get-all.product.action";
 
 interface UseProductQueryParams {
   search: string;
+  page: number;
   limit?: number;
+  enabled?: boolean;
 }
 
-export const useProductQuery = ({ search, limit = 10 }: UseProductQueryParams) => {
+export const useProductQuery = ({
+  search,
+  page,
+  limit = 10,
+  enabled = true,
+}: UseProductQueryParams) => {
   const { activeShopId } = useShopStore();
 
-  const query = useInfiniteQuery({
-    queryKey: ["products", activeShopId, search, limit],
-    queryFn: ({ pageParam = 1 }) =>
+  const query = useQuery({
+    queryKey: ["products", activeShopId, search, page, limit],
+    queryFn: () =>
       GetAllProductAction(activeShopId || "", {
         search,
-        page: Number(pageParam) || 1,
+        page,
         limit,
       }),
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => {
-      const nextPage = lastPage.pagination.page + 1;
-      return nextPage <= lastPage.pagination.totalPages ? nextPage : undefined;
-    },
-    enabled: Boolean(activeShopId),
+    enabled: enabled && Boolean(activeShopId),
+    staleTime: 1000 * 30,
+    placeholderData: (prev) => prev,
   });
 
-  const products = query.data?.pages.flatMap((page) => page.products) || [];
-  const pagination = query.data?.pages.at(-1)?.pagination;
+  const products = query.data?.products || [];
+  const pagination = query.data?.pagination;
 
   return {
     products,
     pagination,
     productsLoading: query.isLoading,
-    fetchNextPage: query.fetchNextPage,
-    hasNextPage: query.hasNextPage ?? false,
-    isFetchingNextPage: query.isFetchingNextPage,
+    isFetching: query.isFetching,
     refetch: query.refetch,
   };
 };

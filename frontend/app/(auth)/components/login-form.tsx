@@ -4,12 +4,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Chrome } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useLogin } from "../hooks/useLogin";
-import { useGoogleAuth } from "../hooks/useGoogleAuth";
 import { useMemo, useState } from "react";
 
 interface LoginFormData {
@@ -21,7 +18,6 @@ const REMEMBER_EMAIL_KEY = "remember-email";
 
 export default function LoginForm() {
   const { login, isLoading } = useLogin();
-  const googleAuth = useGoogleAuth();
   const savedEmail = useMemo(() => {
     if (typeof window === "undefined") return "";
     return localStorage.getItem(REMEMBER_EMAIL_KEY) ?? "";
@@ -51,10 +47,6 @@ export default function LoginForm() {
       email: data.email,
       password: data.password,
     });
-  };
-
-  const handleGoogleSignIn = () => {
-    googleAuth.signInWithGoogle();
   };
   return (
     <Card className=" shadow-lg w-md ">
@@ -130,30 +122,9 @@ export default function LoginForm() {
           <Button
             type="submit"
             className="w-full"
-            disabled={isLoading || googleAuth.isLoading}
+            disabled={isLoading}
           >
             {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
-          </Button>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <Separator />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">O</span>
-            </div>
-          </div>
-
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={handleGoogleSignIn}
-            disabled={isLoading || googleAuth.isLoading}>
-            <Chrome className="mr-2 h-4 w-4" />
-            {googleAuth.isLoading
-              ? "Redirigiendo a Google..."
-              : "Continuar con Google"}
           </Button>
         </form>
       </CardContent>

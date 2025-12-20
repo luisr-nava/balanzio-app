@@ -3,11 +3,11 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { Expense } from "../../interfaces";
 import type { PaymentMethod } from "@/app/(private)/settings/payment-method/interfaces";
 import { cn } from "@/lib/utils";
+import type { Income } from "../../interfaces";
 
-export interface ExpenseFormValues {
+export interface IncomeFormValues {
   description: string;
   amount: number | undefined;
   date?: string;
@@ -15,50 +15,50 @@ export interface ExpenseFormValues {
 }
 
 interface Props {
-  onSubmit: (values: ExpenseFormValues) => void;
+  onSubmit: (values: IncomeFormValues) => void;
   isSubmitting: boolean;
-  editingExpense?: Expense | null;
+  editingIncome?: Income | null;
   onCancelEdit: () => void;
   paymentMethods?: PaymentMethod[];
   paymentMethodsLoading?: boolean;
   paymentMethodsFetching?: boolean;
 }
 
-const DEFAULT_VALUES: ExpenseFormValues = {
+const DEFAULT_VALUES: IncomeFormValues = {
   description: "",
   amount: undefined,
   date: "",
   paymentMethodId: "",
 };
 
-export const ExpenseForm = ({
+export const IncomeForm = ({
   onSubmit,
   isSubmitting,
-  editingExpense,
+  editingIncome,
   onCancelEdit,
   paymentMethods = [],
   paymentMethodsLoading = false,
   paymentMethodsFetching = false,
 }: Props) => {
-  const form = useForm<ExpenseFormValues>({
+  const form = useForm<IncomeFormValues>({
     defaultValues: DEFAULT_VALUES,
   });
   const { errors } = form.formState;
 
   useEffect(() => {
-    if (editingExpense) {
+    if (editingIncome) {
       form.reset({
-        description: editingExpense.description || "",
-        amount: editingExpense.amount,
-        date: editingExpense.date
-          ? editingExpense.date.split("T")[0]
+        description: editingIncome.description || "",
+        amount: editingIncome.amount,
+        date: editingIncome.date
+          ? editingIncome.date.split("T")[0]
           : "",
-        paymentMethodId: editingExpense.paymentMethodId || "",
+        paymentMethodId: editingIncome.paymentMethodId || "",
       });
     } else {
       form.reset(DEFAULT_VALUES);
     }
-  }, [editingExpense, form]);
+  }, [editingIncome, form]);
 
   const handleSubmit = form.handleSubmit((values) => {
     onSubmit({
@@ -77,7 +77,7 @@ export const ExpenseForm = ({
           </Label>
           <Input
             id="description"
-            placeholder="Pago de alquiler"
+            placeholder="Venta online"
             className={cn(
               errors.description &&
                 "border-destructive focus-visible:ring-destructive",
@@ -174,7 +174,7 @@ export const ExpenseForm = ({
       </div>
 
       <div className="flex flex-wrap justify-end gap-2">
-        {editingExpense && (
+        {editingIncome && (
           <Button
             type="button"
             variant="outline"
@@ -185,12 +185,12 @@ export const ExpenseForm = ({
         )}
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting
-            ? editingExpense
+            ? editingIncome
               ? "Guardando..."
               : "Creando..."
-            : editingExpense
-            ? "Actualizar gasto"
-            : "Crear gasto"}
+            : editingIncome
+            ? "Actualizar ingreso"
+            : "Crear ingreso"}
         </Button>
       </div>
     </form>

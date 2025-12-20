@@ -3,21 +3,21 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { expandableRowVariants } from "@/lib/animations";
 import { Calendar, CreditCard, FileText } from "lucide-react";
-import type { Expense } from "../../interfaces";
+import type { Income } from "../../interfaces";
 import type { PaymentMethod } from "@/app/(private)/settings/payment-method/interfaces";
 
 interface Props {
-  expenses: Expense[];
+  incomes: Income[];
   isLoading: boolean;
   isFetching: boolean;
-  onEdit: (expense: Expense) => void;
-  onDelete: (expense: Expense) => void;
+  onEdit: (income: Income) => void;
+  onDelete: (income: Income) => void;
   deletingId?: string | null;
   paymentMethods?: PaymentMethod[];
 }
 
-export const ExpenseTable = ({
-  expenses,
+export const IncomeTable = ({
+  incomes,
   isLoading,
   isFetching,
   onEdit,
@@ -37,15 +37,15 @@ export const ExpenseTable = ({
     return (
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        Cargando gastos...
+        Cargando ingresos...
       </div>
     );
   }
 
-  if (!expenses.length) {
+  if (!incomes.length) {
     return (
       <p className="text-sm text-muted-foreground">
-        No hay gastos registrados en esta tienda.
+        No hay ingresos registrados en esta tienda.
       </p>
     );
   }
@@ -59,17 +59,17 @@ export const ExpenseTable = ({
         <span className="text-right">Acción</span>
       </div>
       <div className="divide-y">
-        {expenses.map((expense, index) => {
-          const isOpen = expandedRow === expense.id;
-          const isLastRow = index === expenses.length - 1;
+        {incomes.map((income, index) => {
+          const isOpen = expandedRow === income.id;
+          const isLastRow = index === incomes.length - 1;
           const paymentMethodName =
-            expense.paymentMethod?.name ||
-            paymentMethods.find((pm) => pm.id === expense.paymentMethodId)
+            income.paymentMethod?.name ||
+            paymentMethods.find((pm) => pm.id === income.paymentMethodId)
               ?.name ||
             "Método no disponible";
 
           return (
-            <div key={expense.id} className="last:border-b-0">
+            <div key={income.id} className="last:border-b-0">
               <motion.div
                 whileHover={{ backgroundColor: "rgba(0, 0, 0, 0.04)" }}
                 whileTap={{ scale: 0.995 }}
@@ -78,23 +78,23 @@ export const ExpenseTable = ({
                 }`}
                 role="button"
                 tabIndex={0}
-                onClick={() => setExpandedRow(isOpen ? null : expense.id)}>
+                onClick={() => setExpandedRow(isOpen ? null : income.id)}>
                 <div className="sm:col-span-1 flex items-start justify-between gap-2">
                   <div className="flex flex-col gap-1 min-w-0">
                     <span className="font-medium line-clamp-1 flex items-center gap-2">
-                      {expense.description}
+                      {income.description}
                     </span>
                   </div>
                 </div>
                 <div className="hidden sm:flex items-center justify-center text-sm text-muted-foreground">
                   <span className="truncate">
-                    {expense.date
-                      ? new Date(expense.date).toLocaleDateString()
+                    {income.date
+                      ? new Date(income.date).toLocaleDateString()
                       : "Sin fecha"}
                   </span>
                 </div>
                 <div className="hidden sm:flex items-center justify-center text-sm font-semibold">
-                  {formatCurrency(expense.amount || 0)}
+                  {formatCurrency(income.amount || 0)}
                 </div>
                 <div className="hidden sm:flex justify-end">
                   <Button
@@ -102,7 +102,7 @@ export const ExpenseTable = ({
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onEdit(expense);
+                      onEdit(income);
                     }}>
                     Editar
                   </Button>
@@ -110,22 +110,22 @@ export const ExpenseTable = ({
                     variant="destructive"
                     size="sm"
                     className="ml-2"
-                    disabled={deletingId === expense.id}
+                    disabled={deletingId === income.id}
                     onClick={(e) => {
                       e.stopPropagation();
-                      onDelete(expense);
+                      onDelete(income);
                     }}>
-                    {deletingId === expense.id ? "Eliminando..." : "Eliminar"}
+                    {deletingId === income.id ? "Eliminando..." : "Eliminar"}
                   </Button>
                 </div>
                 <div className="sm:hidden col-span-2 flex items-center justify-between text-xs text-muted-foreground pt-1">
                   <span>
-                    {expense.date
-                      ? new Date(expense.date).toLocaleDateString()
+                    {income.date
+                      ? new Date(income.date).toLocaleDateString()
                       : "Sin fecha"}
                   </span>
                   <span className="font-semibold">
-                    {formatCurrency(expense.amount || 0)}
+                    {formatCurrency(income.amount || 0)}
                   </span>
                 </div>
               </motion.div>
@@ -146,7 +146,7 @@ export const ExpenseTable = ({
                               Descripción:
                             </span>
                             <p className="font-medium text-right sm:text-left">
-                              {expense.description}
+                              {income.description}
                             </p>
                           </div>
                           <div className="flex items-start justify-between sm:flex-col sm:items-start sm:gap-1">
@@ -155,8 +155,8 @@ export const ExpenseTable = ({
                               Fecha:
                             </span>
                             <p className="font-medium text-right sm:text-left">
-                              {expense.date
-                                ? new Date(expense.date).toLocaleDateString()
+                              {income.date
+                                ? new Date(income.date).toLocaleDateString()
                                 : "Sin fecha"}
                             </p>
                           </div>
@@ -179,19 +179,19 @@ export const ExpenseTable = ({
                           variant="outline"
                           onClick={(e) => {
                             e.stopPropagation();
-                            onEdit(expense);
+                            onEdit(income);
                           }}>
                           Editar
                         </Button>
                         <Button
                           size="sm"
                           variant="destructive"
-                          disabled={deletingId === expense.id}
+                          disabled={deletingId === income.id}
                           onClick={(e) => {
                             e.stopPropagation();
-                            onDelete(expense);
+                            onDelete(income);
                           }}>
-                          {deletingId === expense.id ? "Eliminando..." : "Eliminar"}
+                          {deletingId === income.id ? "Eliminando..." : "Eliminar"}
                         </Button>
                       </div>
                     </div>

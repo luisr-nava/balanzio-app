@@ -13,6 +13,7 @@ export interface Shop {
 
 export interface ShopDetail extends Shop {
   hasOpenCashRegister: boolean;
+  openCashRegisters?: ShopCashRegister[];
   taxIdNumber: string | null;
   taxCondition: string | null;
   taxAddress: string | null;
@@ -33,6 +34,22 @@ export interface ShopDetail extends Shop {
   recentPurchases: unknown[];
   lowStockProducts: unknown[];
   topProductsByStock: unknown[];
+}
+
+export interface ShopCashRegister {
+  id: string;
+  shopId: string;
+  status?: string;
+  isOpen?: boolean;
+  openingAmount?: number;
+  openedAt?: string;
+  openedBy?: string | null;
+  closingAmount?: number | null;
+  actualAmount?: number | null;
+  difference?: number | null;
+  closedAt?: string | null;
+  closedBy?: string | null;
+  closingNotes?: string | null;
 }
 
 export interface CreateShopDto {

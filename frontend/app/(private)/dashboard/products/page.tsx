@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useShopStore } from "@/app/(private)/store/shops.slice";
 import type { Supplier } from "@/lib/types/supplier";
@@ -16,21 +16,21 @@ import { ShopLoading } from "@/components/shop-loading";
 import { usePaginationParams } from "../../hooks/useQueryParams";
 import { ShopEmpty } from "@/components/shop-emty";
 import { supplierApi } from "@/lib/api/supplier.api";
+import { Pagination } from "../../components";
 
 export default function ProductosPage() {
   const { activeShopId, activeShopLoading } = useShopStore();
 
-  const { search, setSearch, debouncedSearch } = usePaginationParams(300);
+  const { search, setSearch, debouncedSearch, page, limit, setPage, setLimit } =
+    usePaginationParams(300);
   const {
     products,
     productsLoading,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useProducts(debouncedSearch);
+    pagination,
+    isFetching,
+  } = useProducts(debouncedSearch, page, limit, Boolean(activeShopId));
   const form = useProductForm();
   const { productModal, editProductModal, initialForm, setValue, reset } = form;
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   // ? Move to supplier hook
   const { data: suppliers = [], isLoading: suppliersLoading } = useQuery({
@@ -45,26 +45,6 @@ export default function ProductosPage() {
       setValue("shopId", activeShopId);
     }
   }, [activeShopId, setValue]);
-
-  useEffect(() => {
-    if (!loadMoreRef.current || !hasNextPage) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries;
-        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
-      },
-      { rootMargin: "200px" },
-    );
-
-    observer.observe(loadMoreRef.current);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   if (!activeShopId) return <ShopEmpty />;
 
@@ -86,15 +66,18 @@ export default function ProductosPage() {
       ) : (
         <div className="p-5 space-y-4">
           <TableProducts products={products} handleEdit={form.handleEdit} />
-          <div className="flex justify-center py-4">
-            {isFetchingNextPage && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                <span>Cargando más productos...</span>
-              </div>
-            )}
-          </div>
-          <div ref={loadMoreRef} className="h-4" />
+          <Pagination
+            page={page}
+            totalPages={pagination?.totalPages ?? 1}
+            limit={limit}
+            onPageChange={(nextPage) => {
+              if (nextPage < 1) return;
+              setPage(nextPage);
+            }}
+            onLimitChange={(nextLimit) => setLimit(nextLimit)}
+            isLoading={isFetching}
+            totalItems={pagination?.total ?? 0}
+          />
         </div>
       )}
 
@@ -127,4 +110,3 @@ export default function ProductosPage() {
     </div>
   );
 }
-

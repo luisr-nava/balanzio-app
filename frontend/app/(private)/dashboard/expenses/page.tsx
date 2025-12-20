@@ -95,6 +95,7 @@ export default function ExpensesPage() {
         }}
         onDelete={handleDelete}
         deletingId={deletingId}
+        paymentMethods={paymentMethods}
       />
 
       {expenses.length > 0 && (

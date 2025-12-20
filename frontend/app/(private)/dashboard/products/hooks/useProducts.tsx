@@ -1,23 +1,24 @@
 import { useProductQuery } from "./product.query";
 
-export const useProducts = (search: string, limit: number = 10) => {
+export const useProducts = (
+  search: string,
+  page: number,
+  limit: number = 10,
+  enabled: boolean = true,
+) => {
   const {
     products,
     productsLoading,
     pagination,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
+    isFetching,
     refetch,
-  } = useProductQuery({ search, limit });
+  } = useProductQuery({ search, page, limit, enabled });
 
   return {
     products,
     productsLoading,
     pagination,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
+    isFetching,
     refetch,
   };
 };

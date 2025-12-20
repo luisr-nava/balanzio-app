@@ -1,19 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { usePaginationParams, useQueryParams } from "@/app/(private)/hooks/useQueryParams";
-import { useExpenses } from "./useExpenses";
-import { useExpenseMutations } from "./useExpenseMutations";
-import type { CreateExpenseDto, Expense } from "../interfaces";
+import { useIncomes } from "./useIncomes";
+import { useIncomeMutations } from "./useIncomeMutations";
+import type { CreateIncomeDto, Income } from "../interfaces";
 import { useShopStore } from "@/app/(private)/store/shops.slice";
 import type { ShopCashRegister } from "@/lib/types/shop";
-import type { ExpenseFormValues } from "../components/expense-form/expense-form";
+import type { IncomeFormValues } from "../components/income-form/income-form";
 
-interface UseExpenseParams {
+interface UseIncomeParams {
   isOwner: boolean;
   activeShopId?: string | null;
 }
 
-export const useExpense = ({ isOwner, activeShopId }: UseExpenseParams) => {
+export const useIncome = ({ isOwner, activeShopId }: UseIncomeParams) => {
   const {
     search,
     setSearch,
@@ -35,7 +35,7 @@ export const useExpense = ({ isOwner, activeShopId }: UseExpenseParams) => {
   const [dateError, setDateError] = useState<string>("");
   const { activeShop } = useShopStore();
 
-  const { expenses, pagination, expensesLoading, isFetching } = useExpenses(
+  const { incomes, pagination, incomesLoading, isFetching } = useIncomes(
     debouncedSearch,
     page,
     limit,
@@ -45,7 +45,7 @@ export const useExpense = ({ isOwner, activeShopId }: UseExpenseParams) => {
   );
 
   const { createMutation, updateMutation, deleteMutation } =
-    useExpenseMutations();
+    useIncomeMutations();
 
   const openCashRegister = useMemo<ShopCashRegister | null>(() => {
     const list = activeShop?.openCashRegisters;
@@ -62,9 +62,9 @@ export const useExpense = ({ isOwner, activeShopId }: UseExpenseParams) => {
   const openCashLoading = false;
   const openCashFetching = false;
 
-  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [editingIncome, setEditingIncome] = useState<Income | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Income | null>(null);
 
   const deletingId = useMemo(
     () =>
@@ -74,9 +74,9 @@ export const useExpense = ({ isOwner, activeShopId }: UseExpenseParams) => {
     [deleteMutation.isPending, deleteMutation.variables],
   );
 
-  const handleSubmit = (values: ExpenseFormValues) => {
+  const handleSubmit = (values: IncomeFormValues) => {
     if (!activeShopId) {
-      toast.error("Selecciona una tienda para gestionar gastos.");
+      toast.error("Selecciona una tienda para gestionar ingresos.");
       return;
     }
 
@@ -92,12 +92,12 @@ export const useExpense = ({ isOwner, activeShopId }: UseExpenseParams) => {
     }
 
     if (!openCashRegister?.id) {
-      toast.error("Necesitas una caja abierta para registrar gastos.");
+      toast.error("Necesitas una caja abierta para registrar ingresos.");
       return;
     }
 
     const today = new Date().toISOString().split("T")[0];
-    const payload: CreateExpenseDto = {
+    const payload: CreateIncomeDto = {
       description: values.description.trim(),
       amount: amountValue,
       date: values.date?.trim() || today,
@@ -106,12 +106,12 @@ export const useExpense = ({ isOwner, activeShopId }: UseExpenseParams) => {
       cashRegisterId: openCashRegister.id,
     };
 
-    if (editingExpense) {
+    if (editingIncome) {
       updateMutation.mutate(
-        { id: editingExpense.id, payload },
+        { id: editingIncome.id, payload },
         {
           onSuccess: () => {
-            setEditingExpense(null);
+            setEditingIncome(null);
             setIsModalOpen(false);
           },
         },
@@ -119,7 +119,7 @@ export const useExpense = ({ isOwner, activeShopId }: UseExpenseParams) => {
     } else {
       createMutation.mutate(payload, {
         onSuccess: () => {
-          setEditingExpense(null);
+          setEditingIncome(null);
           setIsModalOpen(false);
         },
       });
@@ -127,29 +127,29 @@ export const useExpense = ({ isOwner, activeShopId }: UseExpenseParams) => {
   };
 
   const handleOpenCreate = () => {
-    setEditingExpense(null);
+    setEditingIncome(null);
     setIsModalOpen(true);
   };
 
-  const handleEdit = (expense: Expense) => {
-    setEditingExpense(expense);
+  const handleEdit = (income: Income) => {
+    setEditingIncome(income);
     setIsModalOpen(true);
   };
 
   const handleCancelEdit = () => {
-    setEditingExpense(null);
+    setEditingIncome(null);
     setIsModalOpen(false);
   };
 
-  const handleDelete = (expense: Expense) => setDeleteTarget(expense);
+  const handleDelete = (income: Income) => setDeleteTarget(income);
   const closeDeleteModal = () => setDeleteTarget(null);
 
   const confirmDelete = () => {
     if (!deleteTarget) return;
     deleteMutation.mutate(deleteTarget.id, {
       onSuccess: () => {
-        if (editingExpense?.id === deleteTarget.id) {
-          setEditingExpense(null);
+        if (editingIncome?.id === deleteTarget.id) {
+          setEditingIncome(null);
         }
         closeDeleteModal();
       },
@@ -202,7 +202,6 @@ export const useExpense = ({ isOwner, activeShopId }: UseExpenseParams) => {
   }, [page, pagination, setPage]);
 
   return {
-    // filters/pagination
     search,
     setSearch,
     debouncedSearch,
@@ -216,16 +215,13 @@ export const useExpense = ({ isOwner, activeShopId }: UseExpenseParams) => {
     setEndDate,
     dateError,
     pagination,
-    // data
-    expenses,
-    expensesLoading,
+    incomes,
+    incomesLoading,
     isFetching,
-    // modal/state
     isModalOpen,
-    editingExpense,
+    editingIncome,
     deleteTarget,
     deletingId,
-    // handlers
     handleSubmit,
     handleOpenCreate,
     handleEdit,
@@ -233,11 +229,9 @@ export const useExpense = ({ isOwner, activeShopId }: UseExpenseParams) => {
     handleDelete,
     closeDeleteModal,
     confirmDelete,
-    // mutations
     createMutation,
     updateMutation,
     deleteMutation,
-    // cash register
     openCashLoading,
     openCashFetching,
   };
