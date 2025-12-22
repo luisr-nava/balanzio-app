@@ -34,6 +34,8 @@ import { MeasurementUnitModule } from './measurement-unit/measurement-unit.modul
 import { SubscriptionInterceptor } from './common/authorization/subscription.interceptor';
 import { PlanValidationService } from './common/authorization/plan-validation.service';
 import { JwtAuthGuard } from './auth-client/guards/jwt-auth.guard';
+import { NotificationModule } from './notification/notification.module';
+import { StockModule } from './stock/stock.module';
 
 @Module({
   imports: [
@@ -67,6 +69,8 @@ import { JwtAuthGuard } from './auth-client/guards/jwt-auth.guard';
     CashRegisterModule,
     WebhookModule,
     MeasurementUnitModule,
+    NotificationModule,
+    StockModule,
   ],
   controllers: [AppController],
   providers: [

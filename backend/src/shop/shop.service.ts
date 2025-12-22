@@ -12,12 +12,14 @@ import { Shop } from './entities/shop.entity';
 import { JwtPayload } from '../auth-client/interfaces/jwt-payload.interface';
 import { DEFAULT_CURRENCY_CODE } from '../common/constants/currencies';
 import { getTimezoneForCountry } from '../common/utils/timezone.util';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class ShopService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cashRegisterService: CashRegisterService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async createShop(user: JwtPayload, dto: CreateShopDto) {
@@ -67,6 +69,9 @@ export class ShopService {
     });
 
     await this.ensureDefaultPaymentMethods(shop.id);
+    this.notificationService
+      .ensureDefaultPreference(shop.id, user.id)
+      .catch(() => undefined);
 
     return {
       message: 'Tienda creada correctamente',

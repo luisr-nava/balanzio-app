@@ -12,6 +12,7 @@ import { CashRegisterService } from '../cash-register/cash-register.service';
 import { WebhookService } from '../webhook/webhook.service';
 import { JwtPayload } from '../auth-client/interfaces/jwt-payload.interface';
 import { Prisma } from '@prisma/client';
+import { StockService } from '../stock/stock.service';
 
 interface PurchaseQuery {
   search?: string;
@@ -29,6 +30,7 @@ export class PurchaseService {
     private readonly prisma: PrismaService,
     private readonly cashRegisterService: CashRegisterService,
     private readonly webhookService: WebhookService,
+    private readonly stockService: StockService,
   ) {}
 
   async createPurchase(dto: CreatePurchaseDto, user: JwtPayload) {
@@ -80,24 +82,17 @@ export class PurchaseService {
         await tx.shopProduct.update({
           where: { id: item.shopProductId },
           data: {
-            stock: newStock,
             costPrice: item.unitCost,
           },
         });
 
-        // Crear historial del producto
-        await tx.productHistory.create({
-          data: {
-            shopProductId: item.shopProductId,
-            purchaseId: purchase.id,
-            userId: user.id,
-            changeType: 'STOCK_IN',
-            previousStock,
-            newStock,
-            previousCost: sp.costPrice,
-            newCost: item.unitCost,
-            note: dto.notes,
-          },
+        await this.stockService.updateStock({
+          tx,
+          shopProductId: item.shopProductId,
+          delta: item.quantity,
+          userId: user.id,
+          reason: 'purchase',
+          note: dto.notes,
         });
       }
 
@@ -589,28 +584,16 @@ export class PurchaseService {
         if (!newItem) {
           // Item eliminado: revertir stock completamente
           const shopProduct = currentItem.shopProduct;
-          const revertedStock = shopProduct.stock - currentItem.quantity;
-
-          await tx.shopProduct.update({
-            where: { id: currentItem.shopProductId },
-            data: { stock: revertedStock },
+          await this.stockService.updateStock({
+            tx,
+            shopProductId: currentItem.shopProductId,
+            delta: -currentItem.quantity,
+            userId: user.id,
+            reason: 'purchase_cancel',
+            note: 'Eliminación de item de compra',
           });
 
           modifiedProductIds.add(currentItem.shopProductId);
-
-          await tx.productHistory.create({
-            data: {
-              shopProductId: currentItem.shopProductId,
-              purchaseId: purchase.id,
-              userId: user.id,
-              changeType: 'STOCK_ADJUSTMENT',
-              previousStock: shopProduct.stock,
-              newStock: revertedStock,
-              previousCost: shopProduct.costPrice,
-              newCost: shopProduct.costPrice,
-              note: `Item eliminado de compra - Se revirtió stock de ${currentItem.quantity} unidades`,
-            },
-          });
 
           // Eliminar el item de la compra
           await tx.purchaseItem.delete({
@@ -624,15 +607,22 @@ export class PurchaseService {
           if (quantityChanged || costChanged) {
             const shopProduct = currentItem.shopProduct;
             const quantityDiff = newItem.quantity - currentItem.quantity;
-            const newStock = shopProduct.stock + quantityDiff;
 
             // Actualizar stock y costo del producto
             await tx.shopProduct.update({
               where: { id: currentItem.shopProductId },
               data: {
-                stock: newStock,
                 costPrice: newItem.unitCost,
               },
+            });
+
+            await this.stockService.updateStock({
+              tx,
+              shopProductId: currentItem.shopProductId,
+              delta: quantityDiff,
+              userId: user.id,
+              reason: 'purchase',
+              note: 'Actualización de compra',
             });
 
             modifiedProductIds.add(currentItem.shopProductId);
@@ -644,21 +634,6 @@ export class PurchaseService {
                 quantity: newItem.quantity,
                 unitCost: newItem.unitCost,
                 subtotal: newItem.subtotal,
-              },
-            });
-
-            // Crear registro en historial
-            await tx.productHistory.create({
-              data: {
-                shopProductId: currentItem.shopProductId,
-                purchaseId: purchase.id,
-                userId: user.id,
-                changeType: 'UPDATE',
-                previousStock: shopProduct.stock,
-                newStock: newStock,
-                previousCost: shopProduct.costPrice,
-                newCost: newItem.unitCost,
-                note: `Compra actualizada - Cantidad: ${currentItem.quantity} → ${newItem.quantity}, Costo: ${currentItem.unitCost} → ${newItem.unitCost}`,
               },
             });
           }
@@ -683,9 +658,6 @@ export class PurchaseService {
             );
           }
 
-          const previousStock = shopProduct.stock ?? 0;
-          const newStock = previousStock + newItem.quantity;
-
           // Crear el nuevo item
           await tx.purchaseItem.create({
             data: {
@@ -701,27 +673,20 @@ export class PurchaseService {
           await tx.shopProduct.update({
             where: { id: newItem.shopProductId },
             data: {
-              stock: newStock,
               costPrice: newItem.unitCost,
             },
           });
 
-          modifiedProductIds.add(newItem.shopProductId);
-
-          // Crear historial
-          await tx.productHistory.create({
-            data: {
-              shopProductId: newItem.shopProductId,
-              purchaseId: purchase.id,
-              userId: user.id,
-              changeType: 'STOCK_IN',
-              previousStock,
-              newStock,
-              previousCost: shopProduct.costPrice,
-              newCost: newItem.unitCost,
-              note: `Item agregado a compra existente`,
-            },
+          await this.stockService.updateStock({
+            tx,
+            shopProductId: newItem.shopProductId,
+            delta: newItem.quantity,
+            userId: user.id,
+            reason: 'purchase',
+            note: 'Item agregado a compra existente',
           });
+
+          modifiedProductIds.add(newItem.shopProductId);
         }
       }
 
@@ -878,29 +843,13 @@ export class PurchaseService {
       // 1. Revertir stock de todos los items y crear registros en historial
       for (const item of purchase.items) {
         modifiedProductIds.push(item.shopProductId);
-        const shopProduct = item.shopProduct;
-        const previousStock = shopProduct.stock ?? 0;
-        const newStock = previousStock - item.quantity;
-
-        // Actualizar stock del producto (descontar la cantidad de la compra)
-        await tx.shopProduct.update({
-          where: { id: item.shopProductId },
-          data: { stock: newStock },
-        });
-
-        // Crear registro en ProductHistory indicando la reversión
-        await tx.productHistory.create({
-          data: {
-            shopProductId: item.shopProductId,
-            purchaseId: purchase.id,
-            userId: user.id,
-            changeType: 'STOCK_OUT',
-            previousStock,
-            newStock,
-            previousCost: shopProduct.costPrice,
-            newCost: shopProduct.costPrice,
-            note: `Compra cancelada - Se revirtió stock de ${item.quantity} unidades. Razón: ${deletePurchaseDto.deletionReason}`,
-          },
+        await this.stockService.updateStock({
+          tx,
+          shopProductId: item.shopProductId,
+          delta: -item.quantity,
+          userId: user.id,
+          reason: 'purchase_cancel',
+          note: `Compra cancelada - Se revirtió stock de ${item.quantity} unidades. Razón: ${deletePurchaseDto.deletionReason}`,
         });
       }
 

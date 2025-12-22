@@ -10,6 +10,7 @@ import { WebhookService } from '../webhook/webhook.service';
 import { CreateSaleDto } from './dto/create-sale.dto';
 import { UpdateSaleDto } from './dto/update-sale.dto';
 import type { JwtPayload } from '../auth-client/interfaces/jwt-payload.interface';
+import { StockService } from '../stock/stock.service';
 
 @Injectable()
 export class SaleService {
@@ -17,6 +18,7 @@ export class SaleService {
     private readonly prisma: PrismaService,
     private readonly cashRegisterService: CashRegisterService,
     private readonly webhookService: WebhookService,
+    private readonly stockService: StockService,
   ) {}
 
   async create(dto: CreateSaleDto, user: JwtPayload) {
@@ -207,23 +209,13 @@ export class SaleService {
         );
         if (!shopProduct || shopProduct.stock === null) continue;
 
-        const newStock = shopProduct.stock - item.quantity;
-
-        await tx.shopProduct.update({
-          where: { id: item.shopProductId },
-          data: { stock: newStock },
-        });
-
-        // 3. Crear historial de producto
-        await tx.productHistory.create({
-          data: {
-            shopProductId: item.shopProductId,
-            userId: user.id,
-            changeType: 'sale',
-            previousStock: shopProduct.stock,
-            newStock,
-            note: `Venta #${sale.id.substring(0, 8)}`,
-          },
+        await this.stockService.updateStock({
+          tx,
+          shopProductId: item.shopProductId,
+          delta: -item.quantity,
+          userId: user.id,
+          reason: 'sale',
+          note: `Venta #${sale.id.substring(0, 8)}`,
         });
       }
 
@@ -478,15 +470,13 @@ export class SaleService {
           data: { stock: newStock },
         });
 
-        await tx.productHistory.create({
-          data: {
-            shopProductId: item.shopProductId,
-            userId: user.id,
-            changeType: 'sale_cancel',
-            previousStock: item.shopProduct.stock,
-            newStock,
-            note: `Cancelaci�n venta #${id.substring(0, 8)} - ${reason}`,
-          },
+        await this.stockService.updateStock({
+          tx,
+          shopProductId: item.shopProductId,
+          delta: item.quantity,
+          userId: user.id,
+          reason: 'sale_return',
+          note: `Cancelación venta #${id.substring(0, 8)} - ${reason}`,
         });
       }
 

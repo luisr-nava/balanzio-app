@@ -9,12 +9,14 @@ import { UpdateSaleReturnDto } from './dto/update-sale-return.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CashRegisterService } from '../cash-register/cash-register.service';
 import type { JwtPayload } from '../auth-client/interfaces/jwt-payload.interface';
+import { StockService } from '../stock/stock.service';
 
 @Injectable()
 export class SaleReturnService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cashRegisterService: CashRegisterService,
+    private readonly stockService: StockService,
   ) {}
 
   async create(createSaleReturnDto: CreateSaleReturnDto, user: JwtPayload) {
@@ -323,29 +325,13 @@ export class SaleReturnService {
 
       // Reintegrar stock de cada item
       for (const item of saleReturn.items) {
-        await tx.shopProduct.update({
-          where: { id: item.shopProductId },
-          data: {
-            stock: {
-              increment: item.quantity,
-            },
-          },
-        });
-
-        // Registrar en historial
-        const shopProduct = await tx.shopProduct.findUnique({
-          where: { id: item.shopProductId },
-        });
-
-        await tx.productHistory.create({
-          data: {
-            shopProductId: item.shopProductId,
-            userId: user.id,
-            changeType: 'SALE_RETURN',
-            previousStock: (shopProduct?.stock || 0) - item.quantity,
-            newStock: shopProduct?.stock || 0,
-            note: `Devolución de venta #${id.substring(0, 8)}`,
-          },
+        await this.stockService.updateStock({
+          tx,
+          shopProductId: item.shopProductId,
+          delta: item.quantity,
+          userId: user.id,
+          reason: 'sale_return',
+          note: `Devolución de venta #${id.substring(0, 8)}`,
         });
       }
 
