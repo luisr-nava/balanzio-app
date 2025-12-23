@@ -81,7 +81,7 @@ export const EmployeeTable = ({
                         src={
                           employee.profileImage && employee.profileImage.trim()
                             ? employee.profileImage
-                            : "/kioscoapp.png"
+                            : "/balanzio.png"
                         }
                         alt={employee.fullName}
                         width={40}
@@ -242,4 +242,3 @@ export const EmployeeTable = ({
     </div>
   );
 };
-

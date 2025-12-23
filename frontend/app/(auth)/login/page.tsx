@@ -14,7 +14,7 @@ function LoginContent() {
         ¿No tienes una cuenta?{" "}
         <Link
           href="/register"
-          className="text-violet-800 hover:text-violet-900 transition-all duration-300 font-medium">
+          className="text-primary hover:text-primary/80 transition-all duration-300 font-medium">
           Registrarse
         </Link>
       </p>
@@ -29,5 +29,4 @@ export default function Login() {
     </Suspense>
   );
 }
-
 

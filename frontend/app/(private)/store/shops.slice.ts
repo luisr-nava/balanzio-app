@@ -7,10 +7,12 @@ interface ShopState {
   activeShopId: string | null;
   activeShop: ShopDetail | null;
   activeShopLoading: boolean;
+  shouldForceStoreSelection: boolean;
   setShops: (shops: Shop[]) => void;
   setActiveShopId: (shopId: string) => void;
   setActiveShop: (shop: ShopDetail | null) => void;
   setActiveShopLoading: (loading: boolean) => void;
+  setShouldForceStoreSelection: (force: boolean) => void;
   clearShops: () => void;
 }
 
@@ -24,6 +26,7 @@ export const useShopStore = create<ShopState>()(
       activeShopId: null,
       activeShop: null,
       activeShopLoading: false,
+      shouldForceStoreSelection: true,
       setShops: (shops) => set({ shops }),
       setActiveShopId: (shopId) =>
         set((state) => {
@@ -38,12 +41,14 @@ export const useShopStore = create<ShopState>()(
         }),
       setActiveShop: (shop) => set({ activeShop: shop, activeShopLoading: false }),
       setActiveShopLoading: (loading) => set({ activeShopLoading: loading }),
+      setShouldForceStoreSelection: (force) => set({ shouldForceStoreSelection: force }),
       clearShops: () =>
         set({
           shops: [],
           activeShopId: null,
           activeShop: null,
           activeShopLoading: false,
+          shouldForceStoreSelection: true,
         }),
     }),
     {

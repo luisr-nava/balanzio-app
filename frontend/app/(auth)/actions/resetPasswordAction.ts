@@ -1,4 +1,4 @@
-import { kioscoApi } from "@/lib/kioscoApi";
+import { authApi } from "@/lib/authApi";
 import { AxiosError } from "axios";
 import { toApiError } from "@/lib/error-handler";
 import type { ApiError } from "@/lib/error-handler";
@@ -15,10 +15,11 @@ interface ResetPasswordResponse {
 export const resetPasswordAction = async (
   payload: ResetPasswordPayload,
 ): Promise<ResetPasswordResponse> => {
+  const project = process.env.NEXT_PUBLIC_PROJECT;
   try {
-    const { data } = await kioscoApi.post<ResetPasswordResponse>(
-      "/auth-client/reset-password",
-      payload,
+    const { data } = await authApi.post<ResetPasswordResponse>(
+      "/auth/reset-password",
+      { ...payload, appKey: project },
     );
     return data;
   } catch (error) {
@@ -36,3 +37,5 @@ export const resetPasswordAction = async (
     throw error instanceof Error ? error : fallbackError;
   }
 };
+
+

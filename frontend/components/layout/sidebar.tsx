@@ -8,19 +8,22 @@ import {
   Package,
   ShoppingCart,
   Users,
-  UserCircle,
+  User,
   Truck,
   Settings,
   LayoutDashboard,
   Menu,
   ChevronLeft,
   ChevronDown,
-  ChevronRight,
+  ArrowLeftRight,
   FileText,
-  FolderKanban,
   Receipt,
   TrendingDown,
   TrendingUp,
+  SlidersHorizontal,
+  Sliders,
+  UsersRound,
+  Bell,
 } from "lucide-react";
 
 export const menuItems = [
@@ -37,38 +40,35 @@ export const menuItems = [
     description: "Listado de productos de la tienda seleccionada.",
   },
   {
+    label: "Notificaciones",
+    href: "/dashboard/notifications",
+    icon: Bell,
+    description: "Alertas en tiempo real y avisos de stock.",
+  },
+  {
     label: "Vender",
     href: "/dashboard/sales",
     icon: ShoppingCart,
     description: "Punto de venta rápido para la tienda activa.",
-  },
-  {
-    label: "Empleados",
-    href: "/dashboard/employees",
-    icon: Users,
-    description: "Administra el equipo de trabajo.",
   },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(true);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [movementsOpen, setMovementsOpen] = useState(false);
   const [contactsOpen, setContactsOpen] = useState(false);
-
-  const isInSettings = pathname.startsWith("/settings");
-  const showSettingsExpanded = settingsOpen || (!collapsed && isInSettings);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const movementItems = [
     {
       label: "Ventas",
       href: "/dashboard/sales/history",
-      icon: FileText,
+      icon: Receipt,
     },
     {
       label: "Compras",
       href: "/dashboard/purchases",
-      icon: Receipt,
+      icon: FileText,
     },
     {
       label: "Ingresos",
@@ -95,13 +95,35 @@ export function Sidebar() {
     {
       label: "Clientes",
       href: "/dashboard/clients",
-      icon: UserCircle,
+      icon: User,
     },
   ];
   const isInContacts = contactItems.some((item) =>
     pathname.startsWith(item.href),
   );
   const showContactsExpanded = contactsOpen || (!collapsed && isInContacts);
+
+  const settingsItems = [
+    {
+      label: "Configuración",
+      href: "/settings/configuration",
+      icon: SlidersHorizontal,
+    },
+    {
+      label: "Preferencias",
+      href: "/settings/preferences",
+      icon: Sliders,
+    },
+    {
+      label: "Empleados",
+      href: "/dashboard/employees",
+      icon: UsersRound,
+    },
+  ];
+  const isInSettingsGroup = settingsItems.some((item) =>
+    pathname.startsWith(item.href),
+  );
+  const showSettingsExpanded = settingsOpen || (!collapsed && isInSettingsGroup);
 
   return (
     <aside
@@ -129,7 +151,7 @@ export function Sidebar() {
                 ? "w-0 opacity-0 group-hover:w-auto group-hover:opacity-100"
                 : "w-auto opacity-100",
             )}>
-            <h2 className="text-2xl font-bold whitespace-nowrap">Kiosco App</h2>
+            <h2 className="text-2xl font-bold whitespace-nowrap">Balanzio</h2>
           </div>
         </div>
 
@@ -178,7 +200,7 @@ export function Sidebar() {
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
               )}>
-              <FolderKanban className="h-5 w-5 shrink-0" />
+              <ArrowLeftRight className="h-5 w-5 shrink-0" />
               <span
                 className={cn(
                   "block overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200",
@@ -306,14 +328,15 @@ export function Sidebar() {
           </div>
 
           <div className="space-y-1">
-            <Link
-              href="/settings/configuration"
+            <button
+              type="button"
+              onClick={() => setSettingsOpen((prev) => !prev)}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 collapsed
                   ? "justify-center group-hover:justify-start"
                   : "justify-start",
-                isInSettings
+                isInSettingsGroup
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
               )}>
@@ -327,7 +350,51 @@ export function Sidebar() {
                 )}>
                 Ajustes
               </span>
-            </Link>
+              <ChevronDown
+                className={cn(
+                  "ml-auto h-4 w-4 shrink-0 transition-transform",
+                  showSettingsExpanded ? "rotate-180" : "",
+                  collapsed ? "hidden group-hover:inline-block" : "",
+                )}
+              />
+            </button>
+            {showSettingsExpanded && (
+              <div
+                className={cn(
+                  "flex flex-col gap-1 pl-3",
+                  collapsed ? "group-hover:flex" : "flex",
+                )}>
+                {settingsItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = pathname.startsWith(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={cn(
+                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                        collapsed
+                          ? "justify-center group-hover:justify-start"
+                          : "justify-start",
+                        isActive
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                      )}>
+                      <Icon className="h-4 w-4 shrink-0" />
+                      <span
+                        className={cn(
+                          "block overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200",
+                          collapsed
+                            ? "max-w-0 opacity-0 group-hover:max-w-[200px] group-hover:opacity-100"
+                            : "max-w-[200px] opacity-100",
+                        )}>
+                        {item.label}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </nav>
       </div>

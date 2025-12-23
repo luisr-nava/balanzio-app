@@ -1,4 +1,4 @@
-import { kioscoApi } from "@/lib/kioscoApi";
+import { authApi } from "@/lib/authApi";
 import { AxiosError } from "axios";
 import { toApiError } from "@/lib/error-handler";
 import type { ApiError } from "@/lib/error-handler";
@@ -10,10 +10,11 @@ interface ForgotPasswordResponse {
 export const forgotPasswordAction = async (
   email: string,
 ): Promise<ForgotPasswordResponse> => {
+  const project = process.env.NEXT_PUBLIC_PROJECT;
   try {
-    const { data } = await kioscoApi.post<ForgotPasswordResponse>(
-      "/auth-client/forgot-password",
-      { email },
+    const { data } = await authApi.post<ForgotPasswordResponse>(
+      "/auth/forgot-password",
+      { email, appKey: project },
     );
     return data;
   } catch (error) {
@@ -31,3 +32,5 @@ export const forgotPasswordAction = async (
     throw error instanceof Error ? error : fallbackError;
   }
 };
+
+

@@ -14,14 +14,13 @@ export default function Register() {
         ¿Tienes una cuenta?{" "}
         <Link
           href="/login"
-          className="text-violet-800 hover:text-violet-900 transition-all duration-300 font-medium">
+          className="text-primary hover:text-primary/80 transition-all duration-300 font-medium">
           Iniciar Sesión
         </Link>
       </p>
     </div>
   );
 }
-
 
 
 

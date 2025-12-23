@@ -15,20 +15,17 @@ import { LogOut, User, Settings, Store, Check, PlusCircle } from "lucide-react";
 import { useShopStore } from "@/app/(private)/store/shops.slice";
 import { SubscriptionPlanType } from "@/lib/types/subscription";
 import { useTheme } from "next-themes";
+import { redirect } from "next/navigation";
 
 /**
  * UserMenu - Menú de usuario con información y opción de logout
  * Solo se renderiza si el usuario está autenticado
  */
 export function UserMenu() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, plan } = useAuth();
   const { logout, isLoading } = useLogout();
   const { shops, activeShopId, setActiveShopId } = useShopStore();
   const { theme, setTheme } = useTheme();
-
-  if (!isAuthenticated || !user) {
-    return null;
-  }
 
   // Obtener iniciales del nombre completo
   const getInitials = (name: string) => {
@@ -40,25 +37,22 @@ export function UserMenu() {
       .slice(0, 2);
   };
 
-  const planRaw =
-    user.planType ||
-    user.subscriptionPlan ||
-    user.subscriptionType ||
-    SubscriptionPlanType.FREE;
-  const plan =
-    typeof planRaw === "string" && planRaw.toLowerCase().includes("pro")
-      ? SubscriptionPlanType.PRO
-      : typeof planRaw === "string" && planRaw.toLowerCase().includes("premium")
-        ? SubscriptionPlanType.PREMIUM
-        : SubscriptionPlanType.FREE;
-  const canAddStores = plan === SubscriptionPlanType.PREMIUM || plan === SubscriptionPlanType.PRO;
+  // const plan =
+  //   typeof planRaw === "string" && planRaw.toLowerCase().includes("pro")
+  //     ? SubscriptionPlanType.PRO
+  //     : typeof planRaw === "string" && planRaw.toLowerCase().includes("premium")
+  //     ? SubscriptionPlanType.PREMIUM
+  //     : SubscriptionPlanType.FREE;
+  if (!user) return redirect("/login");
+  const canAddStores =
+    plan === SubscriptionPlanType.PREMIUM || plan === SubscriptionPlanType.PRO;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <Avatar>
-            <AvatarFallback>{getInitials(user.fullName)}</AvatarFallback>
+            <AvatarFallback>{getInitials(user?.fullName!)}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -82,8 +76,7 @@ export function UserMenu() {
           <DropdownMenuItem
             onClick={() => {
               window.dispatchEvent(new CustomEvent("open-store-selector"));
-            }}
-          >
+            }}>
             <div className="flex items-center gap-2 text-primary">
               <PlusCircle className="h-4 w-4" />
               <span>Crear tienda</span>
@@ -101,8 +94,7 @@ export function UserMenu() {
               <DropdownMenuItem
                 key={shop.id}
                 onClick={() => setActiveShopId(shop.id)}
-                className="flex items-center justify-between"
-              >
+                className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Store className="h-4 w-4" />
                   <span className="truncate">{shop.name}</span>
@@ -133,7 +125,11 @@ export function UserMenu() {
               size="sm"
               className="text-xs"
               onClick={() => setTheme(option)}>
-              {option === "light" ? "Claro" : option === "dark" ? "Oscuro" : "Sistema"}
+              {option === "light"
+                ? "Claro"
+                : option === "dark"
+                ? "Oscuro"
+                : "Sistema"}
             </Button>
           ))}
         </div>
@@ -146,3 +142,4 @@ export function UserMenu() {
     </DropdownMenu>
   );
 }
+

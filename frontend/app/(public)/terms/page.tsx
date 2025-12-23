@@ -35,7 +35,7 @@ export default function TermsPage() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4">1. Aceptación de los Términos</h2>
               <p className="text-muted-foreground mb-4">
-                Al acceder y utilizar Kiosco App (en adelante, &quot;la Aplicación&quot;), usted acepta
+                Al acceder y utilizar Balanzio (en adelante, &quot;la Aplicación&quot;), usted acepta
                 estar sujeto a estos Términos y Condiciones. Si no está de acuerdo con alguna
                 parte de estos términos, no debe utilizar nuestra aplicación.
               </p>
@@ -49,7 +49,7 @@ export default function TermsPage() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4">2. Descripción del Servicio</h2>
               <p className="text-muted-foreground mb-4">
-                Kiosco App es un sistema integral de gestión empresarial que proporciona las
+                Balanzio es un sistema integral de gestión empresarial que proporciona las
                 siguientes funcionalidades:
               </p>
               <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
@@ -102,7 +102,7 @@ export default function TermsPage() {
               <h2 className="text-2xl font-semibold mb-4">5. Propiedad Intelectual</h2>
               <p className="text-muted-foreground mb-4">
                 Todo el contenido, características y funcionalidad de la Aplicación son propiedad
-                exclusiva de Kiosco App y están protegidos por derechos de autor, marcas
+                exclusiva de Balanzio y están protegidos por derechos de autor, marcas
                 registradas y otras leyes de propiedad intelectual.
               </p>
               <p className="text-muted-foreground">
@@ -160,7 +160,7 @@ export default function TermsPage() {
                 9. Limitación de Responsabilidad
               </h2>
               <p className="text-muted-foreground mb-4">
-                En la medida máxima permitida por la ley, Kiosco App no será responsable por:
+                En la medida máxima permitida por la ley, Balanzio no será responsable por:
               </p>
               <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
                 <li>Daños indirectos, incidentales, especiales o consecuentes</li>
@@ -173,7 +173,7 @@ export default function TermsPage() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4">10. Indemnización</h2>
               <p className="text-muted-foreground">
-                Usted acepta indemnizar y mantener indemne a Kiosco App y sus afiliados de
+                Usted acepta indemnizar y mantener indemne a Balanzio y sus afiliados de
                 cualquier reclamación, daño, pérdida, responsabilidad y gasto (incluidos
                 honorarios legales) que surjan de su uso de la Aplicación o violación de estos
                 términos.
@@ -209,7 +209,7 @@ export default function TermsPage() {
                 través de:
               </p>
               <ul className="list-none text-muted-foreground space-y-2">
-                <li>Email: soporte@kioscoapp.com</li>
+                <li>Email: soporte@balanzio.net</li>
                 <li>Teléfono: +1 (555) 123-4567</li>
                 <li>Dirección: Calle Principal 123, Ciudad, País</li>
               </ul>
@@ -219,7 +219,7 @@ export default function TermsPage() {
 
             <div className="text-center text-sm text-muted-foreground">
               <p>
-                Al utilizar Kiosco App, usted reconoce que ha leído, entendido y acepta estar
+                Al utilizar Balanzio, usted reconoce que ha leído, entendido y acepta estar
                 sujeto a estos Términos y Condiciones.
               </p>
             </div>

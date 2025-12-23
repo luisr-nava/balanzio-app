@@ -5,7 +5,10 @@ import { StoreSetupGuard } from "@/components/guards/store-setup-guard";
 import { Sidebar } from "@/components/layout/sidebar";
 import { MobileSidebar } from "@/components/layout/mobile-sidebar";
 import { UserMenu } from "@/app/(auth)/components/user-menu";
+import { SessionDataLoader } from "@/components/shops/session-data-loader";
 import { menuItems } from "@/components/layout/sidebar";
+import { useNotificationsSocket } from "@/app/(private)/hooks/useNotificationsSocket";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -17,6 +20,7 @@ export default function PrivateLayout({
 }: {
   children: React.ReactNode;
 }) {
+  useNotificationsSocket();
   const pathname = usePathname();
   const isSetupPage = pathname === "/dashboard/setup";
   const isOnSales = pathname.startsWith("/dashboard/sales");
@@ -40,6 +44,7 @@ export default function PrivateLayout({
   return (
     <PrivateRouteGuard>
       <StoreSetupGuard>
+        <SessionDataLoader />
         {isSetupPage ? (
           // Layout simple para la página de setup
           <div className="min-h-screen">
@@ -47,8 +52,8 @@ export default function PrivateLayout({
               <div className="flex items-center justify-between gap-4 p-4">
                 <Link href="/dashboard" className="flex items-center gap-3">
                   <Image
-                    src="/kioscoapp.png"
-                    alt="Logo de Kiosco App"
+                    src="/balanzio.png"
+                    alt="Logo de Balanzio"
                     width={36}
                     height={36}
                     className="h-9 w-9 rounded-lg object-contain shadow-sm"
@@ -60,6 +65,7 @@ export default function PrivateLayout({
                       Vender
                     </Button>
                   </Link>
+                  <NotificationBell />
                   <UserMenu />
                   <MobileSidebar />
                 </div>
@@ -77,33 +83,34 @@ export default function PrivateLayout({
                   <div className="flex items-center gap-3">
                     <Link href="/dashboard" className="flex items-center gap-3">
                       <Image
-                        src="/kioscoapp.png"
-                        alt="Logo de Kiosco App"
+                        src="/balanzio.png"
+                        alt="Logo de Balanzio"
                         width={36}
                         height={36}
-                    className="h-9 w-9 rounded-lg object-contain shadow-sm"
-                  />
-                </Link>
-                <div className="flex flex-col">
-                  <h1 className="text-2xl font-bold leading-tight">
+                        className="h-9 w-9 rounded-lg object-contain shadow-sm"
+                      />
+                    </Link>
+                    <div className="flex flex-col">
+                      <h1 className="text-2xl font-bold leading-tight">
                         {currentMenu?.label || "Panel"}
                       </h1>
                       <p className="text-sm text-muted-foreground">
                         {pageDescription || "Panel de administración."}
                       </p>
                     </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Link href="/dashboard/sales">
+                      <Button size="sm" className={sellButtonClasses}>
+                        Vender
+                      </Button>
+                    </Link>
+                    <NotificationBell />
+                    <UserMenu />
+                    <MobileSidebar />
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Link href="/dashboard/sales">
-                    <Button size="sm" className={sellButtonClasses}>
-                      Vender
-                    </Button>
-                  </Link>
-                  <UserMenu />
-                  <MobileSidebar />
-                </div>
-              </div>
-            </header>
+              </header>
               <main className="flex-1 overflow-y-auto p-6">{children}</main>
             </div>
           </div>

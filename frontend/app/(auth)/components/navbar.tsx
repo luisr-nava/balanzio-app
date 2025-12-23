@@ -9,15 +9,15 @@ export default function Navbar() {
       <div className=" px-10 flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
           <Image
-            src="/kioscoapp.png"
-            alt="Logo de Kiosco App"
+            src="/balanzio.png"
+            alt="Logo de Balanzio"
             width={40}
             height={40}
             priority
             className="h-10 w-10 rounded-lg object-contain shadow-sm"
           />
           <div className="flex flex-col leading-tight">
-            <span className="text-lg font-semibold">Kiosco App</span>
+            <span className="text-lg font-semibold">Balanzio</span>
             <span className="text-xs text-muted-foreground">Gestión para tu negocio</span>
           </div>
         </Link>

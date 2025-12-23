@@ -30,9 +30,22 @@ export const cashRegisterApi = {
   openCashRegister: async (
     payload: OpenCashRegisterDto,
   ): Promise<CashRegister> => {
-    const { data } = await kioscoApi.post<
-      CashRegister | { data: CashRegister }
-    >(`${CASH_REGISTER_BASE_PATH}/open`, payload);
-    return unwrapResponse(data);
+    if (!payload.shopId) {
+      throw new Error("shopId es requerido");
+    }
+
+    try {
+      const { data } = await kioscoApi.post<
+        CashRegister | { data: CashRegister }
+      >(`${CASH_REGISTER_BASE_PATH}/open`, payload, {
+        params: { shopId: payload.shopId },
+      });
+      return unwrapResponse(data);
+    } catch (error: any) {
+      if (error?.response?.status === 404) {
+        throw new Error("Caja no encontrada para la tienda seleccionada");
+      }
+      throw error;
+    }
   },
 };

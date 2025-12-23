@@ -1,4 +1,4 @@
-import { kioscoApi } from "@/lib/kioscoApi";
+import { authApi } from "@/lib/authApi";
 import { RegisterResponse } from "../interfaces";
 import { AxiosError } from "axios";
 import { toApiError } from "@/lib/error-handler";
@@ -14,11 +14,12 @@ interface RegisterPayload {
 export const registerAction = async (
   payload: RegisterPayload,
 ): Promise<RegisterResponse> => {
+  const project = process.env.NEXT_PUBLIC_PROJECT;
   try {
-    const { data } = await kioscoApi.post<RegisterResponse>(
-      "/auth-client/register",
-      payload,
-    );
+    const { data } = await authApi.post<RegisterResponse>("/auth/register", {
+      ...payload,
+      appKey: project,
+    });
     return data;
   } catch (error) {
     console.error("Error en registerAction:", error);

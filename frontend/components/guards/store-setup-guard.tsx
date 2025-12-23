@@ -34,8 +34,14 @@ export function StoreSetupGuard({ children }: StoreSetupGuardProps) {
     activeShop,
     activeShopLoading,
     setActiveShopLoading,
+    shouldForceStoreSelection,
+    setShouldForceStoreSelection,
   } = useShopStore();
   const [showOpenCashModal, setShowOpenCashModal] = useState(false);
+  const selectedShopId = shouldForceStoreSelection ? "" : activeShopId;
+  const userHasAccessToSelectedShop =
+    Boolean(selectedShopId) &&
+    storedShops.some((shop) => shop.id === selectedShopId);
 
   const { data: shops, isLoading: shopsLoading } = useQuery({
     queryKey: ["my-shops"],
@@ -45,21 +51,26 @@ export function StoreSetupGuard({ children }: StoreSetupGuardProps) {
   });
 
   const shopDetailQuery = useQuery<ShopDetail>({
-    queryKey: ["shop", activeShopId],
-    queryFn: () => shopApi.getShopById(activeShopId || ""),
-    enabled: Boolean(activeShopId),
+    queryKey: ["shop", selectedShopId],
+    queryFn: () => shopApi.getShopById(selectedShopId || ""),
+    enabled: Boolean(selectedShopId && userHasAccessToSelectedShop),
   });
   const hasOpenCashDetail =
     shopDetailQuery.data?.hasOpenCashRegister ??
     activeShop?.hasOpenCashRegister;
   const shopHasOpenCash = hasOpenCashDetail === true;
+  const needsCashStatusCheck = hasOpenCashDetail === undefined;
 
   const { data: openCashRegister, isFetching: cashRegisterLoading } =
     useQuery<CashRegister | null>({
-      queryKey: ["cash-register-open", activeShopId],
-      queryFn: () => cashRegisterApi.getOpenCashRegister(activeShopId || ""),
+      queryKey: ["cash-register-open", selectedShopId],
+      queryFn: () => cashRegisterApi.getOpenCashRegister(selectedShopId || ""),
       enabled:
-        Boolean(activeShopId) && !shopHasOpenCash && !shopDetailQuery.isLoading,
+        Boolean(selectedShopId) &&
+        userHasAccessToSelectedShop &&
+        needsCashStatusCheck &&
+        shopDetailQuery.isSuccess &&
+        !shouldForceStoreSelection,
       retry: false,
     });
 
@@ -68,10 +79,11 @@ export function StoreSetupGuard({ children }: StoreSetupGuardProps) {
     const handler = () => {
       setActiveShopId("");
       setActiveShop(null);
+      setShouldForceStoreSelection(true);
     };
     window.addEventListener("open-store-selector", handler);
     return () => window.removeEventListener("open-store-selector", handler);
-  }, [setActiveShop, setActiveShopId]);
+  }, [setActiveShop, setActiveShopId, setShouldForceStoreSelection]);
 
   // Actualizar tienda activa cuando el detalle llega
   useEffect(() => {
@@ -132,7 +144,7 @@ export function StoreSetupGuard({ children }: StoreSetupGuardProps) {
   }, [shops, activeShopId, setActiveShopId, setActiveShop, setShops]);
 
   useEffect(() => {
-    if (!activeShopId) {
+    if (!selectedShopId) {
       setShowOpenCashModal(false);
       return;
     }
@@ -146,34 +158,54 @@ export function StoreSetupGuard({ children }: StoreSetupGuardProps) {
 
     const needsOpening = !openCashRegister || openCashRegister.isOpen === false;
     setShowOpenCashModal(needsOpening);
-  }, [activeShopId, cashRegisterLoading, openCashRegister, shopHasOpenCash]);
+  }, [
+    selectedShopId,
+    cashRegisterLoading,
+    openCashRegister,
+    shopHasOpenCash,
+  ]);
 
   const hasStoredShops = (storedShops?.length ?? 0) > 0;
   const hasValidActiveShop =
-    Boolean(activeShopId) &&
-    storedShops.some((shop) => shop.id === activeShopId);
+    Boolean(selectedShopId) &&
+    storedShops.some((shop) => shop.id === selectedShopId);
+
+  useEffect(() => {
+    if (selectedShopId && !userHasAccessToSelectedShop) {
+      setActiveShopId("");
+      setActiveShop(null);
+      setShouldForceStoreSelection(true);
+    }
+  }, [
+    selectedShopId,
+    userHasAccessToSelectedShop,
+    setActiveShopId,
+    setActiveShop,
+    setShouldForceStoreSelection,
+  ]);
 
   const handleCashRegisterOpened = () => {
     setShowOpenCashModal(false);
-    if (activeShopId) {
+    if (selectedShopId) {
       queryClient.invalidateQueries({
-        queryKey: ["cash-register-open", activeShopId],
+        queryKey: ["cash-register-open", selectedShopId],
       });
-      queryClient.invalidateQueries({ queryKey: ["shop", activeShopId] });
+      queryClient.invalidateQueries({ queryKey: ["shop", selectedShopId] });
     }
     if (activeShop) {
       setActiveShop({ ...activeShop, hasOpenCashRegister: true });
       queryClient.setQueryData<ShopDetail | undefined>(
-        ["shop", activeShopId],
+        ["shop", selectedShopId],
         (prev) => (prev ? { ...prev, hasOpenCashRegister: true } : prev),
       );
     }
   };
 
-  const activeShopName =
-    activeShop?.name ||
-    storedShops.find((shop) => shop.id === activeShopId)?.name ||
-    null;
+  const activeShopName = shouldForceStoreSelection
+    ? null
+    : activeShop?.name ||
+      storedShops.find((shop) => shop.id === selectedShopId)?.name ||
+      null;
 
   // Mostrar loading mientras verifica
   if (authLoading || shopsLoading) {
@@ -189,10 +221,15 @@ export function StoreSetupGuard({ children }: StoreSetupGuardProps) {
 
   const needsSelection =
     isAuthenticated &&
-    (!hasValidActiveShop || !hasStoredShops || !activeShopId);
+    (shouldForceStoreSelection ||
+      !hasValidActiveShop ||
+      !hasStoredShops ||
+      !userHasAccessToSelectedShop ||
+      !selectedShopId);
 
   const handleSelectStore = (storeId: string) => {
     setActiveShopId(storeId);
+    setShouldForceStoreSelection(false);
     if (pathname === "/dashboard/setup") {
       router.push("/dashboard");
     }
@@ -211,6 +248,7 @@ export function StoreSetupGuard({ children }: StoreSetupGuardProps) {
   // Si tiene tiendas, mostrar el contenido
   const shouldShowOpenCashModal =
     showOpenCashModal &&
+    !shouldForceStoreSelection &&
     !shopHasOpenCash &&
     !(openCashRegister && openCashRegister.isOpen);
 
@@ -219,7 +257,7 @@ export function StoreSetupGuard({ children }: StoreSetupGuardProps) {
       {children}
       <OpenCashRegisterModal
         isOpen={shouldShowOpenCashModal}
-        shopId={activeShopId}
+        shopId={selectedShopId}
         shopName={activeShopName}
         onOpened={handleCashRegisterOpened}
       />

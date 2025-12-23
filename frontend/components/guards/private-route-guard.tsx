@@ -12,15 +12,15 @@ interface PrivateRouteGuardProps {
  * Componente que protege rutas privadas, redirigiendo al login si no está autenticado
  */
 export function PrivateRouteGuard({ children }: PrivateRouteGuardProps) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     // Si no está autenticado, redirigir al login
-    if (!isLoading && !isAuthenticated) {
+    if (!isLoading) {
       router.push("/login");
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isLoading, router]);
 
   // Mostrar loading mientras verifica
   if (isLoading) {
@@ -34,11 +34,7 @@ export function PrivateRouteGuard({ children }: PrivateRouteGuardProps) {
     );
   }
 
-  // Si no está autenticado, no mostrar nada (está redirigiendo)
-  if (!isAuthenticated) {
-    return null;
-  }
-
   // Si está autenticado, mostrar el contenido
   return <>{children}</>;
 }
+

@@ -27,8 +27,10 @@ export const useLogin = () => {
       setAuth({
         user: data.user,
         token: data.token,
-        refreshToken: data.refreshToken,
-        projectId: data.projectId,
+        ownerId: data.ownerId,
+        appKey: data.appKey,
+        plan: data.plan,
+        subscriptionStatus: data.subscriptionStatus,
       });
 
       // Toast de éxito
@@ -64,3 +66,4 @@ export const useLogin = () => {
     reset: mutation.reset,
   };
 };
+

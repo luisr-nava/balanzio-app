@@ -1,20 +1,27 @@
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { kioscoApi } from "@/lib/kioscoApi";
+import { authApi } from "@/lib/authApi";
 import { useAuthStore } from "../store/slices/auth.slice";
 import { useShopStore } from "@/app/(private)/store/shops.slice";
+import { useNotificationsStore } from "@/app/(private)/store/notifications.slice";
+import { useQueryClient } from "@tanstack/react-query";
+import { myShopsQueryKey } from "@/app/(private)/hooks/useMyShops";
 
 export const useLogout = () => {
   const router = useRouter();
   const clearAuth = useAuthStore((state) => state.clearAuth);
   const clearShops = useShopStore((state) => state.clearShops);
+  const clearNotifications = useNotificationsStore(
+    (state) => state.clearNotifications,
+  );
+  const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: async () => {
       // Llamar al endpoint de logout del backend (opcional)
       try {
-        await kioscoApi.post("/auth-client/logout");
+        await authApi.post("/auth/logout");
       } catch (error) {
         // Continuar con logout local incluso si falla el backend
         console.error("Error al hacer logout en el backend:", error);
@@ -24,6 +31,8 @@ export const useLogout = () => {
       // Limpiar estado de autenticación y tiendas
       clearAuth();
       clearShops();
+      clearNotifications();
+      queryClient.removeQueries({ queryKey: myShopsQueryKey, exact: true });
 
       // Toast de éxito
       toast.success("Sesión cerrada", {
@@ -47,6 +56,8 @@ export const useLogout = () => {
       // Limpiar de todos modos
       clearAuth();
       clearShops();
+      clearNotifications();
+      queryClient.removeQueries({ queryKey: myShopsQueryKey, exact: true });
       router.push("/login");
     },
   });

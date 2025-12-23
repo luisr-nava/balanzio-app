@@ -1,462 +1,574 @@
-"use client";
-
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import Script from "next/script";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { useAuth } from "./(auth)/hooks";
-import { UserMenu } from "./(auth)/components/user-menu";
-import Image from "next/image";
-import Link from "next/link";
 import {
-  ShoppingCart,
-  Package,
-  Users,
-  Store,
-  TrendingUp,
-  TrendingDown,
-  FileText,
-  CreditCard,
+  ArrowUpRight,
   BarChart3,
-  UserCircle,
-  ShoppingBag,
-  ClipboardList,
-  ArrowLeftRight,
-  FolderTree,
-  Truck,
-  Receipt,
-  DollarSign,
+  CheckCircle2,
+  Clock3,
+  CreditCard,
+  Layers,
+  Package,
+  ShieldCheck,
+  Smartphone,
+  Sparkles,
+  Store,
 } from "lucide-react";
 
-export default function Home() {
-  const { user, isAuthenticated } = useAuth();
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://balanzio.net";
+const ogImage = `${siteUrl}/balanzio-og.png`;
 
-  const modules = [
-    {
-      title: "Ventas",
-      description: "Gestión de ventas y punto de venta",
-      icon: ShoppingCart,
-      href: "/sales",
-      color: "text-green-600",
-      bgColor: "bg-green-50 dark:bg-green-950",
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "Software de gestión para comercios y kioscos | Balanzio",
+    description:
+      "Balanzio centraliza ventas, stock, finanzas y reportes en un POS web rápido para kioscos, almacenes y pymes.",
+    alternates: { canonical: "/" },
+    keywords: [
+      "software de gestión para comercios",
+      "sistema para kioscos",
+      "punto de venta para almacenes",
+      "control de stock",
+      "facturación electrónica",
+      "software para pymes",
+      "POS web",
+    ],
+    openGraph: {
+      title: "Balanzio | Software de gestión y punto de venta para comercios",
+      description: "Controla ventas, stock y finanzas con un POS web rápido y reportes en tiempo real.",
+      url: siteUrl,
+      siteName: "Balanzio",
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: "Balanzio - Software para kioscos y comercios",
+        },
+      ],
+      locale: "es_ES",
+      type: "website",
     },
-    {
-      title: "Productos",
-      description: "Catálogo y gestión de inventario",
-      icon: Package,
-      href: "/products",
-      color: "text-blue-600",
-      bgColor: "bg-blue-50 dark:bg-blue-950",
+    twitter: {
+      card: "summary_large_image",
+      title: "Balanzio | Sistema de gestión para kioscos y pymes",
+      description: "POS, inventario y finanzas en un solo lugar.",
+      images: [ogImage],
+      creator: "@balanzio",
     },
-    {
-      title: "Clientes",
-      description: "Base de datos de clientes",
-      icon: Users,
-      href: "/customers",
-      color: "text-purple-600",
-      bgColor: "bg-purple-50 dark:bg-purple-950",
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+      },
     },
-    {
-      title: "Empleados",
-      description: "Gestión de personal",
-      icon: UserCircle,
-      href: "/employees",
-      color: "text-indigo-600",
-      bgColor: "bg-indigo-50 dark:bg-indigo-950",
-    },
-    {
-      title: "Proveedores",
-      description: "Directorio de proveedores",
-      icon: Truck,
-      href: "/suppliers",
-      color: "text-orange-600",
-      bgColor: "bg-orange-50 dark:bg-orange-950",
-    },
-    {
-      title: "Compras",
-      description: "Órdenes de compra y abastecimiento",
-      icon: ShoppingBag,
-      href: "/purchases",
-      color: "text-cyan-600",
-      bgColor: "bg-cyan-50 dark:bg-cyan-950",
-    },
-    {
-      title: "Categorías",
-      description: "Organización de productos",
-      icon: FolderTree,
-      href: "/categories",
-      color: "text-pink-600",
-      bgColor: "bg-pink-50 dark:bg-pink-950",
-    },
-    {
-      title: "Tiendas",
-      description: "Gestión de sucursales",
-      icon: Store,
-      href: "/shops",
-      color: "text-teal-600",
-      bgColor: "bg-teal-50 dark:bg-teal-950",
-    },
-    {
-      title: "Ingresos",
-      description: "Registro de ingresos",
-      icon: TrendingUp,
-      href: "/income",
-      color: "text-emerald-600",
-      bgColor: "bg-emerald-50 dark:bg-emerald-950",
-    },
-    {
-      title: "Gastos",
-      description: "Control de gastos operativos",
-      icon: TrendingDown,
-      href: "/expenses",
-      color: "text-red-600",
-      bgColor: "bg-red-50 dark:bg-red-950",
-    },
-    {
-      title: "Notas de Crédito",
-      description: "Gestión de créditos y devoluciones",
-      icon: CreditCard,
-      href: "/credit-notes",
-      color: "text-violet-600",
-      bgColor: "bg-violet-50 dark:bg-violet-950",
-    },
-    {
-      title: "Devoluciones de Venta",
-      description: "Procesar devoluciones de clientes",
-      icon: ArrowLeftRight,
-      href: "/sale-returns",
-      color: "text-amber-600",
-      bgColor: "bg-amber-50 dark:bg-amber-950",
-    },
-    {
-      title: "Devoluciones de Compra",
-      description: "Devoluciones a proveedores",
-      icon: Receipt,
-      href: "/purchase-returns",
-      color: "text-rose-600",
-      bgColor: "bg-rose-50 dark:bg-rose-950",
-    },
-    {
-      title: "Reportes",
-      description: "Análisis y estadísticas",
-      icon: BarChart3,
-      href: "/reports",
-      color: "text-slate-600",
-      bgColor: "bg-slate-50 dark:bg-slate-950",
-    },
-  ];
+  };
+}
 
+const featureHighlights = [
+  {
+    title: "Ventas y POS omnicanal",
+    description: "Cobra en segundos con lector de código de barras, acepta múltiples medios de pago y genera facturas al instante.",
+    icon: CreditCard,
+    bullets: ["Tickets y facturas A/B", "Precios por volumen y combos", "Historial y devoluciones rápidas"],
+  },
+  {
+    title: "Control de stock y compras",
+    description: "Inventario en tiempo real, alertas de mínimos, trazabilidad por lotes y reposiciones basadas en ventas.",
+    icon: Package,
+    bullets: ["Alertas automáticas", "Recepciones con proveedor", "Conteos y ajustes auditados"],
+  },
+  {
+    title: "Finanzas y reportes",
+    description: "Tableros claros para márgenes, costos e impuestos. Exporta a Excel/AFIP y mantén tu contabilidad al día.",
+    icon: BarChart3,
+    bullets: ["Flujo de caja unificado", "Reportes diarios y por sucursal", "Exportables para tu contador"],
+  },
+];
+
+const steps = [
+  {
+    title: "Configura tu catálogo y cajas",
+    description: "Carga productos con códigos de barra, impuestos y listas de precio por sucursal.",
+    icon: Layers,
+  },
+  {
+    title: "Opera ventas y stock en tiempo real",
+    description: "POS rápido con soporte offline, sincronizado con inventario y facturación.",
+    icon: Clock3,
+  },
+  {
+    title: "Analiza y optimiza",
+    description: "Paneles de rentabilidad, reposiciones sugeridas y reportes por categoría o vendedor.",
+    icon: ArrowUpRight,
+  },
+];
+
+const useCases = [
+  {
+    title: "Kioscos y almacenes",
+    description: "Acelera cajas, controla mermas y maneja listas de precio dinámicas sin depender de planillas.",
+  },
+  {
+    title: "Tiendas de conveniencia y mini mercados",
+    description: "Sincroniza stock por sucursal, identifica quiebres y evita pérdidas por diferencia de precios.",
+  },
+  {
+    title: "Ferreterías y pymes",
+    description: "Gestión por categorías, compras programadas y reportes financieros para decisiones rápidas.",
+  },
+];
+
+const trustPoints = [
+  { title: "Listo para móvil", description: "Interfaces responsivas y accesibles con tiempo de respuesta sub-200ms en interacciones críticas.", icon: Smartphone },
+  { title: "Estabilidad y datos seguros", description: "Backups diarios, roles de usuario y autenticación segura para tus equipos.", icon: ShieldCheck },
+  { title: "Velocidad para Core Web Vitals", description: "Renderizado server-first, Next/Image optimizado y fuentes precargadas para mejorar LCP, CLS e INP.", icon: Sparkles },
+  { title: "Multi-sucursal desde un panel", description: "Centraliza precios, stock y ventas de todas tus tiendas sin hardware adicional.", icon: Store },
+];
+
+const softwareJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Balanzio",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
+  url: siteUrl,
+  image: ogImage,
+  description: "Software de gestión y punto de venta para kioscos, almacenes y pymes que integra ventas, stock, finanzas y reportes.",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+    url: `${siteUrl}/pricing`,
+    category: "SaaS",
+  },
+  brand: { "@type": "Brand", name: "Balanzio" },
+  audience: {
+    "@type": "Audience",
+    audienceType: ["kioscos", "almacenes", "tiendas de conveniencia", "pymes"],
+  },
+  featureList: [
+    "POS rápido con facturación electrónica",
+    "Control de stock en tiempo real",
+    "Reportes y finanzas para pequeñas empresas",
+    "Gestión de proveedores y compras",
+  ],
+  publisher: {
+    "@type": "Organization",
+    name: "Balanzio",
+    url: siteUrl,
+    logo: `${siteUrl}/balanzio.png`,
+  },
+  potentialAction: {
+    "@type": "RegisterAction",
+    target: `${siteUrl}/register`,
+    name: "Crear cuenta en Balanzio",
+  },
+};
+
+export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/" className="flex items-center gap-3">
-                <Image
-                  src="/kioscoapp.png"
-                  alt="Logo de Kiosco App"
-                  width={40}
-                  height={40}
-                  priority
-                  className="h-10 w-10 rounded-lg object-contain shadow-sm"
-                />
-                <div className="leading-tight">
-                  <h1 className="text-2xl font-bold">Kiosco App</h1>
-                  <p className="text-sm text-muted-foreground">Sistema de Gestión Integral</p>
-                </div>
-              </Link>
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30 text-slate-900 dark:text-slate-50">
+      <header className="border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/70 sticky top-0 z-40">
+        <div className="container mx-auto flex items-center justify-between px-4 py-4">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-sky-500 via-indigo-500 to-blue-600 shadow-md" />
+            <div className="leading-tight">
+              <span className="text-xl font-semibold">Balanzio</span>
+              <p className="text-sm text-muted-foreground">Software de gestión para comercios</p>
             </div>
-            <div className="flex items-center gap-4">
-              <nav className="hidden md:flex items-center gap-6 mr-4">
-                <Link href="/pricing" className="text-sm font-medium hover:text-primary transition-colors">
-                  Precios
-                </Link>
-              </nav>
-              {isAuthenticated ? (
-                <>
-                  <Link href="/dashboard/sales">
-                    <Button className="ml-2">Vender</Button>
-                  </Link>
-                  <UserMenu />
-                </>
-              ) : (
-                <>
-                  <Link href="/dashboard/sales">
-                    <Button className="ml-2">Vender</Button>
-                  </Link>
-                  <div className="flex gap-2">
-                    <Link href="/login">
-                      <Button variant="ghost">Iniciar Sesión</Button>
-                    </Link>
-                    <Link href="/register">
-                      <Button>Registrarse</Button>
-                    </Link>
-                  </div>
-                </>
-              )}
-            </div>
+          </Link>
+          <nav className="hidden items-center gap-6 text-sm font-medium md:flex">
+            <Link href="#soluciones" className="hover:text-primary transition-colors">
+              Soluciones
+            </Link>
+            <Link href="#sectores" className="hover:text-primary transition-colors">
+              Sectores
+            </Link>
+            <Link href="#flujo" className="hover:text-primary transition-colors">
+              Cómo funciona
+            </Link>
+            <Link href="/pricing" className="hover:text-primary transition-colors">
+              Precios
+            </Link>
+          </nav>
+          <div className="flex items-center gap-2">
+            <Link href="/login">
+              <Button variant="ghost" size="sm">
+                Ingresar
+              </Button>
+            </Link>
+            <Link href="/register">
+              <Button size="sm">Probar gratis</Button>
+            </Link>
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="container mx-auto px-4 py-12 text-center">
-        <div className="max-w-3xl mx-auto space-y-4">
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
-            Gestiona tu Negocio de Forma{" "}
-            <span className="text-primary">Inteligente</span>
-          </h2>
-          <p className="text-xl text-muted-foreground">
-            Sistema completo de punto de venta, inventario, ventas y reportes para tu kiosco o tienda
-          </p>
-          {!isAuthenticated && (
-            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+      <main className="pb-20">
+        <section className="container mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-4 pt-12 md:grid-cols-2">
+          <div className="space-y-6">
+            <Badge className="w-fit bg-primary/10 text-primary">POS + Gestión de stock + Finanzas</Badge>
+            <div className="space-y-4">
+              <h1 className="text-4xl font-bold leading-tight tracking-tight md:text-5xl">
+                Software de gestión para comercios y kioscos con punto de venta integrado
+              </h1>
+              <p className="text-lg text-muted-foreground">
+                Balanzio te ayuda a vender más rápido, mantener el stock bajo control y tomar decisiones con datos
+                confiables. Diseñado para kioscos, almacenes y pymes que necesitan operar sin fricciones.
+              </p>
+              <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
+                <span className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                  Cobro y facturación en minutos
+                </span>
+                <span className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                  Control de stock y alertas automáticas
+                </span>
+                <span className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                  Reportes claros para decisiones
+                </span>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
               <Link href="/register">
-                <Button size="lg" className="gap-2">
-                  <DollarSign className="h-5 w-5" />
-                  Comenzar Gratis
-                </Button>
+                <Button size="lg">Comenzar gratis</Button>
               </Link>
               <Link href="/pricing">
                 <Button size="lg" variant="outline">
-                  Ver Planes
+                  Ver planes
                 </Button>
               </Link>
-            </div>
-          )}
-          {isAuthenticated && (
-            <div className="pt-4">
-              <p className="text-lg">
-                Bienvenido, <span className="font-semibold">{user?.fullName}</span>
-              </p>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Modules Grid */}
-      <section className="container mx-auto px-4 py-12">
-        <div className="text-center mb-8">
-          <h3 className="text-3xl font-bold mb-2">Módulos del Sistema</h3>
-          <p className="text-muted-foreground">
-            Todas las herramientas que necesitas en un solo lugar
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {modules.map((module) => {
-            const Icon = module.icon;
-            return (
-              <Link key={module.href} href={module.href}>
-                <Card className="h-full hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer">
-                  <CardHeader className="pb-3">
-                    <div className={`w-12 h-12 rounded-lg ${module.bgColor} flex items-center justify-center mb-3`}>
-                      <Icon className={`h-6 w-6 ${module.color}`} />
-                    </div>
-                    <CardTitle className="text-xl">{module.title}</CardTitle>
-                    <CardDescription>{module.description}</CardDescription>
-                  </CardHeader>
-                </Card>
+              <Link href="mailto:ventas@balanzio.net" className="text-sm font-semibold text-primary">
+                Agendar llamada →
               </Link>
-            );
-          })}
-        </div>
-      </section>
+            </div>
+            <div className="grid grid-cols-1 gap-4 rounded-2xl border bg-background/60 p-4 shadow-sm sm:grid-cols-3">
+              <div>
+                <p className="text-3xl font-bold">2 min</p>
+                <p className="text-sm text-muted-foreground">Tiempo promedio por venta completa</p>
+              </div>
+              <div>
+                <p className="text-3xl font-bold">99.9%</p>
+                <p className="text-sm text-muted-foreground">Disponibilidad de la plataforma</p>
+              </div>
+              <div>
+                <p className="text-3xl font-bold">Stock vivo</p>
+                <p className="text-sm text-muted-foreground">Sincronizado en tiempo real entre sucursales</p>
+              </div>
+            </div>
+          </div>
 
-      {/* Stats Section */}
-      {isAuthenticated && (
-        <section className="container mx-auto px-4 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardDescription>Ventas del Mes</CardDescription>
-                <CardTitle className="text-3xl">$12,450</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2 text-sm text-green-600">
-                  <TrendingUp className="h-4 w-4" />
-                  <span>+12.5% vs mes anterior</span>
+          <div className="relative">
+            <div className="absolute -left-8 -top-8 h-32 w-32 rounded-full bg-primary/10 blur-3xl" aria-hidden />
+            <div className="absolute -right-4 bottom-6 h-24 w-24 rounded-full bg-blue-500/10 blur-3xl" aria-hidden />
+            <Card className="relative overflow-hidden border-primary/10 shadow-lg shadow-primary/5">
+              <CardHeader className="pb-2">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-primary/10" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Panel Balanzio</p>
+                    <p className="text-lg font-semibold">Ventas + Stock + Finanzas</p>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardDescription>Productos en Stock</CardDescription>
-                <CardTitle className="text-3xl">1,234</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2 text-sm text-blue-600">
-                  <Package className="h-4 w-4" />
-                  <span>En 15 categorías</span>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-3 gap-3 text-center">
+                  <div className="rounded-xl border bg-muted/30 p-3">
+                    <p className="text-xs text-muted-foreground">Ventas de hoy</p>
+                    <p className="text-xl font-semibold">$482.500</p>
+                  </div>
+                  <div className="rounded-xl border bg-muted/30 p-3">
+                    <p className="text-xs text-muted-foreground">Ticket promedio</p>
+                    <p className="text-xl font-semibold">$5.820</p>
+                  </div>
+                  <div className="rounded-xl border bg-muted/30 p-3">
+                    <p className="text-xs text-muted-foreground">Unidades en stock</p>
+                    <p className="text-xl font-semibold">12.430</p>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardDescription>Clientes Activos</CardDescription>
-                <CardTitle className="text-3xl">456</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2 text-sm text-purple-600">
-                  <Users className="h-4 w-4" />
-                  <span>+23 este mes</span>
+                <div className="rounded-xl border bg-muted/20 p-4">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">Alertas de stock</span>
+                    <span className="text-xs text-green-600 dark:text-green-400">En tiempo real</span>
+                  </div>
+                  <div className="mt-3 space-y-2 text-sm text-muted-foreground">
+                    <div className="flex items-center justify-between rounded-lg bg-background/80 px-3 py-2">
+                      <span>Gaseosa 500ml</span>
+                      <span className="text-amber-600">Quedan 8</span>
+                    </div>
+                    <div className="flex items-center justify-between rounded-lg bg-background/80 px-3 py-2">
+                      <span>Snacks surtidos</span>
+                      <span className="text-red-600">Stock crítico</span>
+                    </div>
+                    <div className="flex items-center justify-between rounded-lg bg-background/80 px-3 py-2">
+                      <span>Tarjetas prepago</span>
+                      <span className="text-green-600">OK</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-xl border bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-4">
+                  <div className="flex items-center gap-3">
+                    <ShieldCheck className="h-10 w-10 text-primary" />
+                    <div>
+                      <p className="text-sm font-semibold">Datos seguros y siempre disponibles</p>
+                      <p className="text-xs text-muted-foreground">
+                        Respaldo automático, roles por usuario y auditoría completa.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
         </section>
-      )}
 
-      {/* Features Section */}
-      <section className="container mx-auto px-4 py-12 mb-12">
-        <div className="text-center mb-8">
-          <h3 className="text-3xl font-bold mb-2">Características Principales</h3>
-          <p className="text-muted-foreground">
-            Todo lo que necesitas para administrar tu negocio
-          </p>
-        </div>
+        <section id="soluciones" className="container mx-auto max-w-6xl px-4 py-16">
+          <div className="mb-8 space-y-3">
+            <Badge className="w-fit bg-primary/10 text-primary">Soluciones clave</Badge>
+            <h2 className="text-3xl font-bold tracking-tight">Control total de ventas, stock y finanzas</h2>
+            <p className="text-lg text-muted-foreground">
+              Procesos diseñados para Core Web Vitals: renderizado server-first, navegación fluida y datos siempre
+              consistentes.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {featureHighlights.map((feature) => (
+              <Card key={feature.title} className="h-full border-primary/10 shadow-sm">
+                <CardHeader className="space-y-2">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <feature.icon className="h-6 w-6" />
+                  </div>
+                  <CardTitle className="text-xl">{feature.title}</CardTitle>
+                  <CardDescription>{feature.description}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {feature.bullets.map((bullet) => (
+                    <div key={bullet} className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CheckCircle2 className="h-4 w-4 text-primary" />
+                      <span>{bullet}</span>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
-                <BarChart3 className="h-6 w-6 text-primary" />
+        <section id="sectores" className="bg-muted/40">
+          <div className="container mx-auto max-w-6xl px-4 py-16">
+            <div className="mb-8 space-y-3">
+              <Badge className="w-fit bg-primary/10 text-primary">Sectores</Badge>
+              <h2 className="text-3xl font-bold tracking-tight">Diseñado para el día a día de tu tienda</h2>
+              <p className="text-lg text-muted-foreground">
+                Flujos listos para kioscos, almacenes y pymes que necesitan velocidad, precisión y control financiero.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              {useCases.map((useCase) => (
+                <Card key={useCase.title} className="h-full shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="text-xl">{useCase.title}</CardTitle>
+                    <CardDescription>{useCase.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-2 text-sm text-muted-foreground">
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-primary" />
+                        Inventario centralizado y precios consistentes
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-primary" />
+                        Reportes diarios y alertas de rotación
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-primary" />
+                        Integración con facturación y medios de pago locales
+                      </li>
+                    </ul>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="flujo" className="container mx-auto max-w-6xl px-4 py-16">
+          <div className="mb-8 space-y-3">
+            <Badge className="w-fit bg-primary/10 text-primary">Implementación</Badge>
+            <h2 className="text-3xl font-bold tracking-tight">De cero a operativo en días, no semanas</h2>
+            <p className="text-lg text-muted-foreground">
+              Onboarding guiado, importadores de catálogo y dashboards preconfigurados para medir ventas y rentabilidad.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {steps.map((step, index) => (
+              <Card key={step.title} className="h-full">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                  <div className="rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
+                    Paso {index + 1}
+                  </div>
+                  <step.icon className="h-5 w-5 text-primary" />
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <CardTitle className="text-lg">{step.title}</CardTitle>
+                  <CardDescription>{step.description}</CardDescription>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <div className="mt-10 grid grid-cols-1 gap-4 rounded-2xl border bg-gradient-to-r from-primary/5 via-transparent to-transparent p-6 md:grid-cols-4">
+            {trustPoints.map((item) => (
+              <div key={item.title} className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <item.icon className="h-5 w-5 text-primary" />
+                  <p className="text-sm font-semibold">{item.title}</p>
+                </div>
+                <p className="text-sm text-muted-foreground">{item.description}</p>
               </div>
-              <CardTitle>Reportes en Tiempo Real</CardTitle>
-              <CardDescription>
-                Visualiza métricas y estadísticas de tu negocio al instante
-              </CardDescription>
-            </CardHeader>
-          </Card>
+            ))}
+          </div>
+        </section>
 
-          <Card>
-            <CardHeader>
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
-                <ShoppingCart className="h-6 w-6 text-primary" />
+        <section className="container mx-auto max-w-6xl px-4 py-16">
+          <Card className="overflow-hidden border-primary/10 bg-gradient-to-br from-primary/10 via-background to-background shadow-lg">
+            <CardContent className="grid grid-cols-1 gap-8 p-8 md:grid-cols-2 md:p-12">
+              <div className="space-y-4">
+                <Badge className="w-fit bg-white/60 text-primary">CTA</Badge>
+                <h2 className="text-3xl font-bold tracking-tight">Prueba Balanzio y valida tu operación</h2>
+                <p className="text-lg text-muted-foreground">
+                  Configuramos tu primer punto de venta, dejamos el stock listo y activamos alertas críticas para que
+                  no pierdas ventas. Sin hardware extra, sin instalaciones complejas.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <Link href="/register">
+                    <Button size="lg">Crear cuenta gratuita</Button>
+                  </Link>
+                  <Link href="/pricing">
+                    <Button size="lg" variant="outline">
+                      Planes y precios
+                    </Button>
+                  </Link>
+                </div>
               </div>
-              <CardTitle>Punto de Venta Rápido</CardTitle>
-              <CardDescription>
-                Sistema POS intuitivo y rápido para procesar ventas eficientemente
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
-                <Package className="h-6 w-6 text-primary" />
+              <div className="relative">
+                <div className="absolute -left-6 -top-6 h-28 w-28 rounded-full bg-primary/20 blur-3xl" aria-hidden />
+                <div className="absolute -right-6 bottom-4 h-24 w-24 rounded-full bg-blue-500/10 blur-3xl" aria-hidden />
+                <div className="relative rounded-2xl border bg-background/80 p-6 shadow-md">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold">Resumen del día</p>
+                    <Sparkles className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="mt-4 space-y-3">
+                    <div className="flex items-center justify-between text-sm text-muted-foreground">
+                      <span>Ventas con tarjeta</span>
+                      <span className="font-semibold text-foreground">$315.200</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm text-muted-foreground">
+                      <span>Efectivo</span>
+                      <span className="font-semibold text-foreground">$97.300</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm text-muted-foreground">
+                      <span>Costo de mercadería</span>
+                      <span className="font-semibold text-foreground">$189.000</span>
+                    </div>
+                    <Separator />
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-semibold">Margen bruto estimado</span>
+                      <span className="font-semibold text-green-600">48%</span>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                    <ShieldCheck className="h-4 w-4 text-primary" />
+                    Datos cifrados y respaldados automáticamente.
+                  </div>
+                </div>
               </div>
-              <CardTitle>Control de Inventario</CardTitle>
-              <CardDescription>
-                Gestiona tu stock, alertas de inventario bajo y reabastecimiento
-              </CardDescription>
-            </CardHeader>
+            </CardContent>
           </Card>
+        </section>
+      </main>
 
-          <Card>
-            <CardHeader>
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
-                <Users className="h-6 w-6 text-primary" />
-              </div>
-              <CardTitle>Gestión de Clientes</CardTitle>
-              <CardDescription>
-                Administra tu base de clientes y programa de fidelización
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
-                <Store className="h-6 w-6 text-primary" />
-              </div>
-              <CardTitle>Multi-Sucursal</CardTitle>
-              <CardDescription>
-                Gestiona múltiples tiendas desde una sola plataforma
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
-                <FileText className="h-6 w-6 text-primary" />
-              </div>
-              <CardTitle>Facturación Completa</CardTitle>
-              <CardDescription>
-                Genera facturas, notas de crédito y recibos profesionales
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
-      </section>
-
-      {/* Footer */}
       <footer className="border-t bg-muted/50">
-        <div className="container mx-auto px-4 py-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-6">
-            <div>
-              <div className="flex items-center gap-3 mb-3">
-                <Image
-                  src="/kioscoapp.png"
-                  alt="Logo de Kiosco App"
-                  width={32}
-                  height={32}
-                  className="h-8 w-8 rounded-md object-contain shadow-sm"
-                />
-                <h3 className="font-semibold">Kiosco App</h3>
+        <div className="container mx-auto px-4 py-10">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3 lg:grid-cols-4">
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-sky-500 via-indigo-500 to-blue-600" />
+                <span className="text-lg font-semibold">Balanzio</span>
               </div>
               <p className="text-sm text-muted-foreground">
-                Sistema de Gestión Integral para tu Negocio
+                SaaS de gestión para kioscos, almacenes y pymes. Controla ventas, stock y finanzas desde un solo panel.
               </p>
             </div>
             <div>
-              <h3 className="font-semibold mb-3">Producto</h3>
-              <ul className="space-y-2 text-sm">
+              <h3 className="font-semibold">Producto</h3>
+              <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <Link href="/pricing" className="text-muted-foreground hover:text-primary">
+                  <Link href="#soluciones" className="hover:text-primary">
+                    Funcionalidades
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/pricing" className="hover:text-primary">
                     Precios
                   </Link>
                 </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold">Recursos</h3>
+              <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <Link href="/#features" className="text-muted-foreground hover:text-primary">
-                    Características
+                  <Link href="/login" className="hover:text-primary">
+                    Ingresar
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/register" className="hover:text-primary">
+                    Crear cuenta
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold mb-3">Legal</h3>
-              <ul className="space-y-2 text-sm">
+              <h3 className="font-semibold">Contacto</h3>
+              <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <Link href="/terms" className="text-muted-foreground hover:text-primary">
-                    Términos y Condiciones
+                  <Link href="mailto:soporte@balanzio.net" className="hover:text-primary">
+                    soporte@balanzio.net
                   </Link>
                 </li>
                 <li>
-                  <Link href="/privacy" className="text-muted-foreground hover:text-primary">
-                    Política de Privacidad
+                  <Link href="tel:+549115551234" className="hover:text-primary">
+                    +54 9 11 5551 234
                   </Link>
                 </li>
               </ul>
             </div>
-            <div>
-              <h3 className="font-semibold mb-3">Contacto</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>soporte@kioscoapp.com</li>
-                <li>+1 (555) 123-4567</li>
-              </ul>
-            </div>
           </div>
-          <Separator className="my-4" />
-          <div className="text-center text-sm text-muted-foreground">
-            <p>&copy; 2025 Kiosco App. Todos los derechos reservados.</p>
-          </div>
+          <Separator className="my-6" />
+          <p className="text-sm text-muted-foreground">
+            © {new Date().getFullYear()} Balanzio. SaaS de gestión y punto de venta para comercios.
+          </p>
         </div>
       </footer>
+
+      <Script
+        id="ld-json-software"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareJsonLd) }}
+      />
     </div>
   );
 }

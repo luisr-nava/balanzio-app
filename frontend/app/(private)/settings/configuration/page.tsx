@@ -17,7 +17,6 @@ import { useCategory, useCategoryForm } from "../category/hooks";
 import { PaymentMethodForm, PaymentMethodTable } from "../payment-method/components";
 import { usePaymentMethodMutations, usePaymentMethods } from "../payment-method/hooks";
 import type { PaymentMethod } from "../payment-method/interfaces";
-import { SettingsTabs } from "../components/settings-tabs";
 
 export default function ConfigurationPage() {
   const {
@@ -226,14 +225,6 @@ export default function ConfigurationPage() {
     </div>
   );
 
-  const preferencesView = (
-    <Card>
-      <CardContent className="py-6 text-sm text-muted-foreground">
-        No hay preferencias configurables todavía.
-      </CardContent>
-    </Card>
-  );
-
   const configurationView = (
     <div className="grid gap-4 md:grid-cols-[220px_1fr]">
       <div className="space-y-2 pt-6">
@@ -265,10 +256,5 @@ export default function ConfigurationPage() {
     </div>
   );
 
-  return (
-    <SettingsTabs
-      configurationContent={configurationView}
-      preferencesContent={preferencesView}
-    />
-  );
+  return configurationView;
 }

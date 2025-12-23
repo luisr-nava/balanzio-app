@@ -1,8 +1,10 @@
 export interface LoginResponse {
   token: string;
-  refreshToken: string;
   user: User;
-  projectId: string;
+  ownerId: string;
+  appKey: string;
+  plan: string;
+  subscriptionStatus: string;
 }
 
 export interface User {
@@ -10,15 +12,14 @@ export interface User {
   fullName: string;
   email: string;
   role: string;
+  appKey: string;
+  lastLogin: string;
   isVerify: boolean;
   failedLoginAttempts: number;
-  twoFactorEnabled: boolean;
-  planType?: string;
-  subscriptionPlan?: string;
-  subscriptionType?: string;
 }
 
 export interface RegisterResponse {
   message: string;
   projectId: string;
 }
+

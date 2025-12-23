@@ -35,12 +35,12 @@ export default function PrivacyPage() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4">Introducción</h2>
               <p className="text-muted-foreground mb-4">
-                En Kiosco App, nos comprometemos a proteger su privacidad y la seguridad de sus
+                En Balanzio, nos comprometemos a proteger su privacidad y la seguridad de sus
                 datos personales. Esta Política de Privacidad explica cómo recopilamos, usamos,
                 compartimos y protegemos su información cuando utiliza nuestra aplicación.
               </p>
               <p className="text-muted-foreground">
-                Al utilizar Kiosco App, usted acepta las prácticas descritas en esta política.
+                Al utilizar Balanzio, usted acepta las prácticas descritas en esta política.
                 Si no está de acuerdo con esta política, por favor no utilice nuestra aplicación.
               </p>
             </section>
@@ -197,7 +197,7 @@ export default function PrivacyPage() {
               </ul>
               <p className="text-muted-foreground mt-4">
                 Para ejercer estos derechos, puede acceder a la configuración de su cuenta o
-                contactarnos directamente en privacidad@kioscoapp.com
+                contactarnos directamente en privacidad@balanzio.net
               </p>
             </section>
 
@@ -276,8 +276,8 @@ export default function PrivacyPage() {
                 Privacidad, puede contactarnos:
               </p>
               <ul className="list-none text-muted-foreground space-y-2">
-                <li><strong>Oficial de Privacidad:</strong> privacy@kioscoapp.com</li>
-                <li><strong>Email general:</strong> soporte@kioscoapp.com</li>
+                <li><strong>Oficial de Privacidad:</strong> privacy@balanzio.net</li>
+                <li><strong>Email general:</strong> soporte@balanzio.net</li>
                 <li><strong>Teléfono:</strong> +1 (555) 123-4567</li>
                 <li><strong>Dirección:</strong> Calle Principal 123, Ciudad, País</li>
               </ul>
@@ -290,7 +290,7 @@ export default function PrivacyPage() {
 
             <div className="text-center text-sm text-muted-foreground">
               <p className="mb-4">
-                Su privacidad es fundamental para nosotros. Al utilizar Kiosco App, usted
+                Su privacidad es fundamental para nosotros. Al utilizar Balanzio, usted
                 reconoce que ha leído y comprendido esta Política de Privacidad.
               </p>
               <p>

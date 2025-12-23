@@ -1,4 +1,4 @@
-import { kioscoApi } from "@/lib/kioscoApi";
+import { authApi } from "@/lib/authApi";
 import { LoginResponse } from "../interfaces";
 import { AxiosError } from "axios";
 import { unwrapResponse } from "@/lib/api/utils";
@@ -11,17 +11,16 @@ export const loginActions = async (
   email: string,
   password: string,
 ): Promise<LoginResponse> => {
+  const project = process.env.NEXT_PUBLIC_PROJECT;
   try {
-    const { data } = await kioscoApi.post<LoginApiResponse>(
-      "/auth-client/login",
-      {
-        email,
-        password,
-      },
-    );
+    const { data } = await authApi.post<LoginApiResponse>("/auth/login", {
+      email,
+      password,
+      appKey: project,
+    });
     const payload = unwrapResponse<LoginResponse>(data);
 
-    if (!payload?.token || !payload?.user || !payload?.projectId) {
+    if (!payload?.token || !payload?.user) {
       const invalidResponseError: ApiError = Object.assign(
         new Error("Respuesta de login inválida: faltan datos de sesión."),
         { statusCode: 500 },
@@ -42,3 +41,4 @@ export const loginActions = async (
       : new Error("Error desconocido al iniciar sesión");
   }
 };
+

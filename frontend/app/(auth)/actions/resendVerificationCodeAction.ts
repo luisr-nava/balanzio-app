@@ -1,4 +1,4 @@
-import { kioscoApi } from "@/lib/kioscoApi";
+import { authApi } from "@/lib/authApi";
 import { AxiosError } from "axios";
 import { toApiError } from "@/lib/error-handler";
 import type { ApiError } from "@/lib/error-handler";
@@ -10,10 +10,12 @@ interface ResendCodeResponse {
 export const resendVerificationCodeAction = async (
   email: string,
 ): Promise<ResendCodeResponse> => {
+  const project = process.env.NEXT_PUBLIC_PROJECT;
   try {
-    const { data } = await kioscoApi.post<ResendCodeResponse>(
-      "/auth-client/resend-verification-code",
-      { email },
+    const { data } = await authApi.post<ResendCodeResponse>(
+      "/auth/resend-verification-code",
+
+      { email, appKey: project },
     );
     return data;
   } catch (error) {
@@ -31,3 +33,4 @@ export const resendVerificationCodeAction = async (
     throw error instanceof Error ? error : fallbackError;
   }
 };
+

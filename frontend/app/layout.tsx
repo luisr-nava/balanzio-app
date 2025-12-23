@@ -15,56 +15,55 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://kioscoapp.com";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://balanzio.net";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Kiosco App | Punto de venta y gestión para tu negocio",
-    template: "%s | Kiosco App",
+    default: "Balanzio | Software de gestión y punto de venta para comercios",
+    template: "%s | Balanzio",
   },
   description:
-    "Kiosco App es un sistema de gestión integral con punto de venta, inventario, compras y reportes para tiendas y kioscos.",
-  applicationName: "Kiosco App",
+    "Balanzio es el software de gestión para kioscos, almacenes y pymes que integra ventas, stock, facturación y reportes en tiempo real.",
+  applicationName: "Balanzio",
   keywords: [
-    "punto de venta",
-    "POS",
-    "inventario",
-    "kiosco",
-    "ventas",
-    "compras",
-    "facturación",
-    "gestión de tiendas",
+    "software de gestión para comercios",
+    "punto de venta para kioscos",
+    "control de stock",
+    "sistema para almacenes",
+    "facturación electrónica",
+    "pos para pymes",
+    "ventas e inventario",
   ],
-  authors: [{ name: "Kiosco App" }],
-  creator: "Kiosco App",
-  publisher: "Kiosco App",
+  authors: [{ name: "Balanzio" }],
+  creator: "Balanzio",
+  publisher: "Balanzio",
   alternates: {
     canonical: "/",
   },
   openGraph: {
     type: "website",
     url: siteUrl,
-    title: "Kiosco App | Punto de venta y gestión para tu negocio",
+    title: "Balanzio | Software de gestión y punto de venta para comercios",
     description:
-      "Gestiona ventas, inventario, compras y reportes con Kiosco App.",
-    siteName: "Kiosco App",
+      "Centraliza ventas, stock, finanzas y reportes con Balanzio, el sistema para kioscos, almacenes y pymes.",
+    siteName: "Balanzio",
     images: [
       {
-        url: "/kioscoapp-og.png",
+        url: "/balanzio-og.png",
         width: 1200,
         height: 630,
-        alt: "Kiosco App - Gestión y punto de venta",
+        alt: "Balanzio - Software de gestión para comercios",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Kiosco App | Punto de venta y gestión",
+    title: "Balanzio | Punto de venta y gestión",
     description:
-      "Sistema integral para ventas, inventario, compras y reportes.",
-    creator: "@kioscoapp",
-    images: ["/kioscoapp-og.png"],
+      "Sistema SaaS para ventas, inventario, facturación y finanzas de pequeños comercios.",
+    creator: "@balanzio",
+    images: ["/balanzio-og.png"],
   },
   icons: {
     icon: "/favicon.ico",
@@ -91,11 +90,11 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Organization",
-              name: "Kiosco App",
+              name: "Balanzio",
               url: siteUrl,
-              logo: `${siteUrl}/kioscoapp.png`,
+              logo: `${siteUrl}/balanzio.png`,
               description:
-                "Kiosco App es un sistema de punto de venta y gestión integral para tiendas y kioscos.",
+                "Balanzio es un software de gestión y punto de venta para kioscos, almacenes y pequeñas empresas.",
               sameAs: [],
             }),
           }}

@@ -1,4 +1,4 @@
-import { kioscoApi } from "@/lib/kioscoApi";
+import { authApi } from "@/lib/authApi";
 import { AxiosError } from "axios";
 import { toApiError } from "@/lib/error-handler";
 import type { ApiError } from "@/lib/error-handler";
@@ -10,10 +10,11 @@ interface VerifyCodeResponse {
 export const verifyCodeAction = async (
   code: string,
 ): Promise<VerifyCodeResponse> => {
+  const project = process.env.NEXT_PUBLIC_PROJECT;
   try {
-    const { data } = await kioscoApi.post<VerifyCodeResponse>(
-      "/auth-client/verify-code",
-      { code },
+    const { data } = await authApi.post<VerifyCodeResponse>(
+      "/auth/verify-code",
+      { code, appKey: project },
     );
     return data;
   } catch (error) {
@@ -29,3 +30,4 @@ export const verifyCodeAction = async (
     throw error instanceof Error ? error : fallbackError;
   }
 };
+

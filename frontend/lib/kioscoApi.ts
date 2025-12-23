@@ -4,7 +4,8 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 const kioscoApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL:
+    process.env.NEXT_PUBLIC_KIOSCO_API_URL || process.env.NEXT_PUBLIC_API_URL,
 });
 
 kioscoApi.interceptors.request.use((config) => {
@@ -22,7 +23,7 @@ kioscoApi.interceptors.response.use(
     const requestUrl = error.config?.url || "";
 
     // Evitar recargar la vista en endpoints de autenticación (ej. login)
-    const isAuthEndpoint = requestUrl.includes("/auth-client/login");
+    const isAuthEndpoint = requestUrl.includes("/auth/login");
 
     if (status === 401 && !isAuthEndpoint) {
       Cookies.remove("token");
@@ -33,3 +34,4 @@ kioscoApi.interceptors.response.use(
 );
 
 export { kioscoApi };
+
