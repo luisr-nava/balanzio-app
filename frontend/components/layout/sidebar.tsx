@@ -17,6 +17,7 @@ import {
   ChevronDown,
   ArrowLeftRight,
   FileText,
+  FilePieChart,
   Receipt,
   TrendingDown,
   TrendingUp,
@@ -50,6 +51,12 @@ export const menuItems = [
     href: "/dashboard/sales",
     icon: ShoppingCart,
     description: "Punto de venta rápido para la tienda activa.",
+  },
+  {
+    label: "Reportes de caja",
+    href: "/cash-register/reports",
+    icon: FilePieChart,
+    description: "Consulta arqueos cerrados y descarga los archivos oficiales.",
   },
 ];
 

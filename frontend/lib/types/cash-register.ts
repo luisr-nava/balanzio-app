@@ -10,4 +10,5 @@ export interface CashRegister {
 export interface OpenCashRegisterDto {
   shopId: string;
   openingAmount: number;
+  openedByName: string;
 }

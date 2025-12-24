@@ -7,6 +7,7 @@ import { Modal, ModalFooter } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/app/(auth)/hooks";
 import { cashRegisterApi } from "@/lib/api/cash-register.api";
 import { getErrorMessage } from "@/lib/error-handler";
 
@@ -25,6 +26,9 @@ export function OpenCashRegisterModal({
   onOpened,
   onClose,
 }: OpenCashRegisterModalProps) {
+  const { user } = useAuth();
+  const openedByName = user?.fullName?.trim() ?? "";
+  const hasResponsibleName = Boolean(openedByName.length);
   const queryClient = useQueryClient();
   const [openingAmount, setOpeningAmount] = useState<string>("");
 
@@ -47,6 +51,7 @@ export function OpenCashRegisterModal({
         openingAmount: Number.isNaN(parsedAmount)
           ? 0
           : Math.max(parsedAmount, 0),
+        openedByName,
       }),
     onSuccess: (response) => {
       toast.success("Caja abierta", {
@@ -67,7 +72,21 @@ export function OpenCashRegisterModal({
   });
 
   const canSubmit =
-    Boolean(shopId) && !Number.isNaN(parsedAmount) && parsedAmount >= 0;
+    Boolean(shopId) &&
+    !Number.isNaN(parsedAmount) &&
+    parsedAmount >= 0 &&
+    hasResponsibleName;
+
+  const handleOpenClick = () => {
+    if (!hasResponsibleName) {
+      toast.error(
+        "No se detectó el responsable en el store. Revisa tu perfil y vuelve a intentarlo.",
+      );
+      return;
+    }
+
+    openMutation.mutate();
+  };
 
   return (
     <Modal
@@ -81,7 +100,10 @@ export function OpenCashRegisterModal({
     >
       <div className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Tienda seleccionada: <span className="font-medium text-foreground">{shopName || shopId}</span>
+          Tienda seleccionada:{" "}
+          <span className="font-medium text-foreground">
+            {shopName || shopId}
+          </span>
         </p>
 
         <div className="space-y-2">
@@ -101,11 +123,21 @@ export function OpenCashRegisterModal({
           <p className="text-xs text-muted-foreground">
             Este será el efectivo de inicio para la caja de la tienda.
           </p>
+          {!hasResponsibleName ? (
+            <p className="text-xs text-destructive">
+              No se detecta el responsable en el store. Actualiza tu perfil para
+              poder abrir la caja.
+            </p>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Responsable: <span className="font-medium">{openedByName}</span>
+            </p>
+          )}
         </div>
       </div>
       <ModalFooter className="justify-end">
         <Button
-          onClick={() => openMutation.mutate()}
+          onClick={handleOpenClick}
           disabled={!canSubmit || openMutation.isPending}
         >
           {openMutation.isPending ? "Abriendo..." : "Abrir caja"}

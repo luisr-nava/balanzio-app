@@ -1,6 +1,11 @@
 import { kioscoApi } from "@/lib/kioscoApi";
 import { unwrapResponse } from "./utils";
 import type { CashRegister, OpenCashRegisterDto } from "@/lib/types/cash-register";
+import type {
+  CashRegisterReport,
+  CashRegisterReportsApiResponse,
+  PeriodFilter,
+} from "@/lib/types/cash-register-report";
 
 const CASH_REGISTER_BASE_PATH = "/cash-register";
 
@@ -47,5 +52,20 @@ export const cashRegisterApi = {
       }
       throw error;
     }
+  },
+
+  getReports: async (period: PeriodFilter): Promise<CashRegisterReport[]> => {
+    if (!period) {
+      throw new Error("Periodo de reporte es requerido");
+    }
+
+    const { data } = await kioscoApi.get<CashRegisterReportsApiResponse>(
+      `${CASH_REGISTER_BASE_PATH}/reports`,
+      {
+        params: { period },
+      },
+    );
+
+    return unwrapResponse(data);
   },
 };
