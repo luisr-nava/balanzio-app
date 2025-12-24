@@ -1,6 +1,7 @@
 import { Injectable, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import type { JwtPayload } from '../auth-client/interfaces/jwt-payload.interface';
+import type { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ReportsService {
@@ -45,25 +46,35 @@ export class ReportsService {
       include: { shopProduct: { include: { product: true } } },
     });
 
-    const productStats = saleItems.reduce(
-      (acc, item) => {
-        const key = item.shopProductId;
-        if (!acc[key]) {
-          acc[key] = {
-            shopProduct: item.shopProduct,
-            totalQuantity: 0,
-            totalRevenue: 0,
-          };
-        }
-        acc[key].totalQuantity += item.quantity;
-        acc[key].totalRevenue += item.total;
+    type SaleItemWithProduct = Prisma.SaleItemGetPayload<{
+      include: { shopProduct: { include: { product: true } } };
+    }>;
+
+    type ProductStat = {
+      shopProduct: SaleItemWithProduct['shopProduct'];
+      totalQuantity: number;
+      totalRevenue: number;
+    };
+
+    const productStats = saleItems.reduce<Record<string, ProductStat>>((acc, item) => {
+      const key = item.shopProductId;
+      const existing = acc[key];
+      if (!existing) {
+        acc[key] = {
+          shopProduct: item.shopProduct,
+          totalQuantity: item.quantity,
+          totalRevenue: item.total,
+        };
         return acc;
-      },
-      {} as any,
-    );
+      }
+
+      existing.totalQuantity += item.quantity;
+      existing.totalRevenue += item.total;
+      return acc;
+    }, {});
 
     return Object.values(productStats)
-      .sort((a: any, b: any) => b.totalQuantity - a.totalQuantity)
+      .sort((a, b) => b.totalQuantity - a.totalQuantity)
       .slice(0, limit);
   }
 

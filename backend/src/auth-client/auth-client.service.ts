@@ -12,9 +12,12 @@ export class AuthClientService {
 
   constructor(private readonly http: HttpService) {}
 
-  private handleError(error: any, defaultMessage: string) {
+  private handleError(error: unknown, defaultMessage: string) {
+    const message = error instanceof Error ? error.message : String(error);
+    const stack = error instanceof Error ? error.stack : undefined;
+
     // Loguear el error completo internamente para debugging
-    this.logger.error(`Error en Auth Service: ${error.message}`, error.stack);
+    this.logger.error(`Error en Auth Service: ${message}`, stack);
 
     if (axios.isAxiosError(error) && error.response) {
       const { status, data } = error.response;
@@ -22,7 +25,7 @@ export class AuthClientService {
       // En producción, filtrar información sensible
       if (envs.nodeEnv === 'production') {
         // Solo retornar mensajes de error seguros
-        const safeMessage = data?.message || defaultMessage;
+        const safeMessage = (data as { message?: string })?.message || defaultMessage;
         throw new HttpException({ message: safeMessage }, status);
       }
 
@@ -40,10 +43,16 @@ export class AuthClientService {
         { headers: { Authorization: `Bearer ${token}` } },
       );
       return data;
-    } catch (error) {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response) {
+        throw new HttpException(
+          error.response.data,
+          error.response.status,
+        );
+      }
       throw new HttpException(
-        error.response?.data || { message: 'Error al obtener empleados' },
-        error.response?.status || 500,
+        { message: 'Error al obtener empleados' },
+        500,
       );
     }
   }
@@ -60,7 +69,7 @@ export class AuthClientService {
         { headers: { Authorization: `Bearer ${token}` } },
       );
       return data;
-    } catch (error) {
+    } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
         const { status, data } = error.response;
         throw new HttpException(data, status);
@@ -81,7 +90,7 @@ export class AuthClientService {
         { headers: { Authorization: `Bearer ${token}` } },
       );
       return data;
-    } catch (error) {
+    } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
         const { status, data } = error.response;
         throw new HttpException(data, status);
@@ -97,7 +106,7 @@ export class AuthClientService {
         updateUserDto,
       );
       return data;
-    } catch (error) {
+    } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
         const { status, data } = error.response;
         throw new HttpException(data, status);

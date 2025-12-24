@@ -68,12 +68,13 @@ export class CustomLoggerService implements NestLoggerService {
     });
   }
 
-  log(message: string, context?: string, meta?: any) {
+  log(message: string, context?: string, meta?: Record<string, unknown>) {
     // Silenciado
   }
 
-  error(message: string, trace?: string, context?: string, meta?: any) {
-    this.logger.error(message, { context, trace, ...meta });
+  error(message: string, trace?: string, context?: string, meta?: Record<string, unknown>) {
+    const metadata = meta ?? {};
+    this.logger.error(message, { context, trace, ...metadata });
   }
 
   warn(message: string, context?: string) {
@@ -89,12 +90,16 @@ export class CustomLoggerService implements NestLoggerService {
   }
 
   // Método específico para eventos de seguridad
-  security(event: string, details: any, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium') {
+  security(
+    event: string,
+    details: Record<string, unknown>,
+    severity: 'low' | 'medium' | 'high' | 'critical' = 'medium',
+  ) {
     // Silenciado para evitar logs no deseados
   }
 
   // Método para auditoría de acciones sensibles
-  audit(action: string, userId: string, details: any) {
+  audit(action: string, userId: string, details: Record<string, unknown>) {
     // Silenciado para evitar logs no deseados
   }
 }

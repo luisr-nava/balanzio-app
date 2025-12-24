@@ -24,6 +24,13 @@ interface PurchaseQuery {
   endDate?: string;
 }
 
+type PurchaseWithItems = Prisma.PurchaseGetPayload<{
+  include: {
+    shop: { select: { ownerId: true } };
+    items: { include: { shopProduct: true } };
+  };
+}>;
+
 @Injectable()
 export class PurchaseService {
   constructor(
@@ -289,7 +296,7 @@ export class PurchaseService {
       throw new ForbiddenException('No tenés tiendas asignadas');
     }
 
-    const filters: any = {
+    const filters: Prisma.PurchaseWhereInput = {
       shopId: { in: targetShopIds },
       status: 'COMPLETED', // Por defecto solo mostrar compras completadas
     };
@@ -299,13 +306,14 @@ export class PurchaseService {
     }
 
     if (startDate || endDate) {
-      filters.purchaseDate = {};
+      const purchaseDate: Prisma.DateTimeFilter = {};
       if (startDate) {
-        filters.purchaseDate.gte = new Date(startDate);
+        purchaseDate.gte = new Date(startDate);
       }
       if (endDate) {
-        filters.purchaseDate.lte = new Date(endDate);
+        purchaseDate.lte = new Date(endDate);
       }
+      filters.purchaseDate = purchaseDate;
     }
 
     const [purchases, total] = await Promise.all([
@@ -566,7 +574,7 @@ export class PurchaseService {
 
   private async updateWithItems(
     purchaseId: string,
-    purchase: any,
+    purchase: PurchaseWithItems,
     updatePurchaseDto: UpdatePurchaseDto,
     user: JwtPayload,
   ) {
@@ -771,7 +779,7 @@ export class PurchaseService {
       throw new ForbiddenException('No tenés tiendas asignadas');
     }
 
-    const filters: any = {
+    const filters: Prisma.PurchaseDeletionHistoryWhereInput = {
       shopId: { in: targetShopIds },
     };
 

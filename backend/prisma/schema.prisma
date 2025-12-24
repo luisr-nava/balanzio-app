@@ -805,6 +805,7 @@ model CashRegister {
   // Relaciones
   shop              Shop             @relation(fields: [shopId], references: [id])
   movements         CashMovement[]
+  exports           CashRegisterExport[]
 
   @@index([shopId, status])
   @@index([openedAt])
@@ -859,6 +860,25 @@ enum CashMovementType {
   WITHDRAWAL    // Retiro de efectivo
   DEPOSIT       // Depósito adicional
   ADJUSTMENT    // Ajuste manual
+}
+
+enum CashRegisterExportFormat {
+  PDF
+  EXCEL
+}
+
+model CashRegisterExport {
+  id             String                    @id @default(uuid())
+  cashRegisterId String
+  format         CashRegisterExportFormat
+  url            String
+  contentType    String
+  expiresAt      DateTime
+  createdAt      DateTime                  @default(now())
+
+  cashRegister CashRegister @relation(fields: [cashRegisterId], references: [id])
+
+  @@index([cashRegisterId, format, expiresAt])
 }
 
 enum SubscriptionStatus {

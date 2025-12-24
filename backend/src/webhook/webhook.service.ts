@@ -11,6 +11,45 @@ import { UpdateWebhookDto } from './dto/update-webhook.dto';
 import { UpdateStockThresholdDto } from './dto/update-stock-threshold.dto';
 import type { JwtPayload } from '../auth-client/interfaces/jwt-payload.interface';
 import * as crypto from 'crypto';
+import { WebhookEvent as PrismaWebhookEvent } from '@prisma/client';
+
+type StockAlertPayload = {
+  event: PrismaWebhookEvent;
+  timestamp: string;
+  data: {
+    alert: {
+      id: string;
+      currentStock: number | null;
+      threshold: number;
+      createdAt: Date;
+    };
+    product: {
+      id: string;
+      name: string;
+      description: string | null;
+      barcode: string | null;
+    };
+    shopProduct: {
+      id: string;
+      costPrice: number;
+      salePrice: number;
+      stock: number | null;
+    };
+    shop: {
+      id: string;
+      name: string;
+    };
+  };
+};
+
+type WebhookDeliveryTarget = {
+  id: string;
+  url: string;
+  event: PrismaWebhookEvent;
+  secret: string | null;
+  retryAttempts: number;
+  timeoutMs: number;
+};
 
 @Injectable()
 export class WebhookService {
@@ -260,11 +299,11 @@ export class WebhookService {
     const currentStock = shopProduct.stock || 0;
 
     // Determinar evento
-    let event: WebhookEvent | null = null;
+    let event: PrismaWebhookEvent | null = null;
     if (currentStock === 0) {
-      event = WebhookEvent.STOCK_OUT;
+      event = PrismaWebhookEvent.STOCK_OUT;
     } else if (currentStock <= threshold) {
-      event = WebhookEvent.LOW_STOCK;
+      event = PrismaWebhookEvent.LOW_STOCK;
     }
 
     if (!event) {
@@ -305,7 +344,7 @@ export class WebhookService {
     }
 
     // Preparar payload
-    const payload = {
+    const payload: StockAlertPayload = {
       event,
       timestamp: new Date().toISOString(),
       data: {
@@ -341,6 +380,14 @@ export class WebhookService {
         event,
         isActive: true,
       },
+      select: {
+        id: true,
+        url: true,
+        event: true,
+        secret: true,
+        retryAttempts: true,
+        timeoutMs: true,
+      },
     });
 
     // Disparar webhooks
@@ -356,7 +403,7 @@ export class WebhookService {
   }
 
   // Método para disparar un webhook específico
-  private async triggerWebhook(webhook: any, payload: any) {
+  private async triggerWebhook(webhook: WebhookDeliveryTarget, payload: StockAlertPayload) {
     let attempts = 0;
     let success = false;
     let responseStatus: number | null = null;
@@ -368,7 +415,7 @@ export class WebhookService {
 
       try {
         // Generar firma HMAC si hay secret
-        let headers: any = {
+        const headers: Record<string, string> = {
           'Content-Type': 'application/json',
           'User-Agent': 'KioscoApp-Webhook/1.0',
         };
@@ -399,8 +446,8 @@ export class WebhookService {
         } else {
           error = `HTTP ${responseStatus}: ${responseBody}`;
         }
-      } catch (err: any) {
-        error = err.message;
+      } catch (err: unknown) {
+        error = err instanceof Error ? err.message : 'Unknown error';
         this.logger.error(
           `Webhook ${webhook.id} attempt ${attempts} failed: ${error}`,
         );
@@ -430,7 +477,7 @@ export class WebhookService {
     }
   }
 
-  private generateSignature(payload: any, secret: string): string {
+  private generateSignature(payload: StockAlertPayload, secret: string): string {
     const hmac = crypto.createHmac('sha256', secret);
     hmac.update(JSON.stringify(payload));
     return hmac.digest('hex');

@@ -16,6 +16,7 @@ import { JwtAuthGuard } from '../auth-client/guards/jwt-auth.guard';
 import { GetUser } from '../auth-client/decorators/get-user.decorator';
 import { CommonQueryWithDatesDto } from '../common/dto';
 import type { JwtPayload } from '../auth-client/interfaces/jwt-payload.interface';
+import { SaleReturnStatus } from '@prisma/client';
 
 @Controller('sale-return')
 export class SaleReturnController {
@@ -35,10 +36,14 @@ export class SaleReturnController {
     @Query('shopId') shopId?: string,
     @Query('status') status?: string,
   ) {
+    const parsedStatus = status && Object.values(SaleReturnStatus).includes(status as SaleReturnStatus)
+      ? (status as SaleReturnStatus)
+      : undefined;
+
     return this.saleReturnService.findAll(user, {
       ...query,
       shopId,
-      status,
+      status: parsedStatus,
     });
   }
 

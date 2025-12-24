@@ -14,6 +14,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { JwtPayload } from '../auth-client/interfaces/jwt-payload.interface';
 import { CreateMeasurementUnitDto } from './dto/create-measurement-unit.dto';
 import { AssignMeasurementUnitDto } from './dto/assign-measurement-unit.dto';
+import { UpdateMeasurementUnitDto } from './dto/update-measurement-unit.dto';
 
 type MeasurementUnitWithShops = Prisma.MeasurementUnitGetPayload<{
   include: { shopMeasurementUnits: { select: { shopId: true } } };
@@ -198,6 +199,84 @@ export class MeasurementUnitService {
     return {
       message: 'Unidad asignada correctamente',
       data: this.mapUnit(updated!),
+    };
+  }
+
+  async update(
+    measurementUnitId: string,
+    dto: UpdateMeasurementUnitDto,
+    user: JwtPayload,
+  ) {
+    const unit = await this.prisma.measurementUnit.findUnique({
+      where: { id: measurementUnitId },
+      include: {
+        shopMeasurementUnits: {
+          include: {
+            shop: { select: { id: true, ownerId: true, projectId: true } },
+          },
+        },
+      },
+    });
+
+    if (!unit) {
+      throw new NotFoundException('La unidad de medida no existe');
+    }
+
+    if (unit.isDefault || unit.isBaseUnit) {
+      throw new BadRequestException(
+        'No se pueden actualizar unidades base o por defecto',
+      );
+    }
+
+    if (user.role !== 'OWNER') {
+      throw new ForbiddenException('Solo un OWNER puede actualizar unidades');
+    }
+
+    this.ensureUnitOwnership(unit, user);
+
+    const nextCategory = dto.category ?? unit.category;
+    const nextBaseUnit =
+      dto.baseUnit ??
+      (dto.category ? this.baseUnitByCategory[dto.category] : unit.baseUnit);
+    const nextCode = dto.code ? this.normalizeCode(dto.code) : unit.code;
+    const currentConversion =
+      typeof unit.conversionFactor === 'number'
+        ? unit.conversionFactor
+        : Number(unit.conversionFactor);
+    const conversionFactor = dto.conversionFactor ?? currentConversion;
+
+    this.ensureCategoryBaseUnit(nextCategory, nextBaseUnit);
+    this.validateConversion(conversionFactor, unit.isBaseUnit);
+
+    const duplicatedCode = await this.prisma.measurementUnit.findFirst({
+      where: {
+        code: nextCode,
+        baseUnit: nextBaseUnit,
+        NOT: { id: measurementUnitId },
+      },
+    });
+
+    if (duplicatedCode) {
+      throw new ConflictException(
+        'Ya existe una unidad con este código para la misma unidad base',
+      );
+    }
+
+    const updated = await this.prisma.measurementUnit.update({
+      where: { id: measurementUnitId },
+      data: {
+        name: dto.name?.trim() ?? unit.name,
+        code: nextCode,
+        category: nextCategory,
+        baseUnit: nextBaseUnit,
+        conversionFactor: new Prisma.Decimal(conversionFactor),
+      },
+      include: { shopMeasurementUnits: { select: { shopId: true } } },
+    });
+
+    return {
+      message: 'Unidad de medida actualizada correctamente',
+      data: this.mapUnit(updated),
     };
   }
 

@@ -10,6 +10,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CashRegisterService } from '../cash-register/cash-register.service';
 import type { JwtPayload } from '../auth-client/interfaces/jwt-payload.interface';
 import { StockService } from '../stock/stock.service';
+import { SaleReturnStatus } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 
 @Injectable()
 export class SaleReturnService {
@@ -94,7 +96,7 @@ export class SaleReturnService {
     user: JwtPayload,
     filters: {
       shopId?: string;
-      status?: string;
+      status?: SaleReturnStatus;
       startDate?: string;
       endDate?: string;
       page?: number;
@@ -106,7 +108,7 @@ export class SaleReturnService {
     const skip = (page - 1) * limit;
 
     // Construir condiciones de filtro
-    const where: any = {
+    const where: Prisma.SaleReturnWhereInput = {
       shop: {
         ownerId: user.id,
         projectId: user.projectId,
@@ -122,13 +124,14 @@ export class SaleReturnService {
     }
 
     if (filters.startDate || filters.endDate) {
-      where.returnDate = {};
+      const returnDate: Prisma.DateTimeFilter = {};
       if (filters.startDate) {
-        where.returnDate.gte = new Date(filters.startDate);
+        returnDate.gte = new Date(filters.startDate);
       }
       if (filters.endDate) {
-        where.returnDate.lte = new Date(filters.endDate);
+        returnDate.lte = new Date(filters.endDate);
       }
+      where.returnDate = returnDate;
     }
 
     const [returns, total] = await Promise.all([

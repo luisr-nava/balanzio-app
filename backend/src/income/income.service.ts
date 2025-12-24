@@ -7,6 +7,7 @@ import {
 import { CreateIncomeDto } from './dto/create-income.dto';
 import { UpdateIncomeDto } from './dto/update-income.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import type { Prisma } from '@prisma/client';
 import type { JwtPayload } from '../auth-client/interfaces/jwt-payload.interface';
 
 @Injectable()
@@ -115,7 +116,7 @@ export class IncomeService {
     const skip = (page - 1) * limit;
 
     // Construir condiciones de filtro
-    const where: any = {
+    const where: Prisma.IncomeWhereInput = {
       shop: {
         ownerId: user.id,
         projectId: user.projectId,
@@ -127,13 +128,14 @@ export class IncomeService {
     }
 
     if (filters.startDate || filters.endDate) {
-      where.date = {};
+      const dateFilter: Prisma.DateTimeFilter = {};
       if (filters.startDate) {
-        where.date.gte = new Date(filters.startDate);
+        dateFilter.gte = new Date(filters.startDate);
       }
       if (filters.endDate) {
-        where.date.lte = new Date(filters.endDate);
+        dateFilter.lte = new Date(filters.endDate);
       }
+      where.date = dateFilter;
     }
 
     const [incomes, total] = await Promise.all([

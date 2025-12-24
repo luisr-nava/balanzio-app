@@ -11,6 +11,7 @@ import { CreateSaleDto } from './dto/create-sale.dto';
 import { UpdateSaleDto } from './dto/update-sale.dto';
 import type { JwtPayload } from '../auth-client/interfaces/jwt-payload.interface';
 import { StockService } from '../stock/stock.service';
+import type { Prisma } from '@prisma/client';
 
 @Injectable()
 export class SaleService {
@@ -309,12 +310,13 @@ export class SaleService {
       throw new ForbiddenException('No ten�s acceso a esta tienda');
     }
 
-    const where: any = { shopId };
+    const where: Prisma.SaleWhereInput = { shopId };
 
     if (startDate || endDate) {
-      where.saleDate = {};
-      if (startDate) where.saleDate.gte = new Date(startDate);
-      if (endDate) where.saleDate.lte = new Date(endDate);
+      const saleDate: Prisma.DateTimeFilter = {};
+      if (startDate) saleDate.gte = new Date(startDate);
+      if (endDate) saleDate.lte = new Date(endDate);
+      where.saleDate = saleDate;
     }
 
     return this.prisma.sale.findMany({

@@ -143,19 +143,20 @@ export class CashRegisterService {
       throw new BadRequestException('La caja ya está cerrada');
     }
 
-    const { closingAmount, totals } = this.calculateClosingFromMovements(
+    const { expectedAmount, totals } = this.calculateExpectedFromMovements(
       cashRegister.openingAmount,
       cashRegister.movements,
     );
-    const difference = dto.actualAmount - closingAmount;
+    const actualAmount = dto.actualAmount ?? expectedAmount;
+    const difference = actualAmount - expectedAmount;
 
     // Cerrar caja
     const closedCashRegister = await this.prisma.cashRegister.update({
       where: { id: cashRegisterId },
       data: {
         status: 'CLOSED',
-        closingAmount,
-        actualAmount: dto.actualAmount,
+        closingAmount: expectedAmount,
+        actualAmount,
         difference,
         closedAt: new Date(),
         closedBy: user.id,
@@ -219,7 +220,7 @@ export class CashRegisterService {
   ) {
     await this.getCashRegisterWithAccess(cashRegisterId, user);
 
-    const where: any = { cashRegisterId };
+    const where: Prisma.CashMovementWhereInput = { cashRegisterId };
 
     if (startDate || endDate) {
       where.createdAt = {};
@@ -715,7 +716,7 @@ export class CashRegisterService {
     };
   }
 
-  private calculateClosingFromMovements(
+  private calculateExpectedFromMovements(
     openingAmount: number,
     movements: Pick<CashMovement, 'type' | 'amount'>[],
   ) {
@@ -765,9 +766,9 @@ export class CashRegisterService {
       totals.purchases + totals.expenses + totals.returns + totals.withdrawals;
     totals.netIncome = totals.totalIncome - totals.totalExpense;
 
-    const closingAmount = openingAmount + totalMovements;
+    const expectedAmount = openingAmount + totalMovements;
 
-    return { closingAmount, totals };
+    return { expectedAmount, totals };
   }
 
   private getAutoClosingDeadline(openedAt: Date, timezone: string) {
@@ -830,7 +831,7 @@ export class CashRegisterService {
       }
 
       const registerMovements = movementsByRegister.get(register.id) ?? [];
-      const { closingAmount } = this.calculateClosingFromMovements(
+      const { expectedAmount } = this.calculateExpectedFromMovements(
         register.openingAmount,
         registerMovements,
       );
@@ -849,8 +850,8 @@ export class CashRegisterService {
           where: { id: register.id },
           data: {
             status: 'CLOSED',
-            closingAmount,
-            actualAmount: closingAmount,
+            closingAmount: expectedAmount,
+            actualAmount: expectedAmount,
             difference: 0,
             closedAt: new Date(),
             closedBy: register.employeeId,

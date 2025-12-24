@@ -5,6 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import type { Prisma } from '@prisma/client';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { CreatePaymentDto } from './dto/create-payment.dto';
@@ -73,7 +74,7 @@ export class CustomerService {
     }
 
     const normalizedSearch = search?.trim();
-    const where: any = { shopId };
+    const where: Prisma.CustomerWhereInput = { shopId };
     if (!includeInactive) {
       where.isActive = true;
     }

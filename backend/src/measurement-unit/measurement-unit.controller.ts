@@ -5,12 +5,14 @@ import {
   Get,
   Param,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
 import { MeasurementUnitService } from './measurement-unit.service';
 import { CreateMeasurementUnitDto } from './dto/create-measurement-unit.dto';
 import { AssignMeasurementUnitDto } from './dto/assign-measurement-unit.dto';
+import { UpdateMeasurementUnitDto } from './dto/update-measurement-unit.dto';
 import { JwtAuthGuard } from '../auth-client/guards/jwt-auth.guard';
 import { GetUser } from '../auth-client/decorators/get-user.decorator';
 import type { JwtPayload } from '../auth-client/interfaces/jwt-payload.interface';
@@ -39,6 +41,15 @@ export class MeasurementUnitController {
     @GetUser() user: JwtPayload,
   ) {
     return this.measurementUnitService.assignToShops(id, dto, user);
+  }
+
+  @Put(':id')
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateMeasurementUnitDto,
+    @GetUser() user: JwtPayload,
+  ) {
+    return this.measurementUnitService.update(id, dto, user);
   }
 
   @Delete(':id')

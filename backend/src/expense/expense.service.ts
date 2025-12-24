@@ -8,6 +8,7 @@ import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import type { JwtPayload } from '../auth-client/interfaces/jwt-payload.interface';
+import type { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ExpenseService {
@@ -115,7 +116,7 @@ export class ExpenseService {
     const skip = (page - 1) * limit;
 
     // Construir condiciones de filtro
-    const where: any = {
+    const where: Prisma.ExpenseWhereInput = {
       shop: {
         ownerId: user.id,
         projectId: user.projectId,
@@ -127,13 +128,14 @@ export class ExpenseService {
     }
 
     if (filters.startDate || filters.endDate) {
-      where.date = {};
+      const dateFilter: Prisma.DateTimeFilter = {};
       if (filters.startDate) {
-        where.date.gte = new Date(filters.startDate);
+        dateFilter.gte = new Date(filters.startDate);
       }
       if (filters.endDate) {
-        where.date.lte = new Date(filters.endDate);
+        dateFilter.lte = new Date(filters.endDate);
       }
+      where.date = dateFilter;
     }
 
     const [expenses, total] = await Promise.all([

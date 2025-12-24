@@ -9,6 +9,7 @@ import { CreateSupplierCategoryDto } from './dtos/create-supplier-category.dto';
 import { UpdateSupplierCategoryDto } from './dtos/update-supplier-category.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtPayload } from '../auth-client/interfaces/jwt-payload.interface';
+import type { Prisma } from '@prisma/client';
 
 interface SupplierCategoryQuery {
   search?: string;
@@ -145,7 +146,7 @@ export class SupplierCategoryService {
       throw new ForbiddenException('No tenés tiendas asignadas');
     }
 
-    const filters: any = {
+    const filters: Prisma.SupplierCategoryWhereInput = {
       shopId: { in: targetShopIds },
     };
 
