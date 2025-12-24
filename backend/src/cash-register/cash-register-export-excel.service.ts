@@ -37,42 +37,145 @@ export class CashRegisterExportExcelService {
     currencyFormat: string,
   ) {
     const sheet = workbook.addWorksheet('Resumen');
-    this.insertLogo(sheet);
-
-    sheet.addRow([]);
-    sheet.addRow([{ value: 'Arqueo de Caja', font: { bold: true, size: 15 } }]);
-    sheet.addRow([]);
-    const headerRow = sheet.addRow(['Campo', 'Valor']);
-    headerRow.font = { bold: true };
 
     const { cashRegister, totals, responsibleName } = context;
+
+    // =========================
+    // HEADER (logo + info)
+    // =========================
+    for (let i = 1; i <= 4; i++) {
+      sheet.getRow(i).height = 20;
+    }
+
+    // Logo
+    sheet.mergeCells('A1:A4');
+    this.insertLogo(sheet, {
+      tlCol: 0.3,
+      tlRow: 0.5,
+      width: 140,
+      height: 70,
+    });
+    sheet.getColumn('A').width = 30;
+
+    // Título
+    sheet.mergeCells('B1:J1');
+    const titleCell = sheet.getCell('B1');
+    titleCell.value = 'Arqueo de Caja';
+    titleCell.font = {
+      name: 'Calibri',
+      size: 18,
+      bold: true,
+      color: { argb: 'FF1E3A8A' },
+    };
+    titleCell.alignment = {
+      horizontal: 'center',
+      vertical: 'middle',
+    };
+
+    // Info
+    sheet.mergeCells('B2:J4');
+    const infoCell = sheet.getCell('B2');
+    infoCell.value =
+      `Tienda: ${cashRegister.shop.name}\n` +
+      `Fecha: ${this.formatDateOnly(cashRegister.openedAt)}\n` +
+      `Responsable: ${responsibleName ?? 'N/D'}`;
+
+    infoCell.font = {
+      name: 'Calibri',
+      size: 14,
+    };
+    infoCell.alignment = {
+      horizontal: 'center',
+      vertical: 'middle',
+      wrapText: true,
+    };
+
+    // =========================
+    // TABLA
+    // =========================
+    sheet.addRow([]);
+    sheet.getColumn('B').width = 24; 
+    sheet.getColumn('C').width = 24; 
+    sheet.getColumn('D').width = 24; 
+    sheet.getColumn('E').width = 24; 
+    sheet.getColumn('F').width = 24; 
+    sheet.getColumn('G').width = 24; 
+    sheet.getColumn('H').width = 24; 
+    sheet.getColumn('I').width = 24; 
+    sheet.getColumn('J').width = 24; 
+
+    const tableHeader = sheet.addRow([
+      'Fecha',
+      'Hora de apertura',
+      'Monto de apertura',
+      'Total ingresos',
+      'Total egresos',
+      'Balance esperado',
+      'Balance real',
+      'Diferencia',
+      'Hora de cierre',
+      'Total en caja',
+    ]);
+
+    tableHeader.font = {
+      bold: true,
+      name: 'Calibri',
+      size: 13,
+    };
+
+    tableHeader.eachCell((cell) => {
+      cell.alignment = {
+        horizontal: 'center',
+        vertical: 'middle',
+      };
+    });
+
     const expectedBalance = cashRegister.closingAmount ?? totals.expectedAmount;
 
-    const rows: Array<[string, string | number]> = [
-      ['Tienda', cashRegister.shop.name],
-      ['Responsable', responsibleName ?? 'N/D'],
-      ['Fecha apertura', this.formatDateTime(cashRegister.openedAt)],
-      [
-        'Fecha cierre',
-        this.formatDateTime(cashRegister.closedAt ?? new Date()),
-      ],
-      ['Monto de apertura', cashRegister.openingAmount],
-      ['Total ingresos', totals.totalIncome],
-      ['Total egresos', totals.totalExpense],
-      ['Balance esperado', expectedBalance],
-      ['Balance real', cashRegister.actualAmount ?? 0],
-      ['Diferencia', cashRegister.difference ?? 0],
-    ];
+    const opened = this.splitDateTime(cashRegister.openedAt);
+    const closed = cashRegister.closedAt
+      ? this.splitDateTime(cashRegister.closedAt)
+      : null;
 
-    rows.forEach(([label, value]) => {
-      const row = sheet.addRow([label, value]);
-      if (typeof value === 'number') {
-        row.getCell(2).numFmt = currencyFormat;
+    const dataRow = sheet.addRow([
+      this.formatDateOnly(cashRegister.openedAt),
+      opened.time,
+      cashRegister.openingAmount,
+      totals.totalIncome,
+      totals.totalExpense,
+      expectedBalance,
+      cashRegister.actualAmount ?? 0,
+      cashRegister.difference ?? 0,
+      closed?.time ?? '-',
+      cashRegister.actualAmount ?? 0,
+    ]);
+
+    dataRow.eachCell((cell, col) => {
+      cell.alignment = {
+        horizontal: 'center',
+        vertical: 'middle',
+      };
+
+      // Columnas con moneda
+      if ([3, 4, 5, 6, 7, 8, 10].includes(col)) {
+        cell.numFmt = currencyFormat;
+      }
+
+      // Diferencia negativa en rojo
+      if (col === 8 && typeof cell.value === 'number' && cell.value < 0) {
+        cell.font = { color: { argb: 'FFDC2626' } };
       }
     });
 
-    sheet.views = [{ state: 'frozen', ySplit: headerRow.number }];
-    this.autoWidth(sheet);
+    // =========================
+    // FREEZE + PROTECCIÓN
+    // =========================
+    sheet.views = [{ state: 'frozen', ySplit: tableHeader.number }];
+
+    this.unlockSheetCells(sheet);
+    const lockColumns = Math.max(sheet.columnCount, 10);
+    this.lockCellRange(sheet, 1, 1, tableHeader.number, lockColumns);
+    this.protectSheet(sheet);
   }
 
   private buildMovementsSheet(
@@ -81,56 +184,156 @@ export class CashRegisterExportExcelService {
     currencyFormat: string,
   ) {
     const sheet = workbook.addWorksheet('Movimientos');
-    this.insertLogo(sheet);
+    const formattedDate = this.formatDateOnly(new Date());
+    const responsibleText = context.responsibleName ?? 'No disponible';
+    // Aseguramos que existan las filas
+    for (let i = 1; i <= 4; i++) {
+      sheet.getRow(i).height = 20;
+    }
 
-    sheet.addRow([]);
-    sheet.addRow([
-      { value: 'Detalle de movimientos', font: { bold: true, size: 15 } },
-    ]);
-    sheet.addRow([]);
+    // Merge visual de celdas
+    sheet.mergeCells('A1:A4');
+    this.insertLogo(sheet, {
+      tlCol: 0.3, // ⬅️ empuja a la derecha
+      tlRow: 0.5, // ⬇️ empuja hacia abajo
+      width: 140,
+      height: 70,
+    });
+    sheet.getColumn('A').width = 30;
 
-    const header = sheet.addRow([
+    sheet.mergeCells('B1:E1');
+
+    const titleCell = sheet.getCell('B1');
+    titleCell.value = 'Detalle de movimientos';
+    titleCell.font = {
+      name: 'Calibri',
+      size: 18, // 👈 más grande
+      bold: true,
+    };
+    titleCell.alignment = {
+      vertical: 'middle',
+      horizontal: 'center',
+    };
+
+    sheet.getColumn('B').width = 20;
+    sheet.getColumn('C').width = 20;
+    sheet.getColumn('D').width = 40;
+    sheet.getColumn('E').width = 40;
+
+    sheet.mergeCells('B2:E4');
+
+    const infoText =
+      `Tienda: ${context.cashRegister.shop.name}\n` +
+      `Fecha: ${formattedDate}\n` +
+      `Responsable: ${responsibleText}`;
+
+    const infoCell = sheet.getCell('B2');
+    infoCell.value = infoText;
+    infoCell.font = {
+      name: 'Calibri',
+      size: 14, // 👈 más chico que el título
+    };
+    infoCell.alignment = {
+      vertical: 'middle',
+      horizontal: 'center',
+      wrapText: true,
+    };
+
+    const header = sheet.addRow([]);
+    header.hidden = true;
+    sheet.addRow([]);
+    const tableHeader = sheet.addRow([
       'Fecha',
+      'Hora',
       'Tipo',
       'Referencia',
-      'Ingreso',
-      'Egreso',
-      'Balance parcial',
-      'Usuario',
+      'Monto',
     ]);
-    header.font = { bold: true };
+    tableHeader.font = { bold: true, name: 'Calibri', size: 14 };
 
-    sheet.views = [{ state: 'frozen', ySplit: header.number }];
-
-    let runningBalance = context.cashRegister.openingAmount;
+    sheet.views = [{ state: 'frozen', ySplit: tableHeader.number }];
 
     context.cashRegister.movements.forEach((movement) => {
-      const signedAmount = this.getSignedAmount(movement.type, movement.amount);
-      runningBalance += signedAmount;
-      const incomeAmount =
+      const { date, time } = this.splitDateTime(movement.createdAt);
+
+      const amount =
         movement.type === 'OPENING'
           ? movement.amount
-          : signedAmount > 0
-            ? signedAmount
-            : null;
-      const expenseAmount = signedAmount < 0 ? Math.abs(signedAmount) : null;
+          : this.getSignedAmount(movement.type, movement.amount);
 
       const row = sheet.addRow([
-        this.formatDateTime(movement.createdAt),
+        date,
+        time,
         this.mapMovementType(movement.type),
         this.getMovementReference(movement),
-        incomeAmount,
-        expenseAmount,
-        runningBalance,
-        movement.userId,
+        amount,
       ]);
 
-      row.getCell(4).numFmt = currencyFormat;
+      for (let col = 1; col <= 5; col++) {
+        // A=1, E=5
+        const cell = sheet.getCell(7, col);
+        cell.alignment = {
+          horizontal: 'center',
+          vertical: 'middle',
+        };
+      }
+      for (let row = 8; row <= 9; row++) {
+        for (let col = 1; col <= 4; col++) {
+          // A=1, D=4
+          const cell = sheet.getCell(row, col);
+          cell.alignment = {
+            horizontal: 'center',
+            vertical: 'middle',
+          };
+        }
+      }
       row.getCell(5).numFmt = currencyFormat;
-      row.getCell(6).numFmt = currencyFormat;
-    });
 
-    this.autoWidth(sheet);
+      if (amount < 0) {
+        row.getCell(5).font = { color: { argb: 'FFDC2626' } };
+      }
+    });
+    if (context.cashRegister.closedAt) {
+      const { date, time } = this.splitDateTime(context.cashRegister.closedAt);
+
+      const closeRow = sheet.addRow([
+        date,
+        time,
+        'Cierre',
+        'Cierre de caja',
+        context.cashRegister.actualAmount,
+      ]);
+
+      closeRow.getCell(5).numFmt = currencyFormat;
+
+      // 🎨 estilo visual para destacar el cierre
+      closeRow.font = { bold: true };
+      closeRow.getCell(5).font = {
+        bold: true,
+        color: { argb: 'FF16A34A' }, // verde
+      };
+
+      closeRow.eachCell((cell) => {
+        cell.alignment = {
+          horizontal: 'center',
+          vertical: 'middle',
+        };
+      });
+    }
+
+    const lockColumns = Math.max(sheet.columnCount, 7);
+    const headerRowsToLock = 4;
+    this.unlockSheetCells(sheet);
+    this.lockCellRange(sheet, 1, 1, 2, lockColumns);
+    this.lockCellRange(sheet, 1, 3, headerRowsToLock, lockColumns);
+    this.lockCellRange(
+      sheet,
+      tableHeader.number,
+      1,
+      tableHeader.number,
+      lockColumns,
+    );
+    this.protectSheet(sheet);
   }
 
   private getMovementReference(
@@ -217,6 +420,15 @@ export class CashRegisterExportExcelService {
     }).format(dt);
   }
 
+  private formatDateOnly(date: Date | string) {
+    const dt = typeof date === 'string' ? new Date(date) : date;
+    return new Intl.DateTimeFormat('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).format(dt);
+  }
+
   private getCurrencyFormat(currency: string) {
     const symbol =
       new Intl.NumberFormat('es-ES', { style: 'currency', currency })
@@ -247,7 +459,57 @@ export class CashRegisterExportExcelService {
     });
   }
 
-  private insertLogo(sheet: ExcelJS.Worksheet) {
+  private unlockSheetCells(sheet: ExcelJS.Worksheet) {
+    sheet.eachRow((row) => {
+      row.eachCell((cell) => {
+        cell.protection = { locked: false };
+      });
+    });
+  }
+
+  private lockCellRange(
+    sheet: ExcelJS.Worksheet,
+    startRow: number,
+    startCol: number,
+    endRow: number,
+    endCol: number,
+  ) {
+    for (let row = startRow; row <= endRow; row += 1) {
+      for (let col = startCol; col <= endCol; col += 1) {
+        sheet.getCell(row, col).protection = { locked: true };
+      }
+    }
+  }
+
+  private protectSheet(sheet: ExcelJS.Worksheet) {
+    void sheet.protect('', {
+      selectLockedCells: true,
+      selectUnlockedCells: true,
+      formatCells: false,
+      formatColumns: false,
+      formatRows: false,
+      insertColumns: false,
+      insertRows: false,
+      deleteColumns: false,
+      deleteRows: false,
+      sort: false,
+      autoFilter: false,
+      objects: false,
+      scenarios: false,
+    });
+  }
+
+  private insertLogo(
+    sheet: ExcelJS.Worksheet,
+    options?: {
+      tlRow?: number;
+      tlCol?: number;
+      brRow?: number;
+      brCol?: number;
+      width?: number;
+      height?: number;
+    },
+  ) {
     const logo = this.getLogoBuffer();
     if (!logo) {
       return;
@@ -258,10 +520,18 @@ export class CashRegisterExportExcelService {
       extension: 'png',
     });
 
-    sheet.addImage(imageId, {
-      tl: { col: 0, row: 0 },
-      ext: { width: 160, height: 60 },
-    });
+    const imageOptions: ExcelJS.ImagePosition = {
+      tl: {
+        col: options?.tlCol ?? 0,
+        row: options?.tlRow ?? 0,
+      },
+      ext: {
+        width: options?.width ?? 160,
+        height: options?.height ?? 60,
+      },
+    };
+
+    sheet.addImage(imageId, imageOptions);
   }
 
   private getLogoBuffer(): NodeBuffer | null {
@@ -283,5 +553,16 @@ export class CashRegisterExportExcelService {
 
     this.logoBuffer = readFileSync(logoPath);
     return this.logoBuffer;
+  }
+  private splitDateTime(date: Date) {
+    const d = new Date(date);
+    return {
+      date: new Intl.DateTimeFormat('es-ES').format(d),
+      time: new Intl.DateTimeFormat('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      }).format(d),
+    };
   }
 }

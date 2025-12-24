@@ -149,34 +149,58 @@ export class CashRegisterExportPdfService {
           table: {
             widths: ['*', 'auto'],
             body: [
-              [
-                'Monto de apertura',
-                this.formatCurrency(cashRegister.openingAmount, currency),
-              ],
-              [
-                'Total ingresos',
-                this.formatCurrency(totals.totalIncome, currency),
-              ],
-              [
-                'Total egresos',
-                this.formatCurrency(totals.totalExpense, currency),
-              ],
-              [
-                'Balance esperado',
-                this.formatCurrency(
-                  cashRegister.closingAmount ?? totals.expectedAmount,
-                  currency,
-                ),
-              ],
-              [
-                'Monto real declarado',
-                this.formatCurrency(cashRegister.actualAmount ?? 0, currency),
-              ],
-              [
-                'Diferencia',
-                this.formatCurrency(cashRegister.difference ?? 0, currency),
-              ],
-              ['Estado del cierre', differenceStatus],
+              ...[
+                {
+                  label: 'Monto de apertura',
+                  value: this.formatCurrency(
+                    cashRegister.openingAmount,
+                    currency,
+                  ),
+                },
+                {
+                  label: 'Total ingresos',
+                  value: this.formatCurrency(totals.totalIncome, currency),
+                },
+                {
+                  label: 'Total egresos',
+                  value: this.formatCurrency(totals.totalExpense, currency),
+                },
+                {
+                  label: 'Balance esperado',
+                  value: this.formatCurrency(
+                    cashRegister.closingAmount ?? totals.expectedAmount,
+                    currency,
+                  ),
+                },
+                {
+                  label: 'Monto real declarado',
+                  value: this.formatCurrency(
+                    cashRegister.actualAmount ?? 0,
+                    currency,
+                  ),
+                },
+                {
+                  label: 'Diferencia',
+                  value: this.formatCurrency(
+                    cashRegister.difference ?? 0,
+                    currency,
+                  ),
+                },
+                {
+                  label: 'Estado del cierre',
+                  value: differenceStatus,
+                  valueAlignment: 'center',
+                },
+              ].map(({ label, value }) => [
+                {
+                  text: label,
+                  alignment: 'left',
+                } as TableCell,
+                {
+                  text: value,
+                  alignment: 'right',
+                } as TableCell,
+              ]),
             ],
           },
           layout: {
