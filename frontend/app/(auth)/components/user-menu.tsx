@@ -121,7 +121,7 @@ export function UserMenu() {
           {["light", "dark", "system"].map((option) => (
             <Button
               key={option}
-              variant={theme === option ? "secondary" : "ghost"}
+              variant={theme === option ? "default" : "ghost"}
               size="sm"
               className="text-xs"
               onClick={() => setTheme(option)}>
