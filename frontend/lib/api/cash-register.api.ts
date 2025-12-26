@@ -1,5 +1,6 @@
 import { kioscoApi } from "@/lib/kioscoApi";
 import { unwrapResponse } from "./utils";
+import { getTodayIsoDate } from "@/lib/date-utils";
 import type { CashRegister, OpenCashRegisterDto } from "@/lib/types/cash-register";
 import type {
   CashRegisterReport,
@@ -54,18 +55,52 @@ export const cashRegisterApi = {
     }
   },
 
-  getReports: async (period: PeriodFilter): Promise<CashRegisterReport[]> => {
+  getReports: async (params: {
+    period: PeriodFilter;
+    date?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    month?: string;
+    year?: string;
+  }): Promise<{ reports: CashRegisterReport[]; message?: string }> => {
+    const { period, date, dateFrom, dateTo, month, year } = params;
+
     if (!period) {
       throw new Error("Periodo de reporte es requerido");
+    }
+
+    const queryParams: Record<string, string> = { period };
+
+    if (period === "day") {
+      queryParams.date = date ?? getTodayIsoDate();
+    }
+
+    if (dateFrom) {
+      queryParams.dateFrom = dateFrom;
+    }
+
+    if (dateTo) {
+      queryParams.dateTo = dateTo;
+    }
+
+    if (period === "month" && month) {
+      queryParams.month = month;
+    }
+
+    if ((period === "month" || period === "year") && year) {
+      queryParams.year = year;
     }
 
     const { data } = await kioscoApi.get<CashRegisterReportsApiResponse>(
       `${CASH_REGISTER_BASE_PATH}/reports`,
       {
-        params: { period },
+        params: queryParams,
       },
     );
 
-    return unwrapResponse(data);
+    const reports = unwrapResponse<CashRegisterReport[]>(data);
+    const message = "message" in data ? data.message : undefined;
+
+    return { reports, message };
   },
 };

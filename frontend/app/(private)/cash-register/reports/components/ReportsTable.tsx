@@ -13,8 +13,10 @@ import { DownloadReportButton } from "./DownloadReportButton";
 
 interface ReportsTableProps {
   reports: CashRegisterReport[];
+  closingAmount?: number;
   openedByName: string;
   isFetching: boolean;
+  emptyMessage?: string;
 }
 
 const currencyFormatter = new Intl.NumberFormat("es-AR", {
@@ -38,22 +40,28 @@ const formatDateTime = (value: string) => {
 };
 
 const getExpectedBalance = (report: CashRegisterReport) => {
-  const expected = report.actualAmount - report.difference;
-  return Number.isFinite(expected) ? expected : report.openingAmount;
+  const expected = (report.actualAmount ?? 0) - (report.difference ?? 0);
+  if (Number.isFinite(expected)) {
+    return expected;
+  }
+  return report.openingAmount ?? 0;
 };
 
 export function ReportsTable({
   reports,
   openedByName,
   isFetching,
+  emptyMessage,
 }: ReportsTableProps) {
   if (!reports.length) {
     return (
       <div className="rounded-2xl border border-dashed border-muted/40 bg-card/70 p-8 text-center text-sm text-muted-foreground">
         <p className="text-lg font-semibold text-foreground">
-          No hay arqueos cerrados en este periodo.
+          {emptyMessage ?? "No hay arqueos cerrados en este periodo."}
         </p>
-        <p>Intenta otro periodo o espera a que el próximo cierre esté disponible.</p>
+        <p>
+          Intenta otro periodo o espera a que el próximo cierre esté disponible.
+        </p>
       </div>
     );
   }
@@ -73,20 +81,31 @@ export function ReportsTable({
               <TableHead>Apertura</TableHead>
               <TableHead>Cierre</TableHead>
               <TableHead>Responsable</TableHead>
-              <TableHead className="text-right">Balance esperado</TableHead>
-              <TableHead className="text-right">Balance real</TableHead>
+              <TableHead className="text-right">Apertura de caja</TableHead>
+              <TableHead className="text-right">Cierre de caja</TableHead>
               <TableHead className="text-right">Diferencia</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {reports.map((report) => {
-              const expectedBalance = getExpectedBalance(report);
+              const openingAmount = report.openingAmount ?? 0;
+              const expectedAmount = getExpectedBalance(report);
+              const closingAmount =
+                report.actualAmount ?? report ?? openingAmount;
+              const rawDifference =
+                closingAmount === openingAmount
+                  ? 0
+                  : closingAmount - expectedAmount;
+              const differenceAmount = Number.isFinite(rawDifference)
+                ? rawDifference
+                : 0;
               const differenceClass =
-                report.difference < 0 ? "text-destructive" : "text-foreground";
+                differenceAmount < 0 ? "text-destructive" : "text-foreground";
+              const rowKey = report.cashRegisterId;
 
               return (
-                <TableRow key={report.id}>
+                <TableRow key={rowKey}>
                   <TableCell>
                     <span className="font-semibold text-foreground">
                       {report.shopName}
@@ -108,25 +127,25 @@ export function ReportsTable({
                     </span>
                   </TableCell>
                   <TableCell className="text-right font-medium">
-                    {currencyFormatter.format(expectedBalance)}
+                    {currencyFormatter.format(openingAmount)}
                   </TableCell>
                   <TableCell className="text-right font-medium">
-                    {currencyFormatter.format(report.actualAmount)}
+                    {currencyFormatter.format(report.closingAmount!)}
                   </TableCell>
                   <TableCell
                     className={`text-right font-semibold ${differenceClass}`}>
-                    {currencyFormatter.format(report.difference)}
+                    {currencyFormatter.format(differenceAmount)}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
                       <DownloadReportButton
-                        reportId={report.id}
+                        cashRegisterId={report.cashRegisterId}
                         shopName={report.shopName}
                         closedAt={report.closedAt}
                         type="pdf"
                       />
                       <DownloadReportButton
-                        reportId={report.id}
+                        cashRegisterId={report.cashRegisterId}
                         shopName={report.shopName}
                         closedAt={report.closedAt}
                         type="excel"
@@ -142,3 +161,4 @@ export function ReportsTable({
     </div>
   );
 }
+

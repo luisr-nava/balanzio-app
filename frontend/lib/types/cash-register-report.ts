@@ -3,6 +3,7 @@ export type CashRegisterReportPeriod = PeriodFilter;
 
 export interface CashRegisterReport {
   id: string;
+  cashRegisterId: string;
   shopName: string;
   openedAt: string;
   closedAt: string;
@@ -11,4 +12,7 @@ export interface CashRegisterReport {
   difference: number;
 }
 
-export type CashRegisterReportsApiResponse = CashRegisterReport[];
+export interface CashRegisterReportsApiResponse {
+  data: CashRegisterReport[];
+  message?: string;
+}

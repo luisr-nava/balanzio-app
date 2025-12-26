@@ -6,6 +6,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useState } from "react";
 import { Toaster } from "sonner";
 import { AuthProvider } from "./(auth)/components/auth-provider";
+import { PublicRouteGuard } from "@/components/guards/public-route-guard";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
@@ -17,7 +18,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         defaultTheme="system"
         enableSystem
         disableTransitionOnChange>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <PublicRouteGuard>{children}</PublicRouteGuard>
+        </AuthProvider>
         <Toaster position="top-right" richColors closeButton />
       </NextThemesProvider>
 
@@ -25,4 +28,3 @@ export function Providers({ children }: { children: React.ReactNode }) {
     </QueryClientProvider>
   );
 }
-

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { useRouter, usePathname } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { shopApi } from "@/lib/api/shop.api";
 import type { ShopDetail } from "@/lib/types/shop";
@@ -21,8 +20,6 @@ interface StoreSetupGuardProps {
  * Si no tiene tienda, muestra un modal para crear/seleccionar.
  */
 export function StoreSetupGuard({ children }: StoreSetupGuardProps) {
-  const router = useRouter();
-  const pathname = usePathname();
   const queryClient = useQueryClient();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const {
@@ -37,8 +34,12 @@ export function StoreSetupGuard({ children }: StoreSetupGuardProps) {
     shouldForceStoreSelection,
     setShouldForceStoreSelection,
   } = useShopStore();
+  const shopStorePersist = useShopStore.persist;
   const [showOpenCashModal, setShowOpenCashModal] = useState(false);
-  const selectedShopId = shouldForceStoreSelection ? "" : activeShopId;
+  const [isShopStoreHydrated, setIsShopStoreHydrated] = useState(
+    () => shopStorePersist.hasHydrated(),
+  );
+  const selectedShopId = activeShopId;
   const userHasAccessToSelectedShop =
     Boolean(selectedShopId) &&
     storedShops.some((shop) => shop.id === selectedShopId);
@@ -84,6 +85,19 @@ export function StoreSetupGuard({ children }: StoreSetupGuardProps) {
     window.addEventListener("open-store-selector", handler);
     return () => window.removeEventListener("open-store-selector", handler);
   }, [setActiveShop, setActiveShopId, setShouldForceStoreSelection]);
+
+  useEffect(() => {
+    if (shopStorePersist.hasHydrated()) {
+      setIsShopStoreHydrated(true);
+      return;
+    }
+
+    const unsubscribe = shopStorePersist.onFinishHydration(() => {
+      setIsShopStoreHydrated(true);
+    });
+
+    return unsubscribe;
+  }, [shopStorePersist]);
 
   // Actualizar tienda activa cuando el detalle llega
   useEffect(() => {
@@ -165,11 +179,6 @@ export function StoreSetupGuard({ children }: StoreSetupGuardProps) {
     shopHasOpenCash,
   ]);
 
-  const hasStoredShops = (storedShops?.length ?? 0) > 0;
-  const hasValidActiveShop =
-    Boolean(selectedShopId) &&
-    storedShops.some((shop) => shop.id === selectedShopId);
-
   useEffect(() => {
     if (selectedShopId && !userHasAccessToSelectedShop) {
       setActiveShopId("");
@@ -208,7 +217,7 @@ export function StoreSetupGuard({ children }: StoreSetupGuardProps) {
       null;
 
   // Mostrar loading mientras verifica
-  if (authLoading || shopsLoading) {
+  if (authLoading || shopsLoading || !isShopStoreHydrated) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -219,20 +228,10 @@ export function StoreSetupGuard({ children }: StoreSetupGuardProps) {
     );
   }
 
-  const needsSelection =
-    isAuthenticated &&
-    (shouldForceStoreSelection ||
-      !hasValidActiveShop ||
-      !hasStoredShops ||
-      !userHasAccessToSelectedShop ||
-      !selectedShopId);
-
+  const needsSelection = isAuthenticated && !activeShopId;
   const handleSelectStore = (storeId: string) => {
     setActiveShopId(storeId);
     setShouldForceStoreSelection(false);
-    if (pathname === "/dashboard/setup") {
-      router.push("/dashboard");
-    }
   };
 
   if (needsSelection) {

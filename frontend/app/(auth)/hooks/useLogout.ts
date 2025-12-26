@@ -1,5 +1,4 @@
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { authApi } from "@/lib/authApi";
 import { useAuthStore } from "../store/slices/auth.slice";
@@ -9,7 +8,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { myShopsQueryKey } from "@/app/(private)/hooks/useMyShops";
 
 export const useLogout = () => {
-  const router = useRouter();
   const clearAuth = useAuthStore((state) => state.clearAuth);
   const clearShops = useShopStore((state) => state.clearShops);
   const clearNotifications = useNotificationsStore(
@@ -28,37 +26,29 @@ export const useLogout = () => {
       }
     },
     onSuccess: () => {
-      // Limpiar estado de autenticación y tiendas
       clearAuth();
       clearShops();
       clearNotifications();
       queryClient.removeQueries({ queryKey: myShopsQueryKey, exact: true });
 
-      // Toast de éxito
       toast.success("Sesión cerrada", {
         description: "Has cerrado sesión correctamente",
       });
 
       console.log("Logout exitoso");
-
-      // Redirigir al login
-      router.push("/login");
     },
     onError: (error: unknown) => {
       console.error("Error en logout:", error);
 
-      // Toast de advertencia (logout de todos modos)
       toast.warning("Sesión cerrada localmente", {
         description:
           "No se pudo contactar con el servidor, pero la sesión se cerró localmente.",
       });
 
-      // Limpiar de todos modos
       clearAuth();
       clearShops();
       clearNotifications();
       queryClient.removeQueries({ queryKey: myShopsQueryKey, exact: true });
-      router.push("/login");
     },
   });
 

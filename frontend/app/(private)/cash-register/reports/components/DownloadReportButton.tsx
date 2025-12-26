@@ -9,7 +9,7 @@ import { FileText, FileSpreadsheet, Download } from "lucide-react";
 type ReportFileType = "pdf" | "excel";
 
 interface Props {
-  reportId: string;
+  cashRegisterId: string;
   shopName: string;
   closedAt: string;
   type: ReportFileType;
@@ -61,7 +61,7 @@ const buildFileName = ({
 };
 
 export function DownloadReportButton({
-  reportId,
+  cashRegisterId,
   shopName,
   closedAt,
   type,
@@ -69,33 +69,52 @@ export function DownloadReportButton({
   const [isDownloading, setIsDownloading] = useState(false);
   const Icon = iconMap[type];
 
+  const downloadReport = async (
+    fileType: ReportFileType,
+    id: string,
+  ): Promise<void> => {
+    if (!id) {
+      console.error(
+        "No hay cashRegisterId disponible para descargar el reporte.",
+      );
+      return;
+    }
+
+    const sanitizedBase = apiBaseUrl.replace(/\/$/, "");
+    const url = `${sanitizedBase || ""}/cash-register/${id}/report/${fileType}`;
+    const token = Cookies.get("token");
+
+    const response = await fetch(url, {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    });
+
+    if (!response.ok) {
+      throw new Error("No se pudo descargar el archivo");
+    }
+
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = objectUrl;
+    link.download = buildFileName({ shopName, closedAt, type: fileType });
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(objectUrl);
+  };
+
+  const downloadPdf = (id: string) => downloadReport("pdf", id);
+  const downloadExcel = (id: string) => downloadReport("excel", id);
+
   const handleDownload = async () => {
     if (isDownloading) {
       return;
     }
     setIsDownloading(true);
-    const sanitizedBase = apiBaseUrl.replace(/\/$/, "");
-    const url = `${sanitizedBase || ""}/cash-register/${reportId}/report/${type}`;
-    const token = Cookies.get("token");
-
     try {
-      const response = await fetch(url, {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      });
-
-      if (!response.ok) {
-        throw new Error("No se pudo descargar el archivo");
-      }
-
-      const blob = await response.blob();
-      const objectUrl = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = objectUrl;
-      link.download = buildFileName({ shopName, closedAt, type });
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(objectUrl);
+      const startDownload =
+        type === "pdf" ? downloadPdf : downloadExcel;
+      await startDownload(cashRegisterId);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Error desconocido";
