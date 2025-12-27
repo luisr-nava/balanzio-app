@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CashRegisterService } from '../cash-register/cash-register.service';
-import { WebhookService } from '../webhook/webhook.service';
 import { CreateSaleDto } from './dto/create-sale.dto';
 import { UpdateSaleDto } from './dto/update-sale.dto';
 import type { JwtPayload } from '../auth-client/interfaces/jwt-payload.interface';
@@ -18,7 +17,6 @@ export class SaleService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cashRegisterService: CashRegisterService,
-    private readonly webhookService: WebhookService,
     private readonly stockService: StockService,
   ) {}
 
@@ -26,11 +24,38 @@ export class SaleService {
     // Verificar acceso a la tienda
     const shop = await this.prisma.shop.findUnique({
       where: { id: dto.shopId },
+      select: { id: true, ownerId: true, projectId: true },
     });
 
     if (!shop || shop.projectId !== user.projectId) {
       throw new ForbiddenException('No ten�s acceso a esta tienda');
     }
+
+    if (user.role === 'OWNER' && shop.ownerId !== user.id) {
+      throw new ForbiddenException('No ten�s acceso a esta tienda');
+    }
+
+    const isEmployeeActor = user.role === 'EMPLOYEE' || user.role === 'MANAGER';
+    const employeeWhere: Prisma.EmployeeWhereInput = { id: user.id };
+
+    if (isEmployeeActor) {
+      employeeWhere.employeeShops = {
+        some: {
+          shopId: dto.shopId,
+        },
+      };
+    }
+
+    const resolvedEmployee = await this.prisma.employee.findFirst({
+      where: employeeWhere,
+      select: { id: true },
+    });
+
+    if (isEmployeeActor && !resolvedEmployee) {
+      throw new ForbiddenException('No ten�s permiso para esta tienda');
+    }
+
+    const employeeIdForSale = resolvedEmployee?.id;
 
     // Verificar que el método de pago exista y pertenezca a la tienda
     const paymentMethod = await this.prisma.paymentMethod.findUnique({
@@ -180,7 +205,7 @@ export class SaleService {
         data: {
           shopId: dto.shopId,
           customerId: dto.customerId,
-          employeeId: user.id, // El usuario que hace la venta
+          ...(employeeIdForSale ? { employeeId: employeeIdForSale } : {}),
           subtotal,
           discountAmount,
           taxAmount: totalTaxAmount,
@@ -285,18 +310,6 @@ export class SaleService {
       return sale;
     });
 
-    // 6. Verificar stock y disparar webhooks (despu�s de la transacci�n)
-    for (const item of dto.items) {
-      try {
-        await this.webhookService.checkStockAndNotify(item.shopProductId);
-      } catch (error) {
-        // No fallar la venta si el webhook falla, solo loguear
-        console.error(
-          `Error checking stock for webhook on product ${item.shopProductId}:`,
-          error,
-        );
-      }
-    }
 
     return sale;
   }
@@ -518,18 +531,6 @@ export class SaleService {
       return updatedSale;
     });
 
-    // 4. Verificar stock y disparar webhooks (despu�s de devolver el stock)
-    for (const item of sale.items) {
-      try {
-        await this.webhookService.checkStockAndNotify(item.shopProductId);
-      } catch (error) {
-        // No fallar la cancelaci�n si el webhook falla, solo loguear
-        console.error(
-          `Error checking stock for webhook on product ${item.shopProductId}:`,
-          error,
-        );
-      }
-    }
 
     return updatedSale;
   }

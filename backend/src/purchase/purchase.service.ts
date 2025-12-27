@@ -9,7 +9,6 @@ import { UpdatePurchaseDto } from './dto/update-purchase.dto';
 import { DeletePurchaseDto } from './dto/delete-purchase.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CashRegisterService } from '../cash-register/cash-register.service';
-import { WebhookService } from '../webhook/webhook.service';
 import { JwtPayload } from '../auth-client/interfaces/jwt-payload.interface';
 import { Prisma } from '@prisma/client';
 import { StockService } from '../stock/stock.service';
@@ -36,7 +35,6 @@ export class PurchaseService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cashRegisterService: CashRegisterService,
-    private readonly webhookService: WebhookService,
     private readonly stockService: StockService,
   ) {}
 
@@ -133,18 +131,6 @@ export class PurchaseService {
       return purchase;
     });
 
-    // Verificar stock y disparar webhooks (después de la transacción)
-    for (const item of dto.items) {
-      try {
-        await this.webhookService.checkStockAndNotify(item.shopProductId);
-      } catch (error) {
-        // No fallar la compra si el webhook falla, solo loguear
-        console.error(
-          `Error checking stock for webhook on product ${item.shopProductId}:`,
-          error,
-        );
-      }
-    }
 
     return purchase;
   }
@@ -750,17 +736,6 @@ export class PurchaseService {
       };
     });
 
-    // Verificar stock y disparar webhooks para todos los productos modificados
-    for (const shopProductId of modifiedProductIds) {
-      try {
-        await this.webhookService.checkStockAndNotify(shopProductId);
-      } catch (error) {
-        console.error(
-          `Error checking stock for webhook on product ${shopProductId}:`,
-          error,
-        );
-      }
-    }
 
     return result;
   }
@@ -892,17 +867,6 @@ export class PurchaseService {
       });
     });
 
-    // Verificar stock y disparar webhooks para todos los productos modificados
-    for (const shopProductId of modifiedProductIds) {
-      try {
-        await this.webhookService.checkStockAndNotify(shopProductId);
-      } catch (error) {
-        console.error(
-          `Error checking stock for webhook on product ${shopProductId}:`,
-          error,
-        );
-      }
-    }
 
     return {
       message: 'Compra cancelada correctamente',

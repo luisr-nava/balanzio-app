@@ -41,7 +41,6 @@ model Shop {
   customers               Customer[]
   cashRegisters           CashRegister[]
   paymentMethods          PaymentMethod[]
-  webhooks                Webhook[]
   stockAlerts             StockAlert[]
   measurementUnits        ShopMeasurementUnit[]
 }
@@ -643,17 +642,34 @@ model NotificationPreference {
 }
 
 model Notification {
-  id        String   @id @default(uuid())
+  id        String           @id @default(uuid())
   userId    String
   shopId    String
-  type      String
+  type      NotificationType
   title     String
   message   String
-  read      Boolean  @default(false)
-  createdAt DateTime @default(now())
 
+  read      Boolean          @default(false)
+  readAt    DateTime?
+
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  deletedAt DateTime?
+
+  @@index([userId, read])
   @@index([userId, createdAt])
   @@index([shopId])
+}
+
+enum NotificationType {
+  LOW_STOCK
+  STOCK_OUT
+  SALE_CREATED
+  PURCHASE_CREATED
+  PRODUCT_CREATED
+  PRODUCT_UPDATED
+  CUSTOMER_CREATED
 }
 
 model Customer {
@@ -892,50 +908,6 @@ enum MeasurementBaseUnit {
   L
 }
 
-// Webhooks para notificaciones
-model Webhook {
-  id       String       @id @default(uuid())
-  shopId   String
-  name     String // Nombre descriptivo del webhook
-  url      String // URL a la que se enviarán las notificaciones
-  event    WebhookEvent // Tipo de evento que dispara el webhook
-  isActive Boolean      @default(true)
-  secret   String? // Secret para firmar el payload (opcional)
-
-  // Configuración
-  retryAttempts Int @default(3)
-  timeoutMs     Int @default(5000)
-
-  // Metadata
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  createdBy String? // User ID
-
-  // Relaciones
-  shop Shop         @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  logs WebhookLog[]
-
-  @@index([shopId, event, isActive])
-}
-
-model WebhookLog {
-  id             String       @id @default(uuid())
-  webhookId      String
-  event          WebhookEvent
-  payload        String       @db.Text // JSON payload enviado
-  responseStatus Int? // HTTP status code de la respuesta
-  responseBody   String?      @db.Text // Respuesta del servidor
-  success        Boolean      @default(false)
-  attempts       Int          @default(1)
-  error          String?      @db.Text
-  createdAt      DateTime     @default(now())
-
-  webhook Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
-
-  @@index([webhookId, createdAt])
-  @@index([event, success])
-}
-
 model StockAlert {
   id            String @id @default(uuid())
   shopId        String
@@ -952,6 +924,8 @@ model StockAlert {
   // Metadata
   createdAt  DateTime  @default(now())
   notifiedAt DateTime? // Cuándo se envió la notificación
+
+  notificationId String? // Referencia opcional que puede guardarse en el servicio
 
   // Relaciones
   shop        Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
@@ -974,14 +948,4 @@ model Subscription {
 
   @@index([ownerId])
   @@index([status])
-}
-
-enum WebhookEvent {
-  LOW_STOCK // Stock bajo detectado
-  STOCK_OUT // Producto sin stock
-  SALE_CREATED // Nueva venta creada
-  PURCHASE_CREATED // Nueva compra creada
-  PRODUCT_CREATED // Nuevo producto creado
-  PRODUCT_UPDATED // Producto actualizado
-  CUSTOMER_CREATED // Nuevo cliente creado
 }

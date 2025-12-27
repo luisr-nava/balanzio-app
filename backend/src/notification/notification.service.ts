@@ -1,60 +1,83 @@
 import { Injectable, ForbiddenException } from '@nestjs/common';
+import { NotificationType } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { NotificationsGateway } from './notification.gateway';
 import { UpdateNotificationPreferencesDto } from './dto/update-preferences.dto';
 
-interface LowStockContext {
+export interface CreateNotificationDto {
+  userId: string;
   shopId: string;
-  productId: string;
-  productName: string;
-  stockBefore: number;
-  stockAfter: number;
-  ownerId: string;
+  type: NotificationType;
+  title: string;
+  message: string;
 }
 
 @Injectable()
 export class NotificationService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly gateway: NotificationsGateway,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async handleLowStock(context: LowStockContext) {
-    const { shopId, productId, productName, stockBefore, stockAfter, ownerId } =
-      context;
-
-    if (!shopId) return;
-
-    const preference = await this.prisma.notificationPreference.findUnique({
-      where: { userId_shopId: { userId: ownerId, shopId } },
-    });
-
-    if (!preference) return;
-    if (!preference.lowStockEnabled) return;
-
-    const threshold = preference.lowStockThreshold ?? 5;
-    if (!(stockBefore > threshold && stockAfter <= threshold)) {
-      return;
+  async createNotification(dto: CreateNotificationDto) {
+    if (!(await this.shouldCreateNotification(dto))) {
+      return null;
     }
 
-    const notification = await this.prisma.notification.create({
+    return this.prisma.notification.create({
       data: {
-        userId: ownerId,
-        shopId,
-        type: 'LOW_STOCK',
-        title: 'Stock bajo',
-        message: `${productName} tiene stock ${stockAfter} por debajo del umbral (${threshold})`,
+        userId: dto.userId,
+        shopId: dto.shopId,
+        type: dto.type,
+        title: dto.title,
+        message: dto.message,
       },
     });
+  }
 
-    this.gateway.emitNotification(ownerId, {
-      type: 'LOW_STOCK',
-      productId,
-      productName,
-      stock: stockAfter,
-      shopId,
-      notificationId: notification.id,
+  async getNotifications(
+    userId: string,
+    shopId?: string,
+    read?: boolean,
+  ) {
+    return this.prisma.notification.findMany({
+      where: {
+        userId,
+        ...(shopId ? { shopId } : {}),
+        ...(read !== undefined ? { read } : {}),
+      },
+      orderBy: { createdAt: 'desc' },
     });
+  }
+
+  async markAsRead(userId: string, notificationId: string) {
+    const notification = await this.prisma.notification.findUnique({
+      where: { id: notificationId },
+    });
+
+    if (!notification || notification.userId !== userId) {
+      throw new ForbiddenException('No tenés permiso para esta notificación');
+    }
+
+    if (notification.read) {
+      return notification;
+    }
+
+    return this.prisma.notification.update({
+      where: { id: notificationId },
+      data: { read: true },
+    });
+  }
+
+  async markAllAsRead(userId: string, shopId?: string) {
+    const where: Prisma.NotificationWhereInput = { userId };
+    if (shopId) {
+      where.shopId = shopId;
+    }
+
+    const result = await this.prisma.notification.updateMany({
+      where,
+      data: { read: true },
+    });
+
+    return { count: result.count };
   }
 
   async ensureDefaultPreference(shopId: string, ownerId: string) {
@@ -109,27 +132,15 @@ export class NotificationService {
     });
   }
 
-  async getNotifications(userId: string, read?: boolean) {
-    return this.prisma.notification.findMany({
-      where: {
-        userId,
-        ...(read !== undefined ? { read } : {}),
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  async markAsRead(userId: string, notificationId: string) {
-    const notification = await this.prisma.notification.findUnique({
-      where: { id: notificationId },
-    });
-    if (!notification || notification.userId !== userId) {
-      throw new ForbiddenException('No tenés permiso para esta notificación');
+  private async shouldCreateNotification(dto: CreateNotificationDto) {
+    if (dto.type !== NotificationType.LOW_STOCK) {
+      return true;
     }
-    if (notification.read) return notification;
-    return this.prisma.notification.update({
-      where: { id: notificationId },
-      data: { read: true },
+
+    const preference = await this.prisma.notificationPreference.findUnique({
+      where: { userId_shopId: { userId: dto.userId, shopId: dto.shopId } },
     });
+
+    return preference?.lowStockEnabled ?? true;
   }
 }

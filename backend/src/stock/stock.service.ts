@@ -34,7 +34,13 @@ export class StockService {
       where: { id: shopProductId },
       include: {
         product: true,
-        shop: { select: { id: true, ownerId: true } },
+        shop: {
+          select: {
+            id: true,
+            ownerId: true,
+            lowStockThreshold: true,
+          },
+        },
       },
     });
 
@@ -61,14 +67,18 @@ export class StockService {
       },
     });
 
-    await this.notificationService.handleLowStock({
-      shopId: shopProduct.shopId,
-      productId: shopProduct.productId,
-      productName: shopProduct.product.name,
-      stockBefore,
-      stockAfter,
-      ownerId: shopProduct.shop.ownerId,
-    });
+    const threshold = shopProduct.shop.lowStockThreshold ?? 5;
+    const isLowStock = stockAfter <= threshold;
+
+    if (isLowStock) {
+      await this.notificationService.createNotification({
+        userId: shopProduct.shop.ownerId,
+        shopId: shopProduct.shopId,
+        type: 'LOW_STOCK',
+        title: 'Stock bajo',
+        message: `${shopProduct.product.name} tiene stock ${stockAfter} por debajo del umbral (${threshold})`,
+      });
+    }
 
     return { stockBefore, stockAfter };
   }

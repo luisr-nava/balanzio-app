@@ -7,6 +7,7 @@ import {
 import { AppController } from './app.controller';
 import { AuthClientModule } from './auth-client/auth-client.module';
 import { ConfigModule } from '@nestjs/config';
+import { AnalyticsModule } from './analytics/analytics.module';
 import { ShopModule } from './shop/shop.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { EmployeeModule } from './employee/employee.module';
@@ -28,7 +29,6 @@ import { LoggerModule } from './common/logger/logger.module';
 import { SecurityHeadersMiddleware } from './common/middleware/security-headers.middleware';
 import { PaymentMethodModule } from './payment-method/payment-method.module';
 import { CashRegisterModule } from './cash-register/cash-register.module';
-import { WebhookModule } from './webhook/webhook.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MeasurementUnitModule } from './measurement-unit/measurement-unit.module';
 import { SubscriptionInterceptor } from './common/authorization/subscription.interceptor';
@@ -50,6 +50,7 @@ import { StockModule } from './stock/stock.module';
     ]),
     ScheduleModule.forRoot(),
     AuthClientModule,
+    AnalyticsModule,
     ShopModule,
     PrismaModule,
     EmployeeModule,
@@ -67,7 +68,6 @@ import { StockModule } from './stock/stock.module';
     ReportsModule,
     PaymentMethodModule,
     CashRegisterModule,
-    WebhookModule,
     MeasurementUnitModule,
     NotificationModule,
     StockModule,

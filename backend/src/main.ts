@@ -3,8 +3,6 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { envs } from './config/envs';
 import helmet from 'helmet';
-import { CustomLoggerService } from './common/logger/logger.service';
-import { RequestIdInterceptor } from './common/interceptors/request-id.interceptor';
 import { SanitizeInputInterceptor } from './common/interceptors/sanitize-input.interceptor';
 
 async function bootstrap() {

@@ -27,6 +27,7 @@ export class NotificationController {
   @Get('notifications')
   async getNotifications(
     @GetUser() user: JwtPayload,
+    @Query('shopId') shopId?: string,
     @Query('read') read?: string,
   ) {
     const readFilter =
@@ -37,12 +38,25 @@ export class NotificationController {
           : read === 'false'
             ? false
             : undefined;
-    return this.notificationService.getNotifications(user.id, readFilter);
+
+    return this.notificationService.getNotifications(
+      user.id,
+      shopId,
+      readFilter,
+    );
   }
 
   @Patch('notifications/:id/read')
   async markAsRead(@GetUser() user: JwtPayload, @Param('id') id: string) {
     return this.notificationService.markAsRead(user.id, id);
+  }
+
+  @Patch('notifications/read-all')
+  async markAllAsRead(
+    @GetUser() user: JwtPayload,
+    @Query('shopId') shopId?: string,
+  ) {
+    return this.notificationService.markAllAsRead(user.id, shopId);
   }
 
   @Get('shops/:shopId/preferences/notifications')
