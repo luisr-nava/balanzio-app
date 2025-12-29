@@ -6,8 +6,11 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useState } from "react";
 import { Toaster } from "sonner";
 import { PublicRouteGuard } from "@/components/guards/public-route-guard";
+import { useAuthHydration } from "@/features/auth/hooks/useAuthHydration";
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  useAuthHydration();
+
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -37,4 +40,3 @@ export function Providers({ children }: { children: React.ReactNode }) {
     </QueryClientProvider>
   );
 }
-

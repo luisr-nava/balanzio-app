@@ -38,7 +38,7 @@ export const useLogin = () => {
       });
 
       // Redirigir al dashboard
-      router.replace("/dashboard");
+      router.push("/dashboard");
     },
     onError: () => {
       toast.error("Credenciales incorrectas", {

@@ -56,7 +56,9 @@ export function usePrivateRouteGuard() {
   }, [setActiveShopId, setActiveShop, setShouldForceStoreSelection]);
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (isLoading) return;
+
+    if (!isAuthenticated) {
       router.replace("/login");
     }
   }, [isLoading, isAuthenticated, router]);
@@ -76,5 +78,4 @@ export function usePrivateRouteGuard() {
     storedShops,
   };
 }
-
 

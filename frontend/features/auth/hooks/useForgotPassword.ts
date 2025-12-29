@@ -1,6 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { forgotPasswordAction } from "../actions/forgot.password.action";
 import { useForgotPasswordMutation } from "./useAuthMutations";
 import { ForgotPasswordFormData } from "../types";
 

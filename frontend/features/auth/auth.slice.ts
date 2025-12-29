@@ -10,7 +10,7 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       token: null,
       plan: "",
-      isLoading: false,
+      isLoading: true,
       subscriptionStatus: "",
       // Guardar datos de autenticación
       setAuth: (data) => {
@@ -95,4 +95,3 @@ export const useAuthStore = create<AuthState>()(
     },
   ),
 );
-
