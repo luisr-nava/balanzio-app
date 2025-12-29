@@ -22,17 +22,6 @@ interface VerifyAccountFormData {
 
 export default function VerifyAccountForm() {
   const { verifyAccount, isLoading: isVerifying } = useVerifyAccount();
-  const { resendCode, isLoading: isResending } = useResendCode();
-  const [cooldown, setCooldown] = useState(0);
-  const [showEmailInput, setShowEmailInput] = useState(false);
-  const [code, setCode] = useState<string[]>(
-    Array.from({ length: CODE_LENGTH }, () => ""),
-  );
-  const [error, setError] = useState<string>("");
-
-  // Referencias para los inputs del código
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
   const {
     register,
     handleSubmit,
@@ -45,6 +34,21 @@ export default function VerifyAccountForm() {
   });
 
   const email = watch("email");
+
+  const {
+    handleResendCode,
+    isLoading: isResending,
+    cooldown,
+  } = useResendCode(email ? { email: email! } : { email: "" });
+
+  const [showEmailInput, setShowEmailInput] = useState(false);
+  const [code, setCode] = useState<string[]>(
+    Array.from({ length: CODE_LENGTH }, () => ""),
+  );
+  const [error, setError] = useState<string>("");
+
+  // Referencias para los inputs del código
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const handleCodeChange = (index: number, value: string) => {
     const nextChar = normalizeChar(value);
@@ -105,31 +109,6 @@ export default function VerifyAccountForm() {
     verifyAccount(fullCode);
   };
 
-  const handleResendCode = () => {
-    if (!showEmailInput) {
-      setShowEmailInput(true);
-      return;
-    }
-
-    if (!email) {
-      return;
-    }
-
-    resendCode({ email });
-
-    // Cooldown de 60 segundos
-    setCooldown(60);
-    const interval = setInterval(() => {
-      setCooldown((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
-
   const isDisabled = isVerifying || isResending;
 
   return (
@@ -173,7 +152,8 @@ export default function VerifyAccountForm() {
                 <p className="text-sm text-destructive text-center">{error}</p>
               )}
               <p className="text-xs text-muted-foreground text-center">
-                Ingresa el código de 8 caracteres (letras o números) que enviamos a tu email
+                Ingresa el código de 8 caracteres (letras o números) que
+                enviamos a tu email
               </p>
             </div>
           </div>
@@ -208,7 +188,9 @@ export default function VerifyAccountForm() {
                   placeholder="tu@email.com"
                   className="pl-9"
                   {...register("email", {
-                    required: showEmailInput ? "El email es requerido para reenviar" : false,
+                    required: showEmailInput
+                      ? "El email es requerido para reenviar"
+                      : false,
                     pattern: {
                       value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
                       message: "Ingresa un email válido",
@@ -237,10 +219,10 @@ export default function VerifyAccountForm() {
             {cooldown > 0
               ? `Espera ${cooldown}s para reenviar`
               : isResending
-                ? "Enviando..."
-                : showEmailInput
-                  ? "Enviar código"
-                  : "Reenviar código"}
+              ? "Enviando..."
+              : showEmailInput
+              ? "Enviar código"
+              : "Reenviar código"}
           </Button>
 
           <div className="text-center text-sm text-muted-foreground">
@@ -251,3 +233,4 @@ export default function VerifyAccountForm() {
     </Card>
   );
 }
+

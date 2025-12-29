@@ -15,7 +15,6 @@ export const useMyShops = () => {
     queryFn: shopApi.getMyShops,
     enabled: isAuthenticated,
     staleTime: Infinity,
-    cacheTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,

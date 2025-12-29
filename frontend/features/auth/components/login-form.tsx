@@ -6,20 +6,15 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useForm } from "react-hook-form";
-import { useLogin } from "../hooks/useLogin";
-import { useEffect, useMemo, useState } from "react";
 import { LoginFormData } from "../types";
-
-const REMEMBER_EMAIL_KEY = "remember-email";
+import { useLogin } from "../hooks";
+import { useEffect, useState } from "react";
 
 export default function LoginForm() {
-  const { login, isLoading } = useLogin();
-  const savedEmail = useMemo(() => {
-    if (typeof window === "undefined") return "";
-    return localStorage.getItem(REMEMBER_EMAIL_KEY) ?? "";
-  }, []);
+  const [mounted, setMounted] = useState(false);
 
-  const [rememberMe, setRememberMe] = useState(() => Boolean(savedEmail));
+  const { onSubmit, isLoading, rememberMe, setRememberMe, savedEmail } =
+    useLogin();
 
   const {
     register,
@@ -31,22 +26,6 @@ export default function LoginForm() {
       password: "",
     },
   });
-
-  const onSubmit = (data: LoginFormData) => {
-    // Guardar o limpiar email según checkbox
-    if (rememberMe) {
-      localStorage.setItem(REMEMBER_EMAIL_KEY, data.email);
-    } else {
-      localStorage.removeItem(REMEMBER_EMAIL_KEY);
-    }
-
-    login({
-      email: data.email,
-      password: data.password,
-    });
-  };
-
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);

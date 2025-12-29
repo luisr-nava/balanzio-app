@@ -18,7 +18,6 @@ export interface User {
 
 export interface RegisterResponse {
   message: string;
-  projectId: string;
 }
 
 export interface AuthState {
@@ -51,3 +50,13 @@ export interface LoginFormData {
   email: string;
   password: string;
 }
+export interface RegisterFormData {
+  fullName: string;
+  email: string;
+  password: string;
+}
+
+export interface RegisterActionPayload extends RegisterFormData {
+  verifyPassword: string;
+}
+

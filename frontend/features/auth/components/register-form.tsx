@@ -6,23 +6,17 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { useRegister } from "../hooks/useRegister";
-
-interface RegisterFormData {
-  fullName: string;
-  email: string;
-  password: string;
-  verifyPassword: string;
-}
+import { RegisterActionPayload } from "../types";
 
 export default function RegisterForm() {
-  const { register: registerUser, isLoading } = useRegister();
+  const { onSubmit, isLoading } = useRegister();
 
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<RegisterFormData>({
+  } = useForm<RegisterActionPayload>({
     defaultValues: {
       fullName: "",
       email: "",
@@ -32,15 +26,6 @@ export default function RegisterForm() {
   });
 
   const password = watch("password");
-
-  const onSubmit = (data: RegisterFormData) => {
-    registerUser({
-      fullName: data.fullName,
-      email: data.email,
-      password: data.password,
-      projectId: process.env.NEXT_PUBLIC_PROJECT_ID!,
-    });
-  };
 
   return (
     <Card className="border-border/50 shadow-lg">
@@ -135,10 +120,7 @@ export default function RegisterForm() {
             </div>
           </div>
 
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isLoading}>
+          <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Creando cuenta..." : "Crear Cuenta"}
           </Button>
         </form>
@@ -146,3 +128,4 @@ export default function RegisterForm() {
     </Card>
   );
 }
+

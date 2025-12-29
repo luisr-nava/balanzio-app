@@ -1,40 +1,56 @@
-import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { resendVerificationCodeAction } from "../actions/resend.verification.code.action";
+import { useResendCodeMutation } from "./useAuthMutations";
+import { useState } from "react";
 
-export const useResendCode = () => {
-  const mutation = useMutation({
-    mutationFn: async ({ email }: { email: string }) => {
-      return await resendVerificationCodeAction(email);
-    },
-    onSuccess: (data) => {
-      // Toast de éxito
-      toast.success("Código enviado", {
-        description:
-          "Te hemos enviado un nuevo código de verificación. Revisa tu email.",
-        duration: 5000,
-      });
-    },
-    onError: (error: unknown) => {
-      let errorTitle = "Error al enviar código";
-      let errorMessage =
-        "No se pudo enviar el código. Por favor intenta de nuevo.";
+export const useResendCode = ({ email }: { email: string }) => {
+  const { mutate, isPending } = useResendCodeMutation();
+  const [showEmailInput, setShowEmailInput] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+  const handleResendCode = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (!showEmailInput) {
+      setShowEmailInput(true);
+      return;
+    }
 
-      toast.error(errorTitle, {
-        description: errorMessage,
-        duration: 5000,
+    if (!email) {
+      return;
+    }
+    mutate(
+      { email },
+      {
+        onSuccess: () => {
+          toast.success("Código enviado", {
+            description:
+              "Te hemos enviado un nuevo código de verificación. Revisa tu email.",
+            duration: 5000,
+          });
+        },
+        onError: () => {
+          toast.error("Error al enviar código", {
+            description:
+              "No se pudo enviar el código. Por favor intenta de nuevo.",
+            duration: 5000,
+          });
+        },
+      },
+    );
+
+    setCooldown(60);
+    const interval = setInterval(() => {
+      setCooldown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
       });
-    },
-  });
+    }, 1000);
+  };
 
   return {
-    resendCode: mutation.mutate,
-    isLoading: mutation.isPending,
-    error: mutation.error,
-    isSuccess: mutation.isSuccess,
-    isError: mutation.isError,
-    data: mutation.data,
-    reset: mutation.reset,
+    cooldown,
+    handleResendCode,
+    isLoading: isPending,
   };
 };
 

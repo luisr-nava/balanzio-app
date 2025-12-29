@@ -1,11 +1,8 @@
-import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { authApi } from "@/lib/authApi";
 import { useShopStore } from "@/app/(private)/store/shops.slice";
 import { useNotificationsStore } from "@/app/(private)/store/notifications.slice";
-import { useQueryClient } from "@tanstack/react-query";
-import { myShopsQueryKey } from "@/app/(private)/hooks/useMyShops";
 import { useAuthStore } from "../auth.slice";
+import { useLogoutMutation } from "./useAuthMutations";
 
 export const useLogout = () => {
   const clearAuth = useAuthStore((state) => state.clearAuth);
@@ -13,50 +10,36 @@ export const useLogout = () => {
   const setNotifications = useNotificationsStore(
     (state) => state.setNotifications,
   );
-  const queryClient = useQueryClient();
 
-  const mutation = useMutation({
-    mutationFn: async () => {
-      // Llamar al endpoint de logout del backend (opcional)
-      try {
-        await authApi.post("/auth/logout");
-      } catch (error) {
-        // Continuar con logout local incluso si falla el backend
-        console.error("Error al hacer logout en el backend:", error);
-      }
-    },
-    onSuccess: () => {
-      clearAuth();
-      clearShops();
-      setNotifications([]);
-      queryClient.removeQueries({ queryKey: myShopsQueryKey, exact: true });
+  const { mutate, isPending } = useLogoutMutation();
 
-      toast.success("Sesión cerrada", {
-        description: "Has cerrado sesión correctamente",
-      });
+  const handleLogout = () => {
+    mutate(undefined, {
+      onSuccess: () => {
+        clearAuth();
+        clearShops();
+        setNotifications([]);
 
-      console.log("Logout exitoso");
-    },
-    onError: (error: unknown) => {
-      console.error("Error en logout:", error);
+        toast.success("Sesión cerrada", {
+          description: "Has cerrado sesión correctamente",
+        });
+      },
+      onError: (error: unknown) => {
+        toast.warning("Sesión cerrada localmente", {
+          description:
+            "No se pudo contactar con el servidor, pero la sesión se cerró localmente.",
+        });
 
-      toast.warning("Sesión cerrada localmente", {
-        description:
-          "No se pudo contactar con el servidor, pero la sesión se cerró localmente.",
-      });
-
-      clearAuth();
-      clearShops();
-      setNotifications([]);
-      queryClient.removeQueries({ queryKey: myShopsQueryKey, exact: true });
-    },
-  });
+        clearAuth();
+        clearShops();
+        setNotifications([]);
+      },
+    });
+  };
 
   return {
-    logout: mutation.mutate,
-    isLoading: mutation.isPending,
-    error: mutation.error,
-    isError: mutation.isError,
+    logout: handleLogout,
+    isLoading: isPending,
   };
 };
 

@@ -17,10 +17,7 @@ import { SubscriptionPlanType } from "@/lib/types/subscription";
 import { useTheme } from "next-themes";
 import { redirect } from "next/navigation";
 
-/**
- * UserMenu - Menú de usuario con información y opción de logout
- * Solo se renderiza si el usuario está autenticado
- */
+
 export default function UserMenu() {
   const { user, plan } = useAuth();
   const { logout, isLoading } = useLogout();
