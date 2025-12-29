@@ -13,12 +13,14 @@ import { JwtPayload } from '../auth-client/interfaces/jwt-payload.interface';
 import { DEFAULT_CURRENCY_CODE } from '../common/constants/currencies';
 import { getTimezoneForCountry } from '../common/utils/timezone.util';
 import { NotificationService } from '../notification/notification.service';
+import { AnalyticsService } from '../analytics/analytics.service';
 
 @Injectable()
 export class ShopService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cashRegisterService: CashRegisterService,
+    private readonly analyticsService: AnalyticsService,
     private readonly notificationService: NotificationService,
   ) {}
 
@@ -270,6 +272,7 @@ export class ShopService {
         lowStockProducts,
         topProducts,
         openCashRegisters,
+        analytics,
       ] = await Promise.all([
         this.prisma.sale.aggregate({
           where: { shopId: id },
@@ -319,6 +322,12 @@ export class ShopService {
           take: 5,
         }),
         this.cashRegisterService.findOpenCashRegistersForShops([id], user),
+        this.analyticsService.getShopDashboardAnalytics(
+          id,
+          shop.timezone,
+          shop.ownerId,
+          user.fullName ?? null,
+        ),
       ]);
       const shopOpenCashRegisters = openCashRegisters[0]?.cashRegisters ?? [];
 
@@ -377,6 +386,7 @@ export class ShopService {
             productName: sp.product.name,
             stock: sp.stock,
           })),
+          analytics,
           openCashRegisters: shopOpenCashRegisters,
           hasOpenCashRegister: shopOpenCashRegisters.length > 0,
         },

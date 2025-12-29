@@ -1,38 +1,74 @@
-import { ArrayNotEmpty, ArrayUnique, IsArray, IsEnum, IsISO8601, IsNotEmpty, IsOptional, IsString, ValidateIf } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsEnum,
+  IsISO8601,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+  ValidateIf,
+} from 'class-validator';
 
-export enum AnalyticsPeriod {
-  DAY = 'day',
-  RANGE = 'range',
-  MONTH = 'month',
-  YEAR = 'year',
+export enum AnalyticsType {
+  SALES = 'sales',
+  PURCHASES = 'purchases',
+  INCOMES = 'incomes',
+  EXPENSES = 'expenses',
+  ALL = 'all',
 }
 
-export const ANALYTICS_MODULES = ['sales', 'purchases', 'incomes', 'expenses', 'topProducts'] as const;
-export type AnalyticsModule = (typeof ANALYTICS_MODULES)[number];
+export enum AnalyticsPeriod {
+  WEEK = 'week',
+  MONTH = 'month',
+  YEAR = 'year',
+  RANGE = 'range',
+}
 
 export class AnalyticsQueryDto {
   @IsString()
   @IsNotEmpty()
   shopId!: string;
 
-  @IsEnum(AnalyticsPeriod)
-  period!: AnalyticsPeriod;
+  @IsEnum(AnalyticsType)
+  @IsOptional()
+  type: AnalyticsType = AnalyticsType.ALL;
 
+  @IsEnum(AnalyticsPeriod)
+  @IsOptional()
+  period: AnalyticsPeriod = AnalyticsPeriod.WEEK;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(2000)
+  @Max(9999)
+  year?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(12)
+  month?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(53)
+  week?: number;
+
+  @ValidateIf((o) => o.period === AnalyticsPeriod.RANGE)
   @IsString()
   @IsNotEmpty()
   @IsISO8601()
-  from!: string;
+  from?: string;
 
   @ValidateIf((o) => o.period === AnalyticsPeriod.RANGE)
   @IsString()
   @IsNotEmpty()
   @IsISO8601()
   to?: string;
-
-  @IsOptional()
-  @IsArray()
-  @ArrayNotEmpty()
-  @ArrayUnique()
-  @IsEnum(ANALYTICS_MODULES, { each: true })
-  modules?: AnalyticsModule[];
 }
