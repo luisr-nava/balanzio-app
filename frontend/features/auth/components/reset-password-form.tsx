@@ -16,7 +16,7 @@ interface ResetPasswordFormProps {
 }
 
 export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
-  const { resetPassword, isLoading } = useResetPassword();
+  const { onSubmit, isPending } = useResetPassword({ token });
 
   const {
     register,
@@ -31,14 +31,6 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   });
 
   const password = watch("password");
-
-  const onSubmit = (data: ResetPasswordFormData) => {
-    resetPassword({
-      token,
-      newPassword: data.password,
-    });
-    localStorage.removeItem("remember-email");
-  };
 
   return (
     <Card className="shadow-lg w-md">
@@ -56,7 +48,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
                   message: "La contraseña debe tener al menos 6 caracteres",
                 },
               })}
-              disabled={isLoading}
+              disabled={isPending}
             />
             {errors.password && (
               <p className="text-sm text-destructive">
@@ -75,7 +67,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
                 validate: (value) =>
                   value === password || "Las contraseñas no coinciden",
               })}
-              disabled={isLoading}
+              disabled={isPending}
             />
             {errors.confirmPassword && (
               <p className="text-sm text-destructive">
@@ -84,8 +76,8 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
             )}
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Restableciendo..." : "Restablecer contraseña"}
+          <Button type="submit" className="w-full" disabled={isPending}>
+            {isPending ? "Restableciendo..." : "Restablecer contraseña"}
           </Button>
         </form>
       </CardContent>

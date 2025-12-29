@@ -6,6 +6,9 @@ import { myShopsQueryKey } from "@/app/(private)/hooks/useMyShops";
 import { RegisterFormData } from "../types";
 import { registerAction } from "../actions/register.action";
 import { resendVerificationCodeAction } from "../actions/resend.verification.code.action";
+import { verifyCodeAction } from "../actions/verify.code.action";
+import { resetPasswordAction } from "../actions/reset.password.action";
+
 export const useForgotPasswordMutation = () => {
   return useMutation({
     mutationFn: async ({ email }: { email: string }) => {
@@ -53,6 +56,28 @@ export const useResendCodeMutation = () => {
   return useMutation({
     mutationFn: async ({ email }: { email: string }) => {
       return await resendVerificationCodeAction(email);
+    },
+  });
+};
+
+export const useVerifyCodeMutation = () => {
+  return useMutation({
+    mutationFn: async (code: string) => {
+      return await verifyCodeAction(code);
+    },
+  });
+};
+
+export const useResetPasswordMutation = () => {
+  return useMutation({
+    mutationFn: async ({
+      token,
+      newPassword,
+    }: {
+      token: string;
+      newPassword: string;
+    }) => {
+      return await resetPasswordAction({ token, newPassword });
     },
   });
 };

@@ -16,8 +16,7 @@ export const useRegister = () => {
         password: data.password,
       },
       {
-        onSuccess: (data: RegisterResponse) => {
-          // Toast de éxito
+        onSuccess: () => {
           toast.success("¡Cuenta creada exitosamente!", {
             description:
               "Te hemos enviado un código de verificación de 6 dígitos a tu email.",
@@ -75,13 +74,6 @@ export const useRegister = () => {
   return {
     onSubmit,
     isLoading: isPending,
-    // register: mutation.mutate,
-    // isLoading: mutation.isPending,
-    // error: mutation.error,
-    // isSuccess: mutation.isSuccess,
-    // isError: mutation.isError,
-    // data: mutation.data,
-    // reset: mutation.reset,
   };
 };
 

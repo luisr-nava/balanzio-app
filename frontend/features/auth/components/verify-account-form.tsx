@@ -9,19 +9,23 @@ import { useForm } from "react-hook-form";
 import { useVerifyAccount } from "../hooks/useVerifyAccount";
 import { useResendCode } from "../hooks/useResendCode";
 
-const CODE_LENGTH = 8;
-const normalizeChar = (value: string) => {
-  const matches = value.match(/[a-zA-Z0-9]/g);
-  if (!matches || matches.length === 0) return "";
-  return matches[matches.length - 1].toUpperCase();
-};
-
 interface VerifyAccountFormData {
   email?: string;
 }
 
 export default function VerifyAccountForm() {
-  const { verifyAccount, isLoading: isVerifying } = useVerifyAccount();
+  const {
+    onSubmit,
+    isPending: isVerifying,
+    error,
+    code,
+    showEmailInput,
+    inputRefs,
+    handleCodeChange,
+    handleKeyDown,
+    handlePaste,
+  } = useVerifyAccount();
+
   const {
     register,
     handleSubmit,
@@ -41,74 +45,6 @@ export default function VerifyAccountForm() {
     cooldown,
   } = useResendCode(email ? { email: email! } : { email: "" });
 
-  const [showEmailInput, setShowEmailInput] = useState(false);
-  const [code, setCode] = useState<string[]>(
-    Array.from({ length: CODE_LENGTH }, () => ""),
-  );
-  const [error, setError] = useState<string>("");
-
-  // Referencias para los inputs del código
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  const handleCodeChange = (index: number, value: string) => {
-    const nextChar = normalizeChar(value);
-
-    const newCode = [...code];
-    newCode[index] = nextChar;
-    setCode(newCode);
-    setError("");
-
-    // Auto-avanzar al siguiente input si se ingresó un dígito
-    if (nextChar && index < CODE_LENGTH - 1) {
-      inputRefs.current[index + 1]?.focus();
-    }
-  };
-
-  const handleKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
-    // Retroceder al input anterior con Backspace
-    if (e.key === "Backspace" && !code[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handlePaste = (index: number, e: ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const pastedData = e.clipboardData.getData("text");
-    if (!pastedData) return;
-
-    const digits = pastedData
-      .split("")
-      .map((char) => normalizeChar(char))
-      .filter(Boolean)
-      .slice(0, CODE_LENGTH);
-
-    const newCode = [...code];
-
-    digits.forEach((digit, offset) => {
-      const targetIndex = index + offset;
-      if (targetIndex < CODE_LENGTH) {
-        newCode[targetIndex] = digit;
-      }
-    });
-
-    setCode(newCode);
-    setError("");
-
-    const focusIndex = Math.min(index + digits.length, CODE_LENGTH - 1);
-    inputRefs.current[focusIndex]?.focus();
-  };
-
-  const onSubmit = () => {
-    const fullCode = code.join("");
-
-    if (fullCode.length !== CODE_LENGTH) {
-      setError(`El código debe tener ${CODE_LENGTH} caracteres`);
-      return;
-    }
-
-    verifyAccount(fullCode);
-  };
-
   const isDisabled = isVerifying || isResending;
 
   return (
@@ -117,7 +53,7 @@ export default function VerifyAccountForm() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            onSubmit();
+            onSubmit(code.join(""));
           }}
           className="space-y-6">
           <div className="space-y-4">
@@ -233,4 +169,3 @@ export default function VerifyAccountForm() {
     </Card>
   );
 }
-
