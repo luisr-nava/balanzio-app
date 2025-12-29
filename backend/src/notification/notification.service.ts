@@ -32,11 +32,7 @@ export class NotificationService {
     });
   }
 
-  async getNotifications(
-    userId: string,
-    shopId?: string,
-    read?: boolean,
-  ) {
+  async getNotifications(userId: string, shopId?: string, read?: boolean) {
     return this.prisma.notification.findMany({
       where: {
         userId,

@@ -131,7 +131,6 @@ export class PurchaseService {
       return purchase;
     });
 
-
     return purchase;
   }
 
@@ -736,7 +735,6 @@ export class PurchaseService {
       };
     });
 
-
     return result;
   }
 
@@ -866,7 +864,6 @@ export class PurchaseService {
         },
       });
     });
-
 
     return {
       message: 'Compra cancelada correctamente',

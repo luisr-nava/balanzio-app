@@ -1,5 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { fromZonedTime } from 'date-fns-tz';
+
+const zonedTimeToUtc = fromZonedTime;
 import { AnalyticsPeriod, AnalyticsQueryDto } from '../dto/analytics-query.dto';
 
 export type BucketUnit = 'day' | 'month';
@@ -20,7 +22,9 @@ export function resolveAnalyticsPeriodRange(
   timezone: string,
   reference = new Date(),
 ): AnalyticsPeriodRange {
-  const period = query.period ?? AnalyticsPeriod.WEEK;
+  const resolvedPeriod =
+    query.period ??
+    (query.year !== undefined ? AnalyticsPeriod.YEAR : AnalyticsPeriod.WEEK);
   let startDate: Date;
   let endDate: Date;
   let bucketUnit: BucketUnit = 'day';
@@ -31,7 +35,7 @@ export function resolveAnalyticsPeriodRange(
 
   const zonedReference = toTimezone(reference, timezone);
 
-  switch (period) {
+  switch (resolvedPeriod) {
     case AnalyticsPeriod.WEEK: {
       const weekStart = getWeekStartFromQuery(query, timezone, zonedReference);
       startDate = startOfWeek(weekStart, timezone);
@@ -39,13 +43,21 @@ export function resolveAnalyticsPeriodRange(
       break;
     }
     case AnalyticsPeriod.MONTH: {
-      const monthReference = getMonthReferenceFromQuery(query, timezone, zonedReference);
+      const monthReference = getMonthReferenceFromQuery(
+        query,
+        timezone,
+        zonedReference,
+      );
       startDate = startOfMonth(monthReference, timezone);
       endDate = endOfMonth(monthReference, timezone);
       break;
     }
     case AnalyticsPeriod.YEAR: {
-      const yearReference = getYearReferenceFromQuery(query, timezone, zonedReference);
+      const yearReference = getYearReferenceFromQuery(
+        query,
+        timezone,
+        zonedReference,
+      );
       startDate = startOfYear(yearReference, timezone);
       endDate = endOfYear(yearReference, timezone);
       bucketUnit = 'month';
@@ -53,7 +65,9 @@ export function resolveAnalyticsPeriodRange(
     }
     case AnalyticsPeriod.RANGE: {
       if (!query.from || !query.to) {
-        throw new BadRequestException('Los parámetros from y to son obligatorios para period range');
+        throw new BadRequestException(
+          'Los parámetros from y to son obligatorios para period range',
+        );
       }
 
       const fromDate = new Date(query.from);
@@ -71,7 +85,9 @@ export function resolveAnalyticsPeriodRange(
       endDate = endOfDay(toDate, timezone);
 
       if (startDate > endDate) {
-        throw new BadRequestException('El rango debe comenzar antes de finalizar');
+        throw new BadRequestException(
+          'El rango debe comenzar antes de finalizar',
+        );
       }
 
       break;
@@ -87,7 +103,7 @@ export function resolveAnalyticsPeriodRange(
 
   return {
     bucketUnit,
-    period,
+    period: resolvedPeriod,
     startDate,
     endDate,
     range,
@@ -100,7 +116,11 @@ function getWeekStartFromQuery(
   reference: Date,
 ): Date {
   if (query.week) {
-    return getIsoWeekStart(query.year ?? reference.getUTCFullYear(), query.week, timezone);
+    return getIsoWeekStart(
+      query.year ?? reference.getUTCFullYear(),
+      query.week,
+      timezone,
+    );
   }
 
   return reference;
@@ -124,9 +144,8 @@ function getYearReferenceFromQuery(
   timezone: string,
   reference: Date,
 ): Date {
-  const year = query.year ?? reference.getUTCFullYear();
-  const candidate = new Date(Date.UTC(year, 0, 1));
-  return toTimezone(candidate, timezone);
+  const localYear = query.year ?? reference.getUTCFullYear();
+  return zonedTimeToUtc(`${localYear}-01-01 00:00:00`, timezone);
 }
 
 function getIsoWeekStart(year: number, week: number, timezone: string): Date {

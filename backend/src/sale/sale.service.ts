@@ -310,7 +310,6 @@ export class SaleService {
       return sale;
     });
 
-
     return sale;
   }
 
@@ -530,7 +529,6 @@ export class SaleService {
 
       return updatedSale;
     });
-
 
     return updatedSale;
   }

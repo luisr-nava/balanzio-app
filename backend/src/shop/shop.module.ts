@@ -7,7 +7,12 @@ import { NotificationModule } from '../notification/notification.module';
 import { AnalyticsModule } from '../analytics/analytics.module';
 
 @Module({
-  imports: [CashRegisterModule, PrismaModule, NotificationModule, AnalyticsModule],
+  imports: [
+    CashRegisterModule,
+    PrismaModule,
+    NotificationModule,
+    AnalyticsModule,
+  ],
   controllers: [ShopController],
   providers: [ShopService],
   exports: [ShopService],

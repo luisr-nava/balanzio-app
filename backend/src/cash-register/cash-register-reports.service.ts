@@ -40,9 +40,8 @@ export class CashRegisterReportsService {
     user: JwtPayload,
   ) {
     const { start, end } = this.buildDateRange(period, params);
-    const accessibleShopIds = await this.accessService.getAccessibleShopIds(
-      user,
-    );
+    const accessibleShopIds =
+      await this.accessService.getAccessibleShopIds(user);
 
     if (!accessibleShopIds.length) {
       return {
@@ -184,9 +183,7 @@ export class CashRegisterReportsService {
 
   private buildMonthRange(query: ReportQuery) {
     const now = new Date();
-    const monthValue = query.month
-      ? Number(query.month)
-      : now.getMonth() + 1;
+    const monthValue = query.month ? Number(query.month) : now.getMonth() + 1;
     const yearValue = query.year ? Number(query.year) : now.getFullYear();
 
     if (
