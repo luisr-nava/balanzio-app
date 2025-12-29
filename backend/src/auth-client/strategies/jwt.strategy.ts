@@ -38,7 +38,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
     const projectId = payload.projectId ?? payload.ownerId ?? id;
 
-    if ((payload.appKey ?? '').toLowerCase() !== 'kiosco') {
+    const expectedAppKey = envs.appName.toLowerCase();
+    const providedAppKey = payload.appKey?.toLowerCase() ?? expectedAppKey;
+
+    if (providedAppKey !== expectedAppKey) {
       throw new UnauthorizedException('Token appKey no permitido para Kiosco');
     }
 
@@ -46,7 +49,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       ...payload,
       id,
       projectId,
-      appKey: payload.appKey?.toLowerCase() ?? 'kiosco',
+      appKey: expectedAppKey,
       ownerId: payload.ownerId ?? (payload.role === 'OWNER' ? id : undefined),
     };
 

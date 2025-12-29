@@ -1,13 +1,10 @@
-import {
-  ForbiddenException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import type {
   JwtPayload,
   PlanName,
   SubscriptionStatus,
 } from '../../auth-client/interfaces/jwt-payload.interface';
+import { envs } from '../../config/envs';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   PLAN_FEATURES,
@@ -21,7 +18,8 @@ export class PlanValidationService {
   constructor(private readonly prisma: PrismaService) {}
 
   ensureAppKey(user: JwtPayload) {
-    if (user.appKey !== 'kiosco') {
+    const normalizedAppKey = user.appKey?.toLowerCase();
+    if (normalizedAppKey !== envs.appName.toLowerCase()) {
       throw new UnauthorizedException('Invalid app key');
     }
   }

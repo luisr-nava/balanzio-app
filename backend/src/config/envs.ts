@@ -16,6 +16,7 @@ interface EnvVars {
   MAIL_SECURE?: string;
   REPORTS_NOTIFICATION_EMAIL?: string;
   REPORTS_FROM_EMAIL?: string;
+  APP_NAME: string;
 }
 
 const logger = new Logger('Kiosco - error');
@@ -34,6 +35,7 @@ const envVarsSchema = joi
       .valid('development', 'production')
       .default('development'),
     ALLOWED_ORIGINS: joi.string().required(),
+    APP_NAME: joi.string().required(),
     MAIL_HOST: joi.string().allow('', null),
     MAIL_PORT: joi.string().allow('', null),
     MAIL_USER: joi.string().allow('', null),
@@ -60,6 +62,7 @@ export const envs = {
   jwtSecret: envVars.JWT_SECRET,
   nodeEnv: envVars.NODE_ENV,
   allowedOrigins: envVars.ALLOWED_ORIGINS,
+  appName: envVars.APP_NAME,
   mailHost: envVars.MAIL_HOST,
   mailPort: envVars.MAIL_PORT,
   mailUser: envVars.MAIL_USER,
