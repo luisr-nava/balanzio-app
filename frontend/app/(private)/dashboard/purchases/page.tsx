@@ -487,7 +487,7 @@ export default function ComprasPage() {
                         typeof document !== "undefined" &&
                         createPortal(
                           <div
-                            className="z-[9999] rounded-md border bg-card shadow-lg"
+                            className="z-9999 rounded-md border bg-card shadow-lg"
                             style={{
                               position: "fixed",
                               top: dropdownRect.top,

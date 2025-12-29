@@ -1,6 +1,8 @@
 "use client";
 
 import { useAuth } from "@/app/(auth)/hooks";
+import { shopApi } from "@/lib/api/shop.api";
+import { useQuery } from "@tanstack/react-query";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 
@@ -11,6 +13,13 @@ interface PrivateRouteGuardProps {
 export function PrivateRouteGuard({ children }: PrivateRouteGuardProps) {
   const { isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
+
+  const { data: shops, isLoading: shopsLoading } = useQuery({
+    queryKey: ["my-shops"],
+    queryFn: shopApi.getMyShops,
+    enabled: isAuthenticated,
+    retry: 1,
+  });
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {

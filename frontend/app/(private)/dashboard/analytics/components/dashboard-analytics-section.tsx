@@ -40,13 +40,14 @@ function TopProductsCard({ products }: TopProductsCardProps) {
       </CardHeader>
       <CardContent className="space-y-3 py-2">
         {entries.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Sin datos para mostrar.</p>
+          <p className="text-sm text-muted-foreground">
+            Sin datos para mostrar.
+          </p>
         ) : (
           entries.map((product, index) => (
             <div
               key={`${product.shopProductId ?? product.productId ?? index}`}
-              className="flex items-center justify-between gap-3 border-b border-border/50 pb-2 last:border-b-0 last:pb-0"
-            >
+              className="flex items-center justify-between gap-3 border-b border-border/50 pb-2 last:border-b-0 last:pb-0">
               <div className="flex-1 space-y-0.5">
                 <p className="text-sm font-semibold text-foreground">
                   #{index + 1} · {product.name || "Producto"}
@@ -67,7 +68,11 @@ function TopProductsCard({ products }: TopProductsCardProps) {
 }
 
 interface BestSaleCardProps {
-  bestSale?: { total?: number; date?: string; performedBy?: { fullName?: string | null; role?: string } };
+  bestSale?: {
+    total?: number;
+    date?: string;
+    performedBy?: { fullName?: string | null; role?: string };
+  };
   period: AnalyticsPeriod;
 }
 
@@ -79,7 +84,9 @@ function BestSaleCard({ bestSale, period }: BestSaleCardProps) {
           <CardTitle className="text-base font-semibold">Mejor venta</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">Sin datos registrados.</p>
+          <p className="text-sm text-muted-foreground">
+            Sin datos registrados.
+          </p>
         </CardContent>
       </Card>
     );
@@ -95,7 +102,8 @@ function BestSaleCard({ bestSale, period }: BestSaleCardProps) {
 
   const performer = bestSale.performedBy;
   const roleLabel = performer?.role ?? "—";
-  const displayName = performer?.fullName ?? (roleLabel === "OWNER" ? "Owner" : "-");
+  const displayName =
+    performer?.fullName ?? (roleLabel === "OWNER" ? "Owner" : "-");
 
   return (
     <Card className="space-y-1">
@@ -103,7 +111,9 @@ function BestSaleCard({ bestSale, period }: BestSaleCardProps) {
         <CardTitle className="text-base font-semibold">Mejor venta</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2 py-2">
-        <p className="text-foreground text-2xl font-semibold">{formatCurrency(value)}</p>
+        <p className="text-foreground text-2xl font-semibold">
+          {formatCurrency(value)}
+        </p>
         <p className="text-sm text-muted-foreground">{dateLabel}</p>
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm font-semibold text-foreground">{displayName}</p>
@@ -112,7 +122,9 @@ function BestSaleCard({ bestSale, period }: BestSaleCardProps) {
           </span>
         </div>
         <Separator className="my-2" />
-        <p className="text-xs uppercase tracking-[0.4em] text-muted-foreground">Período</p>
+        <p className="text-xs uppercase tracking-[0.4em] text-muted-foreground">
+          Período
+        </p>
         <p className="text-sm font-semibold text-muted-foreground">
           {period.charAt(0).toUpperCase() + period.slice(1)}
         </p>
@@ -141,8 +153,7 @@ function PeriodSelector({
               isActive
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
+            }`}>
             {option.label}
           </button>
         );
@@ -154,7 +165,8 @@ function PeriodSelector({
 export function DashboardAnalyticsSection() {
   const { activeShop, activeShopId } = useShopStore();
   const [uiPeriod, setUiPeriod] = useState<AnalyticsPeriod>("week");
-  const [lastResolvedPeriod, setLastResolvedPeriod] = useState<AnalyticsPeriod>("week");
+  const [lastResolvedPeriod, setLastResolvedPeriod] =
+    useState<AnalyticsPeriod>("week");
   const [from, setFrom] = useState<Date | null>(null);
   const [to, setTo] = useState<Date | null>(null);
 
@@ -250,7 +262,7 @@ export function DashboardAnalyticsSection() {
                 <DatePicker
                   value={from ?? undefined}
                   onChange={(date) => setFrom(date ?? null)}
-                  className="mt-1 min-w-[12rem]"
+                  className="mt-1 min-w-48"
                   maxDate={to ?? undefined}
                 />
               </label>
@@ -259,7 +271,7 @@ export function DashboardAnalyticsSection() {
                 <DatePicker
                   value={to ?? undefined}
                   onChange={(date) => setTo(date ?? null)}
-                  className="mt-1 min-w-[12rem]"
+                  className="mt-1 min-w-48"
                   maxDate={new Date()}
                 />
               </label>
@@ -270,7 +282,9 @@ export function DashboardAnalyticsSection() {
           <span>{periodLabel}</span>
           {rangeLabel && <span>{rangeLabel}</span>}
           {showRangeWarning && (
-            <span className="text-destructive">Complete ambos campos para consultar el rango.</span>
+            <span className="text-destructive">
+              Complete ambos campos para consultar el rango.
+            </span>
           )}
         </div>
       </div>
@@ -304,8 +318,12 @@ export function DashboardAnalyticsSection() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <TopProductsCard products={activeShop?.analytics?.topProducts} />
-        <BestSaleCard bestSale={activeShop?.analytics?.bestSale} period={effectivePeriod} />
+        <BestSaleCard
+          bestSale={activeShop?.analytics?.bestSale}
+          period={effectivePeriod}
+        />
       </div>
     </section>
   );
 }
+
