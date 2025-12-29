@@ -7,12 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useForm } from "react-hook-form";
 import { useLogin } from "../hooks/useLogin";
-import { useMemo, useState } from "react";
-
-interface LoginFormData {
-  email: string;
-  password: string;
-}
+import { useEffect, useMemo, useState } from "react";
+import { LoginFormData } from "../types";
 
 const REMEMBER_EMAIL_KEY = "remember-email";
 
@@ -22,7 +18,7 @@ export default function LoginForm() {
     if (typeof window === "undefined") return "";
     return localStorage.getItem(REMEMBER_EMAIL_KEY) ?? "";
   }, []);
-  
+
   const [rememberMe, setRememberMe] = useState(() => Boolean(savedEmail));
 
   const {
@@ -49,11 +45,18 @@ export default function LoginForm() {
       password: data.password,
     });
   };
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
   return (
     <Card className=" shadow-lg w-md ">
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -120,11 +123,7 @@ export default function LoginForm() {
             </label>
           </div>
 
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isLoading}
-          >
+          <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
           </Button>
         </form>
@@ -132,3 +131,4 @@ export default function LoginForm() {
     </Card>
   );
 }
+

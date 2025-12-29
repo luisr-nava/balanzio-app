@@ -7,11 +7,10 @@ interface VerifyCodeResponse {
 export const verifyCodeAction = async (
   code: string,
 ): Promise<VerifyCodeResponse> => {
-  const project = process.env.NEXT_PUBLIC_PROJECT;
   try {
     const { data } = await authApi.post<VerifyCodeResponse>(
       "/auth/verify-code",
-      { code, appKey: project },
+      { code },
     );
     return data;
   } catch (error) {

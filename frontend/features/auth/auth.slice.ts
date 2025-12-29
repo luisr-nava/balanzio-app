@@ -9,22 +9,18 @@ export const useAuthStore = create<AuthState>()(
       // Estado inicial
       user: null,
       token: null,
-      appKey: "",
       plan: "",
-      isLoading: true,
+      isLoading: false,
       subscriptionStatus: "",
       // Guardar datos de autenticación
       setAuth: (data) => {
         // Guardar en cookies
         Cookies.set("token", data.token, { expires: 7 }); // 7 días
 
-        Cookies.set("appKey", data.appKey, { expires: 7 });
-
         // Actualizar estado
         set({
           user: data.user,
           token: data.token,
-          appKey: data.appKey,
           plan: data.plan,
           subscriptionStatus: data.subscriptionStatus,
           isLoading: false,
@@ -47,7 +43,6 @@ export const useAuthStore = create<AuthState>()(
         set({
           user: null,
           token: null,
-          appKey: "",
           plan: "",
           subscriptionStatus: "",
           isLoading: false,
@@ -57,12 +52,10 @@ export const useAuthStore = create<AuthState>()(
       // Verificar si hay autenticación válida
       checkAuth: () => {
         const token = Cookies.get("token");
-        const appKey = Cookies.get("appKey");
 
-        if (token && appKey) {
+        if (token) {
           set({
             token,
-            appKey,
             isLoading: false,
           });
         } else {
@@ -73,14 +66,12 @@ export const useAuthStore = create<AuthState>()(
       // Hidratar estado desde cookies (al cargar la app)
       hydrate: () => {
         const token = Cookies.get("token");
-        const appKey = Cookies.get("appKey");
         const plan = Cookies.get("plan");
         const subscriptionStatus = Cookies.get("subscriptionStatus");
 
-        if (token && appKey) {
+        if (token) {
           set({
             token,
-            appKey: appKey || "",
             plan: plan || "",
             subscriptionStatus: subscriptionStatus || "",
             isLoading: false,
@@ -98,7 +89,6 @@ export const useAuthStore = create<AuthState>()(
       // Solo persistir estos campos (no tokens por seguridad)
       partialize: (state) => ({
         user: state.user,
-        appKey: state.appKey,
         plan: state.plan,
         subscriptionStatus: state.subscriptionStatus,
       }),

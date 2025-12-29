@@ -10,7 +10,7 @@ export const useVerifyAccount = () => {
     mutationFn: async (code: string) => {
       return await verifyCodeAction(code);
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       // Toast de éxito
       toast.success("¡Cuenta verificada!", {
         description:

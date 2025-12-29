@@ -15,7 +15,6 @@ export const registerAction = async (
   try {
     const { data } = await authApi.post<RegisterResponse>("/auth/register", {
       ...payload,
-      appKey: project,
     });
     return data;
   } catch (error) {

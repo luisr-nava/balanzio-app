@@ -3,7 +3,6 @@ import { useAuthStore } from "../auth.slice";
 export const useAuth = () => {
   const user = useAuthStore((state) => state.user);
   const token = useAuthStore((state) => state.token);
-  const project = useAuthStore((state) => state.appKey);
   const isLoading = useAuthStore((state) => state.isLoading);
   const plan = useAuthStore((state) => state.plan);
   const isAuthenticated = Boolean(token);
@@ -11,8 +10,7 @@ export const useAuth = () => {
   return {
     user,
     token,
-    project,
-    isLoading: false,
+    isLoading,
     plan,
     isAuthenticated,
   };

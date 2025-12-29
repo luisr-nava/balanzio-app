@@ -2,7 +2,6 @@ export interface LoginResponse {
   token: string;
   user: User;
   ownerId: string;
-  appKey: string;
   plan: string;
   subscriptionStatus: string;
 }
@@ -12,7 +11,6 @@ export interface User {
   fullName: string;
   email: string;
   role: string;
-  appKey: string;
   lastLogin: string;
   isVerify: boolean;
   failedLoginAttempts: number;
@@ -27,7 +25,6 @@ export interface AuthState {
   user: User | null;
   token: string | null;
   ownerId?: string;
-  appKey: string;
   plan: string;
   subscriptionStatus: string;
   isLoading: boolean;
@@ -37,7 +34,6 @@ export interface AuthState {
     user: User;
     token: string;
     ownerId?: string;
-    appKey: string;
     plan: string;
     subscriptionStatus: string;
   }) => void;
@@ -46,3 +42,13 @@ export interface AuthState {
   checkAuth: () => void;
   hydrate: () => void;
 }
+
+export interface ForgotPasswordFormData {
+  email: string;
+}
+
+export interface LoginFormData {
+  email: string;
+  password: string;
+}
+

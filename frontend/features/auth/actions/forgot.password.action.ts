@@ -11,7 +11,7 @@ export const forgotPasswordAction = async (
   try {
     const { data } = await authApi.post<ForgotPasswordResponse>(
       "/auth/forgot-password",
-      { email, appKey: project },
+      { email },
     );
     return data;
   } catch (error) {

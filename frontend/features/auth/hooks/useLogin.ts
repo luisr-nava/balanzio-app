@@ -1,10 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { loginActions } from "../actions/login.action";
 import { getAuthErrorMessage } from "@/lib/error-handler";
 import { useAuthStore } from "../auth.slice";
 import { LoginResponse } from "../types";
+import { loginActions } from "../actions/login.action";
 
 export const useLogin = () => {
   const router = useRouter();
@@ -28,7 +28,6 @@ export const useLogin = () => {
         user: data.user,
         token: data.token,
         ownerId: data.ownerId,
-        appKey: data.appKey,
         plan: data.plan,
         subscriptionStatus: data.subscriptionStatus,
       });
@@ -38,19 +37,12 @@ export const useLogin = () => {
         description: `Inicio de sesión exitoso. Hola, ${data.user.fullName}`,
       });
 
-      console.log("Login exitoso:", data.user);
-
       // Redirigir al dashboard
-      router.push(redirectTo);
+      router.replace("/dashboard");
     },
-    onError: (error: unknown) => {
-      console.error("Error en login:", error);
-
-      // Obtener mensaje de error usando el helper centralizado
-      const { title, message } = getAuthErrorMessage(error);
-
-      toast.error(title, {
-        description: message,
+    onError: () => {
+      toast.error("Credenciales incorrectas", {
+        description: "El email o la contraseña son incorrectos.",
         duration: 5000,
       });
     },

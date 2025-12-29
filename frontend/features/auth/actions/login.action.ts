@@ -10,7 +10,6 @@ export const loginActions = async (
     const { data } = await authApi.post<LoginResponse>("/auth/login", {
       email,
       password,
-      appKey: project,
     });
 
     if (!data?.token || !data?.user) {

@@ -12,11 +12,10 @@ interface ResetPasswordResponse {
 export const resetPasswordAction = async (
   payload: ResetPasswordPayload,
 ): Promise<ResetPasswordResponse> => {
-  const project = process.env.NEXT_PUBLIC_PROJECT;
   try {
     const { data } = await authApi.post<ResetPasswordResponse>(
       "/auth/reset-password",
-      { ...payload, appKey: project },
+      { ...payload },
     );
     return data;
   } catch (error) {

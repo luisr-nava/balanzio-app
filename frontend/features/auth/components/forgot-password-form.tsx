@@ -7,14 +7,10 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { useForgotPassword } from "../hooks/useForgotPassword";
-
-interface ForgotPasswordFormData {
-  email: string;
-}
+import { ForgotPasswordFormData } from "../types";
 
 export default function ForgotPasswordForm() {
-  const { sendResetEmail, isLoading } = useForgotPassword();
-
+  const { onSubmit, isLoading } = useForgotPassword();
   const {
     register,
     handleSubmit,
@@ -24,10 +20,6 @@ export default function ForgotPasswordForm() {
       email: "",
     },
   });
-
-  const onSubmit = (data: ForgotPasswordFormData) => {
-    sendResetEmail({ email: data.email });
-  };
 
   return (
     <Card className="shadow-lg w-md">
@@ -70,3 +62,4 @@ export default function ForgotPasswordForm() {
     </Card>
   );
 }
+
