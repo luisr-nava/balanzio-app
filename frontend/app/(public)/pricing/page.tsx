@@ -1,12 +1,19 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import { ArrowLeft, Check, Crown, Sparkles, Zap } from "lucide-react";
-import { useAuth } from "@/app/(auth)/hooks";
+import { useAuth } from "@/features/auth/hooks";
 
 export default function PricingPage() {
   const { isAuthenticated } = useAuth();
@@ -110,7 +117,8 @@ export default function PricingPage() {
             Planes y Precios
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Elige el plan perfecto para tu negocio. Comienza gratis y actualiza cuando lo necesites.
+            Elige el plan perfecto para tu negocio. Comienza gratis y actualiza
+            cuando lo necesites.
           </p>
         </div>
 
@@ -133,7 +141,8 @@ export default function PricingPage() {
                 )}
 
                 <CardHeader className="text-center pb-8 pt-8">
-                  <div className={`w-16 h-16 rounded-2xl ${plan.bgColor} flex items-center justify-center mx-auto mb-4`}>
+                  <div
+                    className={`w-16 h-16 rounded-2xl ${plan.bgColor} flex items-center justify-center mx-auto mb-4`}>
                     <Icon className={`h-8 w-8 ${plan.color}`} />
                   </div>
                   <CardTitle className="text-2xl mb-2">{plan.name}</CardTitle>
@@ -142,9 +151,7 @@ export default function PricingPage() {
                   </CardDescription>
                   <div className="mt-4">
                     <div className="flex items-baseline justify-center gap-2">
-                      <span className="text-5xl font-bold">
-                        ${plan.price}
-                      </span>
+                      <span className="text-5xl font-bold">${plan.price}</span>
                       <span className="text-muted-foreground">
                         {plan.price > 0 ? "/mes" : ""}
                       </span>
@@ -161,7 +168,9 @@ export default function PricingPage() {
                   <div className="space-y-3">
                     {plan.features.map((feature, index) => (
                       <div key={index} className="flex items-start gap-3">
-                        <Check className={`h-5 w-5 ${plan.color} flex-shrink-0 mt-0.5`} />
+                        <Check
+                          className={`h-5 w-5 ${plan.color} flex-shrink-0 mt-0.5`}
+                        />
                         <span className="text-sm">{feature}</span>
                       </div>
                     ))}
@@ -187,12 +196,12 @@ export default function PricingPage() {
                 </CardContent>
 
                 <CardFooter>
-                  <Link href={isAuthenticated ? "/dashboard" : "/register"} className="w-full">
+                  <Link
+                    href={isAuthenticated ? "/dashboard" : "/register"}
+                    className="w-full">
                     <Button
                       className={`w-full ${
-                        plan.popular
-                          ? "bg-blue-600 hover:bg-blue-700"
-                          : ""
+                        plan.popular ? "bg-blue-600 hover:bg-blue-700" : ""
                       }`}
                       variant={plan.popular ? "default" : "outline"}
                       size="lg">
@@ -223,72 +232,87 @@ export default function PricingPage() {
           <div className="grid gap-6 md:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">¿Puedo cambiar de plan en cualquier momento?</CardTitle>
+                <CardTitle className="text-lg">
+                  ¿Puedo cambiar de plan en cualquier momento?
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  Sí, puedes actualizar o degradar tu plan en cualquier momento. Los cambios se
-                  reflejarán en tu próximo ciclo de facturación.
+                  Sí, puedes actualizar o degradar tu plan en cualquier momento.
+                  Los cambios se reflejarán en tu próximo ciclo de facturación.
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">¿Qué métodos de pago aceptan?</CardTitle>
+                <CardTitle className="text-lg">
+                  ¿Qué métodos de pago aceptan?
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  Aceptamos tarjetas de crédito/débito (Visa, Mastercard, American Express),
-                  PayPal y transferencias bancarias para planes anuales.
+                  Aceptamos tarjetas de crédito/débito (Visa, Mastercard,
+                  American Express), PayPal y transferencias bancarias para
+                  planes anuales.
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">¿Hay periodo de prueba?</CardTitle>
+                <CardTitle className="text-lg">
+                  ¿Hay periodo de prueba?
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  El plan Free es completamente gratuito. Los planes Premium y Pro incluyen
-                  garantía de reembolso de 30 días si no estás satisfecho.
+                  El plan Free es completamente gratuito. Los planes Premium y
+                  Pro incluyen garantía de reembolso de 30 días si no estás
+                  satisfecho.
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">¿Qué sucede si excedo los límites?</CardTitle>
+                <CardTitle className="text-lg">
+                  ¿Qué sucede si excedo los límites?
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  Recibirás una notificación para actualizar tu plan. Tus datos estarán seguros
-                  y no perderás información al actualizar.
+                  Recibirás una notificación para actualizar tu plan. Tus datos
+                  estarán seguros y no perderás información al actualizar.
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">¿Ofrecen descuentos para planes anuales?</CardTitle>
+                <CardTitle className="text-lg">
+                  ¿Ofrecen descuentos para planes anuales?
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  Sí, al pagar anualmente obtienes 2 meses gratis (equivalente a un 16% de
-                  descuento). Contacta a ventas para más información.
+                  Sí, al pagar anualmente obtienes 2 meses gratis (equivalente a
+                  un 16% de descuento). Contacta a ventas para más información.
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">¿Los datos están seguros?</CardTitle>
+                <CardTitle className="text-lg">
+                  ¿Los datos están seguros?
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  Absolutamente. Todos los planes incluyen cifrado de datos, backups regulares
-                  y cumplimiento con estándares de seguridad internacionales.
+                  Absolutamente. Todos los planes incluyen cifrado de datos,
+                  backups regulares y cumplimiento con estándares de seguridad
+                  internacionales.
                 </p>
               </CardContent>
             </Card>
@@ -303,7 +327,8 @@ export default function PricingPage() {
                 ¿Necesitas un plan personalizado?
               </CardTitle>
               <CardDescription className="text-blue-100 text-lg">
-                Para empresas con necesidades específicas, ofrecemos planes a medida
+                Para empresas con necesidades específicas, ofrecemos planes a
+                medida
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
@@ -313,7 +338,10 @@ export default function PricingPage() {
                     Comenzar Gratis
                   </Button>
                 </Link>
-                <Button size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white/10">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="bg-transparent border-white text-white hover:bg-white/10">
                   Contactar Ventas
                 </Button>
               </div>
@@ -324,3 +352,4 @@ export default function PricingPage() {
     </div>
   );
 }
+

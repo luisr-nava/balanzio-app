@@ -9,7 +9,7 @@ import { useCashRegisterReports } from "./hooks/useCashRegisterReports";
 import type { CashRegisterReportsQueryParams } from "./hooks/useCashRegisterReports";
 import type { DateRangeValue } from "@/components/ui/date-range-picker";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useAuth } from "@/app/(auth)/hooks";
+import { useAuth } from "@/features/auth/hooks";
 import { formatIsoDate } from "@/lib/date-utils";
 import type { PeriodFilter } from "./types/cash-register-report";
 
@@ -24,7 +24,9 @@ export default function CashRegisterReportsPage() {
 
   const openedByName = user?.fullName ?? "";
   const [period, setPeriod] = useState<PeriodFilter>(DEFAULT_PERIOD);
-  const [selectedDay, setSelectedDay] = useState<Date | undefined>(() => new Date());
+  const [selectedDay, setSelectedDay] = useState<Date | undefined>(
+    () => new Date(),
+  );
   const [weekRange, setWeekRange] = useState<DateRangeValue>({});
   const [monthSelection, setMonthSelection] = useState({
     month: currentMonth,
@@ -152,8 +154,12 @@ function ReportsTableSkeleton() {
   return (
     <div className="space-y-3 rounded-3xl border border-border bg-card p-6 shadow-sm">
       {Array.from({ length: 4 }).map((_, index) => (
-        <div key={index} className="h-12 rounded-xl bg-muted/70 animate-pulse" />
+        <div
+          key={index}
+          className="h-12 rounded-xl bg-muted/70 animate-pulse"
+        />
       ))}
     </div>
   );
 }
+

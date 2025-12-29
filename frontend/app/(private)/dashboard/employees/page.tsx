@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/app/(auth)/hooks";
+import { useAuth } from "@/features/auth/hooks";
 import { useShopStore } from "@/app/(private)/store/shops.slice";
 import { ShopLoading } from "@/components/shop-loading";
 import { Modal } from "@/components/ui/modal";

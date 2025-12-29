@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { shopApi } from "@/lib/api/shop.api";
 import type { Shop } from "@/lib/types/shop";
-import { useAuth } from "@/app/(auth)/hooks";
+import { useAuth } from "@/features/auth/hooks";
 
 const MY_SHOPS_QUERY_KEY = ["my-shops"] as const;
 
@@ -24,3 +24,4 @@ export const useMyShops = () => {
 };
 
 export const myShopsQueryKey = MY_SHOPS_QUERY_KEY;
+

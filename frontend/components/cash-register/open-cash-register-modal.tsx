@@ -7,7 +7,7 @@ import { Modal, ModalFooter } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/app/(auth)/hooks";
+import { useAuth } from "@/features/auth/hooks";
 import { cashRegisterApi } from "@/lib/api/cash-register.api";
 import { getErrorMessage } from "@/lib/error-handler";
 
@@ -61,10 +61,7 @@ export function OpenCashRegisterModal({
       onOpened();
     },
     onError: (error: unknown) => {
-      const { message } = getErrorMessage(
-        error,
-        "No pudimos abrir la caja",
-      );
+      const { message } = getErrorMessage(error, "No pudimos abrir la caja");
       toast.error("Error al abrir caja", {
         description: message,
       });
@@ -96,8 +93,7 @@ export function OpenCashRegisterModal({
       description="No encontramos una caja abierta para esta tienda. Ingresa el monto inicial para continuar."
       size="md"
       showCloseButton={false}
-      closeOnOverlayClick={false}
-    >
+      closeOnOverlayClick={false}>
       <div className="space-y-4">
         <p className="text-sm text-muted-foreground">
           Tienda seleccionada:{" "}
@@ -138,11 +134,11 @@ export function OpenCashRegisterModal({
       <ModalFooter className="justify-end">
         <Button
           onClick={handleOpenClick}
-          disabled={!canSubmit || openMutation.isPending}
-        >
+          disabled={!canSubmit || openMutation.isPending}>
           {openMutation.isPending ? "Abriendo..." : "Abrir caja"}
         </Button>
       </ModalFooter>
     </Modal>
   );
 }
+

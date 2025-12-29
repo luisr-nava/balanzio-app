@@ -1,5 +1,4 @@
-import React from "react";
-import RegisterForm from "../components/register-form";
+import { RegisterForm } from "@/features/auth/components";
 import Link from "next/link";
 
 export default function Register() {
@@ -21,6 +20,4 @@ export default function Register() {
     </div>
   );
 }
-
-
 

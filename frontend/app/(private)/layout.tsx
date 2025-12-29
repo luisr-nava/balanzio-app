@@ -1,9 +1,10 @@
 "use client";
 
-import { PrivateRouteGuard } from "@/components/guards/private-route-guard";
-import { StoreSetupGuard } from "@/components/guards/store-setup-guard";
-import { SessionDataLoader } from "@/components/shops/session-data-loader";
 import { useNotificationsQuery } from "@/app/(private)/hooks/useNotificationsQuery";
+import { usePrivateRouteGuard } from "@/features/auth/hooks/usePrivateRouteGuard";
+
+import { StoreSelector } from "@/components/shops/store-selector";
+import { Loading } from "@/components/loading";
 
 export default function PrivateLayout({
   children,
@@ -11,13 +12,28 @@ export default function PrivateLayout({
   children: React.ReactNode;
 }) {
   useNotificationsQuery();
+  const {
+    isLoading,
+    needsStoreSelection,
+    handleSelectStore,
+    shops,
+    storedShops,
+  } = usePrivateRouteGuard();
 
-  return (
-    <PrivateRouteGuard>
-      <StoreSetupGuard>
-        <SessionDataLoader />
-        {children}
-      </StoreSetupGuard>
-    </PrivateRouteGuard>
-  );
+  if (isLoading) {
+    return <Loading text="Verificando autenticación..." />;
+  }
+  const shopOptions = shops ?? storedShops;
+
+  if (needsStoreSelection) {
+    return (
+      <StoreSelector
+        shops={shopOptions}
+        onSelect={handleSelectStore}
+        onCreateSuccess={handleSelectStore}
+      />
+    );
+  }
+  return <>{children}</>;
 }
+

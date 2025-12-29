@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useAuth } from "@/app/(auth)/hooks";
+import { useAuth } from "@/features/auth/hooks";
 import { useShopStore } from "@/app/(private)/store/shops.slice";
 import {
   Card,
@@ -284,3 +284,4 @@ export default function ProveedoresPage() {
     </div>
   );
 }
+

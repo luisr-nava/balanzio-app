@@ -1,4 +1,5 @@
-import VerifyAccountForm from "../components/verify-account-form";
+import { VerifyAccountForm } from "@/features/auth/components";
+
 
 export default function VerifyAccountPage() {
   return (
@@ -13,3 +14,4 @@ export default function VerifyAccountPage() {
     </div>
   );
 }
+

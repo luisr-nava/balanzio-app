@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CheckCircle2, PlusCircle, Store } from "lucide-react";
-import { useAuth } from "@/app/(auth)/hooks";
+import { useAuth } from "@/features/auth/hooks";
 import { SubscriptionPlanType } from "@/lib/types/subscription";
 import { getErrorMessage } from "@/lib/error-handler";
 import {
@@ -195,10 +195,7 @@ export function StoreSelector({
       queryClient.invalidateQueries({ queryKey: ["my-shops"] });
     },
     onError: (error: unknown) => {
-      const { message } = getErrorMessage(
-        error,
-        "No pudimos crear la tienda",
-      );
+      const { message } = getErrorMessage(error, "No pudimos crear la tienda");
       toast.error("Error al crear", {
         description: message,
       });
@@ -217,8 +214,7 @@ export function StoreSelector({
   return (
     <div
       className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
-      data-store-selector-trigger
-    >
+      data-store-selector-trigger>
       <Card className="w-full max-w-5xl shadow-xl">
         <CardHeader className="flex flex-col gap-2">
           <CardTitle className="text-2xl">Selecciona tu tienda</CardTitle>
@@ -243,7 +239,7 @@ export function StoreSelector({
                   return (
                     <button
                       key={shopId}
-                  onClick={() => setSelectedShopId(shopId)}
+                      onClick={() => setSelectedShopId(shopId)}
                       className={`w-full text-left border rounded-lg p-4 transition hover:border-primary ${
                         isActive
                           ? "border-primary bg-primary/5"
@@ -342,8 +338,7 @@ export function StoreSelector({
                     id="store-country"
                     className="h-10 rounded-md border bg-background px-3 text-sm"
                     value={countryCode}
-                    onChange={(e) => setCountryCode(e.target.value)}
-                  >
+                    onChange={(e) => setCountryCode(e.target.value)}>
                     <option value="" disabled>
                       Selecciona tu país
                     </option>
@@ -361,8 +356,7 @@ export function StoreSelector({
                     id="store-currency"
                     className="h-10 rounded-md border bg-background px-3 text-sm"
                     value={currencyCode}
-                    onChange={(e) => setCurrencyCode(e.target.value)}
-                  >
+                    onChange={(e) => setCurrencyCode(e.target.value)}>
                     <option value="" disabled>
                       Selecciona tu moneda
                     </option>
@@ -400,3 +394,4 @@ export function StoreSelector({
     </div>
   );
 }
+

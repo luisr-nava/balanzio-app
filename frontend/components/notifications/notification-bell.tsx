@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Bell, Check, Loader2 } from "lucide-react";
 import { useNotifications } from "@/app/(private)/hooks/useNotifications";
-import { useAuth } from "@/app/(auth)/hooks";
+import { useAuth } from "@/features/auth/hooks";
 
 const formatDate = (date: string) =>
   new Date(date).toLocaleString("es-ES", {
@@ -59,7 +59,9 @@ export const NotificationBell = () => {
       <DropdownMenuContent align="end" className="w-80">
         <DropdownMenuLabel className="flex items-center justify-between">
           <span>Notificaciones</span>
-          {isUpdating && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+          {isUpdating && (
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {latestNotifications.length === 0 ? (
@@ -131,3 +133,4 @@ export const NotificationBell = () => {
     </DropdownMenu>
   );
 };
+

@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/app/(auth)/hooks";
+import { useAuth } from "@/features/auth/hooks";
 import { useShopStore } from "@/app/(private)/store/shops.slice";
 import { ShopLoading } from "@/components/shop-loading";
 import { Modal } from "@/components/ui/modal";
@@ -142,8 +142,8 @@ export default function ExpensesPage() {
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
             ¿Seguro que deseas eliminar{" "}
-            <span className="font-semibold">{deleteTarget?.description}</span>? Esta
-            acción no se puede deshacer.
+            <span className="font-semibold">{deleteTarget?.description}</span>?
+            Esta acción no se puede deshacer.
           </p>
           <div className="flex justify-end gap-2">
             <Button
@@ -166,3 +166,4 @@ export default function ExpensesPage() {
     </div>
   );
 }
+

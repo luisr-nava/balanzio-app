@@ -1,19 +1,32 @@
-import Navbar from "./components/navbar";
-import { AuthGuard } from "./components/auth-guard";
+"use client";
+import { Loading } from "@/components/loading";
+import { Navbar } from "@/features/auth/components";
+import { useAuth } from "@/features/auth/hooks";
+import { useRouter } from "next/navigation";
 
 export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
+
+  if (!isLoading && isAuthenticated) {
+    router.push("/dashboard");
+  }
+
+  if (isLoading) {
+    return <Loading text="Cargando..." />;
+  }
+
   return (
-    <AuthGuard>
+    <>
       <Navbar />
       <main className="pt-14 flex items-center justify-center p-4">
         {children}
       </main>
-    </AuthGuard>
+    </>
   );
 }
-
 

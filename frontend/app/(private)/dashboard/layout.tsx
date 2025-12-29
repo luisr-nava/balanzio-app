@@ -7,10 +7,10 @@ import { type ReactNode } from "react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { MobileSidebar } from "@/components/layout/mobile-sidebar";
 import { NotificationBell } from "@/components/notifications/notification-bell";
-import { UserMenu } from "@/app/(auth)/components/user-menu";
 import { menuItems } from "@/components/layout/sidebar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { UserMenu } from "@/features/auth/components";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -21,16 +21,15 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       "animate-pulse ring-2 ring-primary/50 ring-offset-2 ring-offset-background",
   );
   const currentMenu =
-    menuItems.reduce<
-      (typeof menuItems)[number] | null
-    >((best, item) => {
+    menuItems.reduce<(typeof menuItems)[number] | null>((best, item) => {
       const matches =
         pathname === item.href || pathname.startsWith(`${item.href}/`);
       if (!matches) return best;
       if (!best) return item;
       return item.href.length > best.href.length ? item : best;
     }, null) || null;
-  const pageDescription = currentMenu?.description || "Panel de administración.";
+  const pageDescription =
+    currentMenu?.description || "Panel de administración.";
 
   return (
     <div className="flex min-h-screen bg-background">

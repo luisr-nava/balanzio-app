@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
-import { useAuth } from "@/app/(auth)/hooks/useAuth";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 import { useShallow } from "zustand/react/shallow";
 import { useShopStore } from "@/app/(private)/store/shops.slice";
 import type { CategoryProduct, CategorySupplier } from "../interfaces";

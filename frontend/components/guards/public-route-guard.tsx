@@ -2,7 +2,7 @@
 
 import { useEffect, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useAuth } from "@/app/(auth)/hooks";
+import { useAuth } from "@/features/auth/hooks";
 
 const PUBLIC_STATIC_PATHS = new Set(["/", "/pricing", "/privacy", "/terms"]);
 const PUBLIC_PREFIXES = [
@@ -47,3 +47,4 @@ export function PublicRouteGuard({ children }: PublicRouteGuardProps) {
 
   return <>{children}</>;
 }
+
