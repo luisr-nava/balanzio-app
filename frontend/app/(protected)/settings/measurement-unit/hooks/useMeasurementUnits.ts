@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useShopStore } from "@/app/(private)/store/shops.slice";
+import { useShopStore } from "@/app/(protected)/store/shops.slice";
 import { getMeasurementUnitsAction } from "../actions";
 
 export const useMeasurementUnits = () => {
@@ -19,3 +19,4 @@ export const useMeasurementUnits = () => {
     isFetching: query.isFetching,
   };
 };
+

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Expense } from "../../interfaces";
-import type { PaymentMethod } from "@/app/(private)/settings/payment-method/interfaces";
+import type { PaymentMethod } from "@/app/(protected)/settings/payment-method/interfaces";
 import { cn } from "@/lib/utils";
 
 export interface ExpenseFormValues {
@@ -50,9 +50,7 @@ export const ExpenseForm = ({
       form.reset({
         description: editingExpense.description || "",
         amount: editingExpense.amount,
-        date: editingExpense.date
-          ? editingExpense.date.split("T")[0]
-          : "",
+        date: editingExpense.date ? editingExpense.date.split("T")[0] : "",
         paymentMethodId: editingExpense.paymentMethodId || "",
       });
     } else {
@@ -118,9 +116,7 @@ export const ExpenseForm = ({
             })}
           />
           {errors.amount && (
-            <p className="text-xs text-destructive">
-              {errors.amount.message}
-            </p>
+            <p className="text-xs text-destructive">{errors.amount.message}</p>
           )}
         </div>
       </div>
@@ -196,3 +192,4 @@ export const ExpenseForm = ({
     </form>
   );
 };
+

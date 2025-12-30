@@ -1,6 +1,6 @@
 "use client";
 
-import { useMyShops } from "@/app/(private)/hooks/useMyShops";
+import { useMyShops } from "@/app/(protected)/hooks/useMyShops";
 
 /**
  * Carga tiendas de la sesión una sola vez.
@@ -10,3 +10,4 @@ export function SessionDataLoader() {
   useMyShops();
   return null;
 }
+

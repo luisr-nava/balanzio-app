@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useShopStore } from "@/app/(private)/store/shops.slice";
+import { useShopStore } from "@/app/(protected)/store/shops.slice";
 import { CreateCustomerDto } from "../interfaces";
 import { createCustomerAction } from "../actions/create.customer.action";
 import { updateCustomerAction } from "../actions/update.customer.action";
@@ -46,3 +46,4 @@ export const useCustomerDeleteMutation = () => {
     },
   });
 };
+

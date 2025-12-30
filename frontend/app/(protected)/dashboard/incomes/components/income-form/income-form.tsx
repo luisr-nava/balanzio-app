@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { PaymentMethod } from "@/app/(private)/settings/payment-method/interfaces";
+import type { PaymentMethod } from "@/app/(protected)/settings/payment-method/interfaces";
 import { cn } from "@/lib/utils";
 import type { Income } from "../../interfaces";
 
@@ -50,9 +50,7 @@ export const IncomeForm = ({
       form.reset({
         description: editingIncome.description || "",
         amount: editingIncome.amount,
-        date: editingIncome.date
-          ? editingIncome.date.split("T")[0]
-          : "",
+        date: editingIncome.date ? editingIncome.date.split("T")[0] : "",
         paymentMethodId: editingIncome.paymentMethodId || "",
       });
     } else {
@@ -118,9 +116,7 @@ export const IncomeForm = ({
             })}
           />
           {errors.amount && (
-            <p className="text-xs text-destructive">
-              {errors.amount.message}
-            </p>
+            <p className="text-xs text-destructive">{errors.amount.message}</p>
           )}
         </div>
       </div>
@@ -196,3 +192,4 @@ export const IncomeForm = ({
     </form>
   );
 };
+

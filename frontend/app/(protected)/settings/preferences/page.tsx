@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useShopStore } from "@/app/(private)/store/shops.slice";
+import { useShopStore } from "@/app/(protected)/store/shops.slice";
 import { notificationApi } from "@/lib/api/notification.api";
 import type { NotificationPreferences } from "@/lib/types/notification";
 import { getErrorMessage } from "@/lib/error-handler";
@@ -62,7 +62,9 @@ export default function PreferencesPage() {
     },
   });
 
-  const onSubmit = form.handleSubmit((values) => updatePreferences.mutate(values));
+  const onSubmit = form.handleSubmit((values) =>
+    updatePreferences.mutate(values),
+  );
 
   if (!activeShopId) {
     return (
@@ -74,7 +76,8 @@ export default function PreferencesPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
-          No hay tienda activa. Selecciona una tienda desde el menú para continuar.
+          No hay tienda activa. Selecciona una tienda desde el menú para
+          continuar.
         </CardContent>
       </Card>
     );
@@ -108,16 +111,16 @@ export default function PreferencesPage() {
                   <Switch
                     checked={field.value}
                     onCheckedChange={field.onChange}
-                    disabled={preferencesQuery.isLoading || updatePreferences.isPending}
+                    disabled={
+                      preferencesQuery.isLoading || updatePreferences.isPending
+                    }
                   />
                 )}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="lowStockThreshold">
-                Umbral de stock bajo
-              </Label>
+              <Label htmlFor="lowStockThreshold">Umbral de stock bajo</Label>
               <Input
                 id="lowStockThreshold"
                 type="number"
@@ -127,7 +130,9 @@ export default function PreferencesPage() {
                   valueAsNumber: true,
                   min: 0,
                 })}
-                disabled={preferencesQuery.isLoading || updatePreferences.isPending}
+                disabled={
+                  preferencesQuery.isLoading || updatePreferences.isPending
+                }
               />
               <p className="text-sm text-muted-foreground">
                 Se enviarán notificaciones cuando un producto esté por debajo de
@@ -143,7 +148,9 @@ export default function PreferencesPage() {
                   updatePreferences.isPending ||
                   !form.formState.isDirty
                 }>
-                {updatePreferences.isPending ? "Guardando..." : "Guardar cambios"}
+                {updatePreferences.isPending
+                  ? "Guardando..."
+                  : "Guardar cambios"}
               </Button>
             </div>
           </form>
@@ -152,3 +159,4 @@ export default function PreferencesPage() {
     </div>
   );
 }
+

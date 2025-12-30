@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { expandableRowVariants } from "@/lib/animations";
 import { Calendar, CreditCard, FileText } from "lucide-react";
 import type { Expense } from "../../interfaces";
-import type { PaymentMethod } from "@/app/(private)/settings/payment-method/interfaces";
+import type { PaymentMethod } from "@/app/(protected)/settings/payment-method/interfaces";
 
 interface Props {
   expenses: Expense[];
@@ -191,7 +191,9 @@ export const ExpenseTable = ({
                             e.stopPropagation();
                             onDelete(expense);
                           }}>
-                          {deletingId === expense.id ? "Eliminando..." : "Eliminar"}
+                          {deletingId === expense.id
+                            ? "Eliminando..."
+                            : "Eliminar"}
                         </Button>
                       </div>
                     </div>
@@ -212,3 +214,4 @@ export const ExpenseTable = ({
     </div>
   );
 };
+

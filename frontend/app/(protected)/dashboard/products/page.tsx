@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useShopStore } from "@/app/(private)/store/shops.slice";
+import { useShopStore } from "@/app/(protected)/store/shops.slice";
 import type { Supplier } from "@/lib/types/supplier";
 import { Modal } from "@/components/ui/modal";
 import { useProducts } from "./hooks/useProducts";
@@ -17,21 +17,28 @@ import { usePaginationParams } from "../../hooks/useQueryParams";
 import { ShopEmpty } from "@/components/shop-emty";
 import { supplierApi } from "@/lib/api/supplier.api";
 import { Pagination } from "../../components";
-import { useMeasurementUnits } from "@/app/(private)/settings/measurement-unit/hooks";
+import { useMeasurementUnits } from "@/app/(protected)/settings/measurement-unit/hooks";
 
 export default function ProductosPage() {
   const { activeShopId, activeShopLoading } = useShopStore();
 
   const { search, setSearch, debouncedSearch, page, limit, setPage, setLimit } =
     usePaginationParams(300);
-  const {
-    products,
-    productsLoading,
-    pagination,
-    isFetching,
-  } = useProducts(debouncedSearch, page, limit, Boolean(activeShopId));
+  const { products, productsLoading, pagination, isFetching } = useProducts(
+    debouncedSearch,
+    page,
+    limit,
+    Boolean(activeShopId),
+  );
   const form = useProductForm();
-  const { productModal, editProductModal, initialForm, setValue, reset, getValues } = form;
+  const {
+    productModal,
+    editProductModal,
+    initialForm,
+    setValue,
+    reset,
+    getValues,
+  } = form;
 
   // ? Move to supplier hook
   const { data: suppliers = [], isLoading: suppliersLoading } = useQuery({
@@ -40,10 +47,8 @@ export default function ProductosPage() {
     enabled: Boolean(activeShopId),
     staleTime: 1000 * 30,
   });
-  const {
-    measurementUnits,
-    isLoading: measurementUnitsLoading,
-  } = useMeasurementUnits();
+  const { measurementUnits, isLoading: measurementUnitsLoading } =
+    useMeasurementUnits();
 
   useEffect(() => {
     if (activeShopId) {
@@ -132,3 +137,4 @@ export default function ProductosPage() {
     </div>
   );
 }
+

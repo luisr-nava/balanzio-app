@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useShopStore } from "@/app/(private)/store/shops.slice";
+import { useShopStore } from "@/app/(protected)/store/shops.slice";
 import { getPaymentMethodsAction } from "../actions";
 
 export const usePaymentMethods = () => {
@@ -20,3 +20,4 @@ export const usePaymentMethods = () => {
     isFetching: query.isFetching,
   };
 };
+

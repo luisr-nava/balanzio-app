@@ -1,9 +1,9 @@
-import { useShopStore } from "@/app/(private)/store/shops.slice";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "./useAuth";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getAllShops } from "@/features/shop/actions/get-all.shops.action";
+import { useShopStore } from "@/features/shop/shop.store";
 
 export function usePrivateRouteGuard() {
   const { isLoading, isAuthenticated } = useAuth();

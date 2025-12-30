@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useDebounce } from "@/app/(private)/hooks/useDebounce";
+import { useDebounce } from "@/app/(protected)/hooks/useDebounce";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -63,7 +63,9 @@ export const ExpenseHeader = ({
             onChange={(e) => setStartDate(e.target.value)}
           />
           {dateError && (
-            <p className="text-xs text-destructive w-full sm:w-44">{dateError}</p>
+            <p className="text-xs text-destructive w-full sm:w-44">
+              {dateError}
+            </p>
           )}
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -77,7 +79,9 @@ export const ExpenseHeader = ({
             onChange={(e) => setEndDate(e.target.value)}
           />
           {dateError && (
-            <p className="text-xs text-destructive w-full sm:w-44">{dateError}</p>
+            <p className="text-xs text-destructive w-full sm:w-44">
+              {dateError}
+            </p>
           )}
         </div>
         <Button
@@ -93,3 +97,4 @@ export const ExpenseHeader = ({
     </div>
   );
 };
+

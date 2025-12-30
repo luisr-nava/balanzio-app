@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useShopStore } from "@/app/(private)/store/shops.slice";
+import { useShopStore } from "@/app/(protected)/store/shops.slice";
 import {
   createPaymentMethodAction,
   deletePaymentMethodAction,
@@ -13,7 +13,9 @@ export const usePaymentMethodMutations = () => {
   const queryClient = useQueryClient();
   const { activeShopId } = useShopStore();
   const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: ["payment-methods", activeShopId] });
+    queryClient.invalidateQueries({
+      queryKey: ["payment-methods", activeShopId],
+    });
 
   const createMutation = useMutation({
     mutationFn: (payload: CreatePaymentMethodDto) =>
@@ -69,3 +71,4 @@ export const usePaymentMethodMutations = () => {
 
   return { createMutation, updateMutation, deleteMutation };
 };
+

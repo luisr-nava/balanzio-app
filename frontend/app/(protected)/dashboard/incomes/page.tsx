@@ -1,15 +1,15 @@
 "use client";
 
 import { useAuth } from "@/features/auth/hooks";
-import { useShopStore } from "@/app/(private)/store/shops.slice";
+import { useShopStore } from "@/app/(protected)/store/shops.slice";
 import { ShopLoading } from "@/components/shop-loading";
 import { Modal } from "@/components/ui/modal";
 import {
   AccessRestrictedCard,
   Pagination,
   SelectShopCard,
-} from "@/app/(private)/components";
-import { usePaymentMethods } from "@/app/(private)/settings/payment-method/hooks";
+} from "@/app/(protected)/components";
+import { usePaymentMethods } from "@/app/(protected)/settings/payment-method/hooks";
 import { IncomeHeader, IncomeForm, IncomeTable } from "./components";
 import { useIncome } from "./hooks/useIncome";
 import { Button } from "@/components/ui/button";

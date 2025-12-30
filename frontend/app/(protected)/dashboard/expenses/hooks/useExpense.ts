@@ -3,11 +3,11 @@ import { toast } from "sonner";
 import {
   usePaginationParams,
   useQueryParams,
-} from "@/app/(private)/hooks/useQueryParams";
+} from "@/app/(protected)/hooks/useQueryParams";
 import { useExpenses } from "./useExpenses";
 import { useExpenseMutations } from "./useExpenseMutations";
 import type { CreateExpenseDto, Expense } from "../interfaces";
-import { useShopStore } from "@/app/(private)/store/shops.slice";
+import { useShopStore } from "@/app/(protected)/store/shops.slice";
 import type { ShopCashRegister } from "@/lib/types/shop";
 import type { ExpenseFormValues } from "../components/expense-form/expense-form";
 

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useShopStore } from "@/app/(private)/store/shops.slice";
+import { useShopStore } from "@/app/(protected)/store/shops.slice";
 import { useShallow } from "zustand/react/shallow";
 import {
   usePoductCreateMutation,
@@ -7,7 +7,7 @@ import {
 } from "./product.mutation";
 import { CreateProductDto, Product } from "../interfaces";
 import { useForm } from "react-hook-form";
-import { useModal } from "@/app/(private)/hooks/useModal";
+import { useModal } from "@/app/(protected)/hooks/useModal";
 const initialForm: CreateProductDto = {
   name: "",
   description: "",
@@ -41,11 +41,11 @@ export const useProductForm = () => {
     getValues,
     formState: { errors },
   } = useForm<CreateProductDto>({
-      defaultValues: {
-        ...initialForm,
-        shopId: activeShopId || "",
-      },
-    });
+    defaultValues: {
+      ...initialForm,
+      shopId: activeShopId || "",
+    },
+  });
 
   const onSubmit = handleSubmit((values) => {
     if (!activeShopId) return;
@@ -88,7 +88,8 @@ export const useProductForm = () => {
       stock: product.stock ?? 0,
       supplierId: product.supplierId || "",
       isActive: product.isActive,
-      measurementUnitId: product.measurementUnitId || product.measurementUnit?.id || "",
+      measurementUnitId:
+        product.measurementUnitId || product.measurementUnit?.id || "",
     });
     editProductModal.open(product.id);
   };
@@ -157,3 +158,4 @@ export const useProductForm = () => {
 };
 
 export type UseProductFormReturn = ReturnType<typeof useProductForm>;
+

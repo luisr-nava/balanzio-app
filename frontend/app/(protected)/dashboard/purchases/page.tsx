@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { useShopStore } from "@/app/(private)/store/shops.slice";
+import { useShopStore } from "@/app/(protected)/store/shops.slice";
 import { purchaseApi } from "@/lib/api/purchase.api";
 import { productApi } from "@/lib/api/product.api";
 import { supplierApi } from "@/lib/api/supplier.api";
@@ -14,7 +14,7 @@ import type {
   Purchase,
   PurchaseItem,
 } from "@/lib/types/purchase";
-import type { Product } from "@/app/(private)/dashboard/products/interfaces";
+import type { Product } from "@/app/(protected)/dashboard/products/interfaces";
 import type { Supplier } from "@/lib/types/supplier";
 import {
   Card,

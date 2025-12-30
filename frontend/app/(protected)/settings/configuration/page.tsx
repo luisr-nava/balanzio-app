@@ -1,6 +1,6 @@
 "use client";
 
-import { useShopStore } from "@/app/(private)/store/shops.slice";
+import { useShopStore } from "@/app/(protected)/store/shops.slice";
 import { useState } from "react";
 import {
   Card,
@@ -14,8 +14,14 @@ import { Package, Truck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CategoryForm, CategoryList } from "../category/components";
 import { useCategory, useCategoryForm } from "../category/hooks";
-import { PaymentMethodForm, PaymentMethodTable } from "../payment-method/components";
-import { usePaymentMethodMutations, usePaymentMethods } from "../payment-method/hooks";
+import {
+  PaymentMethodForm,
+  PaymentMethodTable,
+} from "../payment-method/components";
+import {
+  usePaymentMethodMutations,
+  usePaymentMethods,
+} from "../payment-method/hooks";
 import type { PaymentMethod } from "../payment-method/interfaces";
 import {
   MeasurementUnitForm,
@@ -108,10 +114,16 @@ export default function ConfigurationPage() {
   const [panel, setPanel] = useState<
     "categories" | "payment-methods" | "measurement-units"
   >("categories");
-  const [editingPaymentMethod, setEditingPaymentMethod] = useState<PaymentMethod | null>(null);
-  const [deletingPaymentMethodId, setDeletingPaymentMethodId] = useState<string | null>(null);
-  const [editingMeasurementUnit, setEditingMeasurementUnit] = useState<MeasurementUnit | null>(null);
-  const [deletingMeasurementUnitId, setDeletingMeasurementUnitId] = useState<string | null>(null);
+  const [editingPaymentMethod, setEditingPaymentMethod] =
+    useState<PaymentMethod | null>(null);
+  const [deletingPaymentMethodId, setDeletingPaymentMethodId] = useState<
+    string | null
+  >(null);
+  const [editingMeasurementUnit, setEditingMeasurementUnit] =
+    useState<MeasurementUnit | null>(null);
+  const [deletingMeasurementUnitId, setDeletingMeasurementUnitId] = useState<
+    string | null
+  >(null);
 
   if (activeShopLoading) {
     return <ShopLoading />;
@@ -379,3 +391,4 @@ export default function ConfigurationPage() {
 
   return configurationView;
 }
+

@@ -1,6 +1,6 @@
 import { kioscoApi } from "@/lib/kioscoApi";
 import type { Customer, GetAllCustomerResponse } from "../interfaces";
-import { Pagination } from "@/app/(private)/interfaces";
+import { Pagination } from "@/app/(protected)/interfaces";
 
 export const getAllCustomerAction = async (
   shopId: string,
@@ -29,3 +29,4 @@ export const getAllCustomerAction = async (
     pagination: data.meta,
   };
 };
+

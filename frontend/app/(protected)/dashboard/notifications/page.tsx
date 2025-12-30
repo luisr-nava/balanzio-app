@@ -1,6 +1,6 @@
 "use client";
 import { Bell, Check, RefreshCcw } from "lucide-react";
-import { useNotifications } from "@/app/(private)/hooks/useNotifications";
+
 import {
   Card,
   CardContent,
@@ -19,16 +19,16 @@ const formatDate = (date: string) =>
   });
 
 export default function NotificationsPage() {
-  const {
-    notifications,
-    unreadCount,
-    isUpdating,
-    refreshNotifications,
-    markNotificationAsRead,
-    markAllAsRead,
-  } = useNotifications();
+  // const {
+  //   notifications,
+  //   unreadCount,
+  //   isUpdating,
+  //   refreshNotifications,
+  //   markNotificationAsRead,
+  //   markAllAsRead,
+  // } = useNotifications();
 
-  const hasNotifications = notifications.length > 0;
+  // const hasNotifications = notifications.length > 0;
 
   return (
     <div className="space-y-6">
@@ -39,9 +39,9 @@ export default function NotificationsPage() {
             Alertas en tiempo real sobre stock y actividad de tus tiendas.
           </p>
         </div>
-        <Badge variant={unreadCount > 0 ? "default" : "outline"}>
+        {/* <Badge variant={unreadCount > 0 ? "default" : "outline"}>
           {unreadCount} sin leer
-        </Badge>
+        </Badge> */}
       </div>
 
       <Card>
@@ -60,24 +60,26 @@ export default function NotificationsPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={refreshNotifications}
-              disabled={isUpdating}>
+              // onClick={refreshNotifications}
+              // disabled={isUpdating}
+            >
               <RefreshCcw
-                className={`mr-2 h-4 w-4 ${isUpdating ? "animate-spin" : ""}`}
+              // className={`mr-2 h-4 w-4 ${isUpdating ? "animate-spin" : ""}`}
               />
               Actualizar
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => markAllAsRead()}
-              disabled={unreadCount === 0}>
+              // onClick={() => markAllAsRead()}
+              // disabled={unreadCount === 0}
+            >
               Marcar todas como leídas
             </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
-          {!hasNotifications ? (
+          {/* {!hasNotifications ? (
             <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed p-6 text-center">
               <Bell className="h-8 w-8 text-muted-foreground" />
               <div className="space-y-1">
@@ -136,11 +138,12 @@ export default function NotificationsPage() {
                 </div>
               );
             })
-          )}
+          )} */}
         </CardContent>
       </Card>
 
-      {hasNotifications && <Separator />}
+      {/* {hasNotifications && <Separator />} */}
     </div>
   );
 }
+

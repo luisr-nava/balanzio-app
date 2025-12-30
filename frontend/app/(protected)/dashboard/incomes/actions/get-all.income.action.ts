@@ -1,6 +1,6 @@
 import { kioscoApi } from "@/lib/kioscoApi";
 import type { Income, GetIncomesResponse } from "../interfaces";
-import type { Pagination } from "@/app/(private)/interfaces";
+import type { Pagination } from "@/app/(protected)/interfaces";
 
 type GetIncomesParams = {
   search?: string;
@@ -30,3 +30,4 @@ export const getIncomesAction = async (
     pagination: data.meta,
   };
 };
+

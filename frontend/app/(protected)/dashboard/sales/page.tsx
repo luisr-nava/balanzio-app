@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useMemo } from "react";
-import { useShopStore } from "@/app/(private)/store/shops.slice";
+import { useShopStore } from "@/app/(protected)/store/shops.slice";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
@@ -88,8 +88,7 @@ export default function VentasPage() {
                     const stock = Math.max(0, Number(product.stock ?? 0));
                     const quantityInCart =
                       quantityByShopProductId.get(resolvedShopProductId) ?? 0;
-                    const isAddDisabled =
-                      stock <= 0 || quantityInCart >= stock;
+                    const isAddDisabled = stock <= 0 || quantityInCart >= stock;
 
                     return (
                       <CardProduct
@@ -194,3 +193,4 @@ export default function VentasPage() {
     </div>
   );
 }
+

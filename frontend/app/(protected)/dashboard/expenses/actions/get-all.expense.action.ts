@@ -1,6 +1,6 @@
 import { kioscoApi } from "@/lib/kioscoApi";
 import type { Expense, GetExpensesResponse } from "../interfaces";
-import type { Pagination } from "@/app/(private)/interfaces";
+import type { Pagination } from "@/app/(protected)/interfaces";
 
 type GetExpensesParams = {
   search?: string;
@@ -30,3 +30,4 @@ export const getExpensesAction = async (
     pagination: data.meta,
   };
 };
+

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useAuth } from "@/features/auth/hooks";
-import { useShopStore } from "@/app/(private)/store/shops.slice";
+import { useShopStore } from "@/app/(protected)/store/shops.slice";
 import {
   Card,
   CardContent,
@@ -22,7 +22,7 @@ import { useSupplierMutations } from "./hooks/useSupplierMutations";
 import { toast } from "sonner";
 import { Modal } from "@/components/ui/modal";
 import { ShopLoading } from "@/components/shop-loading";
-import { useCategorySuppliersQuery } from "@/app/(private)/settings/category/hooks";
+import { useCategorySuppliersQuery } from "@/app/(protected)/settings/category/hooks";
 
 export default function ProveedoresPage() {
   const { user } = useAuth();

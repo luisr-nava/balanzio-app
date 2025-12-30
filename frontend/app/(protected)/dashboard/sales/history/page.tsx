@@ -1,9 +1,15 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { ShopEmpty } from "@/components/shop-emty";
 import { ShopLoading } from "@/components/shop-loading";
-import { useShopStore } from "@/app/(private)/store/shops.slice";
+import { useShopStore } from "@/app/(protected)/store/shops.slice";
 
 export default function SalesHistoryPage() {
   const { activeShopId, activeShopLoading } = useShopStore();
@@ -17,7 +23,8 @@ export default function SalesHistoryPage() {
         <CardHeader>
           <CardTitle>Ventas</CardTitle>
           <CardDescription>
-            Consulta el historial y detalles de las ventas realizadas en la tienda activa.
+            Consulta el historial y detalles de las ventas realizadas en la
+            tienda activa.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -29,3 +36,4 @@ export default function SalesHistoryPage() {
     </div>
   );
 }
+

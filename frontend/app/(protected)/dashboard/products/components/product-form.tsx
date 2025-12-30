@@ -7,7 +7,7 @@ import type { CreateProductDto } from "../interfaces";
 import type { UseProductFormReturn } from "../hooks/useProductForm";
 import type { Supplier } from "@/lib/types/supplier";
 import { Switch } from "@/components/ui/switch";
-import type { MeasurementUnit } from "@/app/(private)/settings/measurement-unit/interfaces";
+import type { MeasurementUnit } from "@/app/(protected)/settings/measurement-unit/interfaces";
 
 type Props = Pick<
   UseProductFormReturn,
@@ -146,7 +146,8 @@ export const ProductForm = ({
                   const cost = Number(
                     (formValues as CreateProductDto)?.costPrice ?? 0,
                   );
-                  if (value <= 0) return "El precio de venta debe ser mayor a 0";
+                  if (value <= 0)
+                    return "El precio de venta debe ser mayor a 0";
                   if (cost && value <= cost) {
                     return "El precio de venta debe ser mayor al costo";
                   }
@@ -260,3 +261,4 @@ export const ProductForm = ({
     </form>
   );
 };
+

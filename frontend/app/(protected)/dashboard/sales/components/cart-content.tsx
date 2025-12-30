@@ -1,5 +1,5 @@
 import { Product } from "../../products/interfaces";
-import { PaymentMethod } from "@/app/(private)/settings/payment-method/interfaces";
+import { PaymentMethod } from "@/app/(protected)/settings/payment-method/interfaces";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";

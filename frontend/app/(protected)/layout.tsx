@@ -1,6 +1,6 @@
 "use client";
 
-import { useNotificationsQuery } from "@/app/(private)/hooks/useNotificationsQuery";
+import { useNotificationsQuery } from "@/app/(protected)/hooks/useNotificationsQuery";
 import { usePrivateRouteGuard } from "@/features/auth/hooks/usePrivateRouteGuard";
 
 import { StoreSelector } from "@/components/shops/store-selector";

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getIncomesAction } from "../actions";
-import { useShopStore } from "@/app/(private)/store/shops.slice";
+import { useShopStore } from "@/app/(protected)/store/shops.slice";
 
 export const useIncomeQuery = (
   search: string,
@@ -13,7 +13,15 @@ export const useIncomeQuery = (
   const { activeShopId } = useShopStore();
 
   return useQuery({
-    queryKey: ["incomes", activeShopId, search, page, limit, startDate, endDate],
+    queryKey: [
+      "incomes",
+      activeShopId,
+      search,
+      page,
+      limit,
+      startDate,
+      endDate,
+    ],
     queryFn: () =>
       getIncomesAction(activeShopId || "", {
         search: search || undefined,
@@ -25,3 +33,4 @@ export const useIncomeQuery = (
     enabled,
   });
 };
+

@@ -6,7 +6,7 @@ import {
   deleteIncomeAction,
 } from "../actions";
 import type { CreateIncomeDto } from "../interfaces";
-import { useShopStore } from "@/app/(private)/store/shops.slice";
+import { useShopStore } from "@/app/(protected)/store/shops.slice";
 
 export const useIncomeMutations = () => {
   const queryClient = useQueryClient();
@@ -53,3 +53,4 @@ export const useIncomeMutations = () => {
 
   return { createMutation, updateMutation, deleteMutation };
 };
+

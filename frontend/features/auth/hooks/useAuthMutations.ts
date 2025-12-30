@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { forgotPasswordAction } from "../actions/forgot.password.action";
 import { loginActions } from "../actions/login.action";
 import { logoutActions } from "../actions/logout.action";
-import { myShopsQueryKey } from "@/app/(private)/hooks/useMyShops";
+import { myShopsQueryKey } from "@/app/(protected)/hooks/useMyShops";
 import { RegisterFormData } from "../types";
 import { registerAction } from "../actions/register.action";
 import { resendVerificationCodeAction } from "../actions/resend.verification.code.action";

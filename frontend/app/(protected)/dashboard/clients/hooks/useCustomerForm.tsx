@@ -1,4 +1,4 @@
-import { useShopStore } from "@/app/(private)/store/shops.slice";
+import { useShopStore } from "@/app/(protected)/store/shops.slice";
 import { useShallow } from "zustand/react/shallow";
 import {
   useCustomerCreateMutation,
@@ -7,7 +7,7 @@ import {
 } from "./customer.mutation";
 import type { CreateCustomerDto, Customer } from "../interfaces";
 import { useForm } from "react-hook-form";
-import { useModal } from "@/app/(private)/hooks/useModal";
+import { useModal } from "@/app/(protected)/hooks/useModal";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/error-handler";
 
@@ -75,7 +75,7 @@ export const useCustomerForm = () => {
       phone: values.phone?.trim() || null,
       dni: values.dni?.toString().trim(),
       address: values.address?.trim() || null,
-      creditLimit: values.creditLimit ||0 ,
+      creditLimit: values.creditLimit || 0,
       notes: values.notes?.trim() || null,
       shopId: activeShopId,
     };
@@ -181,3 +181,4 @@ export const useCustomerForm = () => {
 };
 
 export type UseCustomerFormReturn = ReturnType<typeof useCustomerForm>;
+

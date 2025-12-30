@@ -1,7 +1,7 @@
 import { kioscoApi } from "@/lib/kioscoApi";
 import type { Employee, GetEmployeesResponse } from "../interfaces";
 import { unwrapResponse } from "@/lib/api/utils";
-import type { Pagination } from "@/app/(private)/interfaces";
+import type { Pagination } from "@/app/(protected)/interfaces";
 
 type GetEmployeesParams = {
   search?: string;
@@ -65,3 +65,4 @@ export const getEmployeesAction = async (
     pagination: buildFallbackPagination(0, page, limit),
   };
 };
+

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useShopStore } from "@/app/(private)/store/shops.slice";
+import { useShopStore } from "@/app/(protected)/store/shops.slice";
 import { CreateProductDto } from "../interfaces";
 import { createProductAction } from "../actions/create.product.action";
 import { updateProductAction } from "../actions/update.product.action";
@@ -31,8 +31,13 @@ export const useProductUpdateMutation = () => {
   const { activeShopId } = useShopStore();
 
   return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: Partial<CreateProductDto> }) =>
-      updateProductAction(id, payload),
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: Partial<CreateProductDto>;
+    }) => updateProductAction(id, payload),
     onSuccess: () => {
       toast.success("Producto actualizado");
       queryClient.invalidateQueries({ queryKey: ["products", activeShopId] });
@@ -46,3 +51,4 @@ export const useProductUpdateMutation = () => {
     },
   });
 };
+

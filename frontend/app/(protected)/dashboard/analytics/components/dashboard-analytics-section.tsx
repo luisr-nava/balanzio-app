@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Separator } from "@/components/ui/separator";
-import { useShopStore } from "@/app/(private)/store/shops.slice";
+import { useShopStore } from "@/app/(protected)/store/shops.slice";
 import { AnalyticsPeriod, TopProduct } from "@/lib/types/analytics";
 import { useAnalytics } from "../hooks/useAnalytics";
 import { CombinedMetricChart } from "./combined-metric-chart";

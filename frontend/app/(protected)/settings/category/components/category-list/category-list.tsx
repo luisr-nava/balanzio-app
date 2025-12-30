@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Edit3 } from "lucide-react";
-import { Loading } from "@/app/(private)/components";
+import { Loading } from "@/app/(protected)/components";
 
 interface Item {
   id: string;

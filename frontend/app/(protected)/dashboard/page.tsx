@@ -1,6 +1,6 @@
 "use client";
 
-import { useShopStore } from "@/app/(private)/store/shops.slice";
+import { useShopStore } from "@/app/(protected)/store/shops.slice";
 import { Loading, SelectShopCard } from "../components";
 import { Analytics, Financial, Stats } from "./components";
 import { useAnalitycs } from "./hooks/useAnalitycs";

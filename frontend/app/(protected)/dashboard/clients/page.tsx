@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useShopStore } from "@/app/(private)/store/shops.slice";
+import { useShopStore } from "@/app/(protected)/store/shops.slice";
 import { usePaginationParams } from "../../hooks/useQueryParams";
 import { useCustomers } from "./hooks/useCustomers";
 import { useCustomerForm } from "./hooks/useCustomerForm";
@@ -9,24 +9,20 @@ import { Modal } from "@/components/ui/modal";
 import { ShopEmpty } from "@/components/shop-emty";
 import { ShopLoading } from "@/components/shop-loading";
 import { Empty, Loading } from "../../components";
-import { Pagination } from "@/app/(private)/components";
+import { Pagination } from "@/app/(protected)/components";
 import { Button } from "@/components/ui/button";
 import type { Customer } from "./interfaces";
 
 export default function ClientesPage() {
   const { activeShopId, activeShopLoading } = useShopStore();
 
-  const {
-    search,
-    setSearch,
+  const { search, setSearch, debouncedSearch, page, limit, setPage, setLimit } =
+    usePaginationParams(300);
+  const { customers, customersLoading, pagination, isFetching } = useCustomers(
     debouncedSearch,
     page,
     limit,
-    setPage,
-    setLimit,
-  } = usePaginationParams(300);
-  const { customers, customersLoading, pagination, isFetching } =
-    useCustomers(debouncedSearch, page, limit);
+  );
 
   const form = useCustomerForm();
   const { customerModal, editCustomerModal, initialForm, reset } = form;
@@ -123,8 +119,8 @@ export default function ClientesPage() {
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
             ¿Seguro que deseas eliminar a{" "}
-            <span className="font-semibold">{deleteTarget?.fullName}</span>? Esta
-            acción no se puede deshacer.
+            <span className="font-semibold">{deleteTarget?.fullName}</span>?
+            Esta acción no se puede deshacer.
           </p>
           <div className="flex justify-end gap-2">
             <Button
@@ -147,3 +143,4 @@ export default function ClientesPage() {
     </div>
   );
 }
+

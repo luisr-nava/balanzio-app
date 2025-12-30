@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useShopStore } from "@/app/(private)/store/shops.slice";
+import { useShopStore } from "@/app/(protected)/store/shops.slice";
 import { createSupplierAction } from "../actions/create.supplier.action";
 import { updateSupplierAction } from "../actions/update.supplier.action";
 import { deleteSupplierAction } from "../actions/delete.supplier.action";
@@ -22,10 +22,8 @@ export const useSupplierMutations = () => {
     },
     onError: (error: unknown) => {
       toast.error("Error", {
-        description: getErrorMessage(
-          error,
-          "No se pudo crear el proveedor",
-        ).message,
+        description: getErrorMessage(error, "No se pudo crear el proveedor")
+          .message,
       });
     },
   });
@@ -60,13 +58,12 @@ export const useSupplierMutations = () => {
     },
     onError: (error: unknown) => {
       toast.error("Error", {
-        description: getErrorMessage(
-          error,
-          "No se pudo eliminar el proveedor",
-        ).message,
+        description: getErrorMessage(error, "No se pudo eliminar el proveedor")
+          .message,
       });
     },
   });
 
   return { createMutation, updateMutation, deleteMutation };
 };
+

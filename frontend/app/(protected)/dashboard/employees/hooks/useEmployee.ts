@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { usePaginationParams } from "@/app/(private)/hooks/useQueryParams";
+import { usePaginationParams } from "@/app/(protected)/hooks/useQueryParams";
 import { Employee, CreateEmployeeDto } from "../interfaces";
 import { useEmployees } from "./useEmployees";
 import { useEmployeeMutations } from "./useEmployeeMutations";

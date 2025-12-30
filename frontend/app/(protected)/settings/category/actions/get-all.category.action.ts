@@ -1,6 +1,6 @@
 import { kioscoApi } from "@/lib/kioscoApi";
 import { CategoryProduct, CategorySupplier } from "../interfaces";
-import { Pagination } from "@/app/(private)/interfaces";
+import { Pagination } from "@/app/(protected)/interfaces";
 
 export const GetAllCategoryProductAction = async (params?: {
   page?: number;
@@ -47,5 +47,4 @@ export const GetAllCategorySupplierAction = async (params?: {
     pagination: data.pagination,
   };
 };
-
 

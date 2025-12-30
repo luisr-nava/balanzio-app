@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useShopStore } from "@/app/(private)/store/shops.slice";
+import { useShopStore } from "@/app/(protected)/store/shops.slice";
 import {
   createExpenseAction,
   updateExpenseAction,
@@ -22,10 +22,7 @@ export const useExpenseMutations = () => {
       invalidate();
     },
     onError: (error: unknown) => {
-      const { message } = getErrorMessage(
-        error,
-        "No se pudo crear el gasto",
-      );
+      const { message } = getErrorMessage(error, "No se pudo crear el gasto");
       toast.error("Error", { description: message });
     },
   });
@@ -68,3 +65,4 @@ export const useExpenseMutations = () => {
 
   return { createMutation, updateMutation, deleteMutation };
 };
+

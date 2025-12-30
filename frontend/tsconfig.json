@@ -28,7 +28,9 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts"
-, "app/(private)/dashboard/hooks/useAnalitycs.query.ts"  ],
+    "**/*.mts",
+    "app/(protected)/dashboard/hooks/useAnalitycs.query.ts"
+  ],
   "exclude": ["node_modules"]
 }
+

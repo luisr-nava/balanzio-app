@@ -1,5 +1,5 @@
 import { kioscoApi } from "@/lib/kioscoApi";
-import type { Product } from "@/app/(private)/dashboard/products/interfaces";
+import type { Product } from "@/app/(protected)/dashboard/products/interfaces";
 import { unwrapResponse } from "./utils";
 
 const PRODUCT_BASE_PATH = "/product";
@@ -23,3 +23,4 @@ export const productApi = {
     return unwrapResponse(data);
   },
 };
+

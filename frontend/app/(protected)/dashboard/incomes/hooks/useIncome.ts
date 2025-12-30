@@ -3,11 +3,11 @@ import { toast } from "sonner";
 import {
   usePaginationParams,
   useQueryParams,
-} from "@/app/(private)/hooks/useQueryParams";
+} from "@/app/(protected)/hooks/useQueryParams";
 import { useIncomes } from "./useIncomes";
 import { useIncomeMutations } from "./useIncomeMutations";
 import type { CreateIncomeDto, Income } from "../interfaces";
-import { useShopStore } from "@/app/(private)/store/shops.slice";
+import { useShopStore } from "@/app/(protected)/store/shops.slice";
 import type { ShopCashRegister } from "@/lib/types/shop";
 import type { IncomeFormValues } from "../components/income-form/income-form";
 
