@@ -72,3 +72,17 @@ export interface UpdateShopDto {
   currencyCode?: string;
   isActive?: boolean;
 }
+
+export interface ShopState {
+  shops: Shop[];
+  activeShopId: string | null;
+  activeShop: ShopDetail | null;
+  activeShopLoading: boolean;
+  shouldForceStoreSelection: boolean;
+  setShops: (shops: Shop[]) => void;
+  setActiveShopId: (shopId: string) => void;
+  setActiveShop: (shop: ShopDetail | null) => void;
+  setActiveShopLoading: (loading: boolean) => void;
+  setShouldForceStoreSelection: (force: boolean) => void;
+  clearShops: () => void;
+}

@@ -1,24 +1,7 @@
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
-import type { Shop, ShopDetail } from "@/lib/types/shop";
+import { ShopDetail, ShopState } from "./types";
+import { createJSONStorage, persist } from "zustand/middleware";
 
-interface ShopState {
-  shops: Shop[];
-  activeShopId: string | null;
-  activeShop: ShopDetail | null;
-  activeShopLoading: boolean;
-  shouldForceStoreSelection: boolean;
-  setShops: (shops: Shop[]) => void;
-  setActiveShopId: (shopId: string) => void;
-  setActiveShop: (shop: ShopDetail | null) => void;
-  setActiveShopLoading: (loading: boolean) => void;
-  setShouldForceStoreSelection: (force: boolean) => void;
-  clearShops: () => void;
-}
-
-/**
- * Estado global de tiendas (lista y tienda activa)
- */
 export const useShopStore = create<ShopState>()(
   persist(
     (set) => ({
@@ -31,17 +14,21 @@ export const useShopStore = create<ShopState>()(
       setActiveShopId: (shopId) =>
         set((state) => {
           const isNewShop = state.activeShopId !== shopId;
-          const fallbackShop = state.shops.find((shop) => shop.id === shopId) || null;
+          const fallbackShop =
+            state.shops.find((shop) => shop.id === shopId) || null;
           return {
             activeShopId: shopId,
-            activeShop: isNewShop ? (fallbackShop as ShopDetail | null) : state.activeShop,
-            // Solo mostramos loading si no tenemos ningún dato de la tienda seleccionada
+            activeShop: isNewShop
+              ? (fallbackShop as ShopDetail | null)
+              : state.activeShop,
             activeShopLoading: isNewShop && Boolean(shopId) && !fallbackShop,
           };
         }),
-      setActiveShop: (shop) => set({ activeShop: shop, activeShopLoading: false }),
+      setActiveShop: (shop) =>
+        set({ activeShop: shop, activeShopLoading: false }),
       setActiveShopLoading: (loading) => set({ activeShopLoading: loading }),
-      setShouldForceStoreSelection: (force) => set({ shouldForceStoreSelection: force }),
+      setShouldForceStoreSelection: (force) =>
+        set({ shouldForceStoreSelection: force }),
       clearShops: () =>
         set({
           shops: [],
@@ -62,3 +49,4 @@ export const useShopStore = create<ShopState>()(
     },
   ),
 );
+

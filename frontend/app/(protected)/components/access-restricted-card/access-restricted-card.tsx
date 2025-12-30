@@ -13,9 +13,6 @@ interface Props {
   helperText?: string;
 }
 
-/**
- * Card genérico para bloquear secciones a roles restringidos.
- */
 export const AccessRestrictedCard = ({
   title = "Acceso restringido",
   description = "Esta sección solo está disponible para propietarios de la cuenta.",
