@@ -1,17 +1,17 @@
 "use client";
 import { useEffect, useState } from "react";
-import { usePaginationParams } from "../../hooks/useQueryParams";
 import { useCustomers } from "./hooks/useCustomers";
 import { useCustomerForm } from "./hooks/useCustomerForm";
 import { CustomerForm, CustomerHeader, TableCustomers } from "./components";
 import { Modal } from "@/components/ui/modal";
 import { ShopEmpty } from "@/components/shop-emty";
-import { ShopLoading } from "@/components/shop-loading";
-import { Empty, Loading } from "../../components";
+import { Empty } from "../../components";
 import { Pagination } from "@/app/(protected)/components";
 import { Button } from "@/components/ui/button";
 import type { Customer } from "./interfaces";
 import { useShopStore } from "@/features/shop/shop.store";
+import { usePaginationParams } from "@/src/hooks/usePaginationParams";
+import { Loading } from "@/components/loading";
 
 export default function ClientesPage() {
   const { activeShopId } = useShopStore();

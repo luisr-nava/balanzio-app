@@ -1,5 +1,4 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Card, CardContent } from "@/components/ui/card";
 import { CashRegisterReport } from "../type";
 import { Loading } from "@/components/loading";
 import ReportsTable from "./ReportsTable";

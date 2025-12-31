@@ -9,7 +9,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { CashRegisterReport } from "../type";
-import DownloadReportButton from "./DownloadReportButton";
+import DownloadReportButton from "./download-report-button";
 import { useCurrencyFormatter } from "@/src/hooks/useCurrencyFormatter";
 
 interface ReportsTableProps {
