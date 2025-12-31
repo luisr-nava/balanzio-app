@@ -15,7 +15,12 @@ export const useAnalyticsQuery = (
 
   const query = useQuery({
     queryKey: ["analytics", activeShopId, params],
-    queryFn: () => getAllAnalyticsAction(activeShopId!, params),
+    queryFn: () => {
+      if (!activeShopId) {
+        throw new Error("activeShopId is required");
+      }
+      return getAllAnalyticsAction(activeShopId, params);
+    },
     enabled: Boolean(activeShopId),
     staleTime: 1000 * 60 * 5,
   });

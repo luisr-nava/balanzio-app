@@ -2,18 +2,17 @@
 
 import { useShopStore } from "@/features/shop/shop.store";
 import { SelectShopCard } from "../components";
-import { useDashboardPage } from "@/features/dashboard/hooks/useDashboardPage";
 import { Analytics, Financial, Stats } from "@/features/dashboard/components";
 
 export default function Dashboard() {
-  const { activeShopId } = useDashboardPage();
+  const { activeShopId } = useShopStore();
 
   if (!activeShopId) return <SelectShopCard />;
 
   return (
     <>
-      <Financial activeShop={activeShopId!} />
-      <Stats activeShop={activeShopId!} />
+      <Financial />
+      <Stats />
       <Analytics />
     </>
   );

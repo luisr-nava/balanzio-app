@@ -1,33 +1,60 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { ShopDetail } from "@/lib/types/shop";
-interface FinancialProps {
-  activeShop: string;
-}
-export default function Financial({ activeShop }: FinancialProps) {
+import { useSummary } from "../hooks/useSummary";
+import { useCurrencyFormatter } from "@/src/hooks/useCurrencyFormatter";
+import { Scale, TrendingDown, TrendingUp, Wallet } from "lucide-react";
+
+export default function Financial() {
+  const { summary, summaryLoading } = useSummary();
+  const formatCurrency = useCurrencyFormatter();
   const financial = [
-    { label: "Total ventas", value: activeShop?.totalSales ?? 0 },
-    { label: "Total gastos", value: activeShop?.totalExpenses ?? 0 },
-    { label: "Total ingresos", value: activeShop?.totalIncomes ?? 0 },
-    { label: "Balance", value: activeShop?.balance ?? 0 },
+    {
+      label: "Total ventas",
+      value: summary?.totalSales ?? 0,
+      icon: TrendingUp,
+    },
+    {
+      label: "Total gastos",
+      value: summary?.totalExpenses ?? 0,
+      icon: TrendingDown,
+    },
+    {
+      label: "Total ingresos",
+      value: summary?.totalIncomes ?? 0,
+      icon: Wallet,
+    },
+    {
+      label: "Balance",
+      value: summary?.balance ?? 0,
+      icon: Scale,
+    },
   ];
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {financial.map((item) => (
         <Card className="py-2" key={item.label}>
-          <CardContent>
-            <div className="grid gap-2 grid-cols-2 lg:grid-cols-4">
-              <div key={item.label} className="space-y-1">
-                <p className="text-sm text-muted-foreground">{item.label}</p>
-                <p className="text-2xl font-semibold">
-                  ${item.value?.toLocaleString("es-AR") ?? 0}
-                </p>
+          <CardContent className="flex items-center gap-4">
+            {summaryLoading ? (
+              <p className="text-center">Cargando...</p>
+            ) : (
+              <div className="flex items-center gap-5">
+                <item.icon className="h-6 w-6 text-primary/80 stroke-2" />
+                <div className="flex items-center gap-5">
+                  <div className="">
+                    <p className="text-sm text-muted-foreground">
+                      {item.label}
+                    </p>
+                    <p className="text-2xl font-semibold">
+                      {formatCurrency(item.value ?? 0)}
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
       ))}
     </div>
   );
-};
+}
 
 

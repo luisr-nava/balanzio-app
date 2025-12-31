@@ -37,8 +37,6 @@ export function formatCurrency(
   return formatter!.format(value);
 }
 
-
-
 // utils/currency.ts
 export const getCurrencySymbol = (
   currencyCode: string,
@@ -73,4 +71,41 @@ export const mapCurrencyWithSymbol = (
     code: currency.code,
     symbol: getCurrencySymbol(currency.code, locale),
   }));
+
+export const formatMoney = (
+  value: number,
+  currencyCode: string,
+  locale = "es-AR",
+) => {
+  const symbol = getCurrencySymbol(currencyCode, locale);
+  return `${symbol}${value.toLocaleString(locale)}`;
+};
+
+export function getHslColor(variable: string, alpha = 1) {
+  if (typeof window === "undefined") return "transparent";
+
+  const value = getComputedStyle(document.documentElement)
+    .getPropertyValue(variable)
+    .trim();
+
+  return `hsl(${value} / ${alpha})`;
+}
+export type Period = "week" | "month" | "year";
+export function formatChartLabel(label: string | Date, period: Period) {
+  const date = new Date(label + "T00:00:00");
+
+  if (period === "week") {
+    return date.toLocaleDateString("es-AR", { weekday: "long" });
+  }
+
+  if (period === "month") {
+    return date.getDate().toString();
+  }
+
+  if (period === "year") {
+    return date.toLocaleDateString("es-AR", { month: "long" });
+  }
+
+  return label;
+}
 

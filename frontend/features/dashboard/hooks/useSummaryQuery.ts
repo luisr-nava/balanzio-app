@@ -4,11 +4,16 @@ import { useShopStore } from "@/features/shop/shop.store";
 
 export const useSummaryQuery = () => {
   const { activeShopId } = useShopStore();
-
-  return useQuery({
+  const query = useQuery({
     queryKey: ["summary"],
     queryFn: () => getAllSummaryAction(activeShopId!),
     enabled: !!activeShopId,
   });
+
+  return {
+    summary: query.data,
+    summaryLoading: query.isLoading,
+    refetch: query.refetch,
+  };
 };
 
