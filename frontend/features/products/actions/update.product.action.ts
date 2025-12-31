@@ -1,9 +1,5 @@
 import { kioscoApi } from "@/lib/kioscoApi";
-import {
-  CreateProductDto,
-  CreateProductResponse,
-  Product,
-} from "../interfaces";
+import { CreateProductDto, CreateProductResponse, Product } from "../types";
 
 export const updateProductAction = async (
   id: string,
@@ -16,3 +12,4 @@ export const updateProductAction = async (
 
   return data.data.product;
 };
+

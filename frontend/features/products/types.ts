@@ -48,6 +48,18 @@ export interface CreateProductResponse {
   };
 }
 
+
+export interface GetAllProductResponse {
+  message: string;
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+  data: Product[];
+}
+
 export interface ShopProduct {
   id: string;
   shopId: string;
@@ -73,3 +85,5 @@ export interface ProductMeasurementUnit {
   isBaseUnit: boolean;
   isDefault: boolean;
 }
+
+

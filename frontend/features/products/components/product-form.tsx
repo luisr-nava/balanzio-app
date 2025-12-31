@@ -3,66 +3,49 @@ import { Input } from "@/components/ui/input";
 import { ModalFooter } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Controller, useWatch } from "react-hook-form";
-import type { CreateProductDto } from "../interfaces";
-import type { UseProductFormReturn } from "../hooks/useProductForm";
+import type { CreateProductDto } from "../types";
 import type { Supplier } from "@/lib/types/supplier";
-import { Switch } from "@/components/ui/switch";
 import type { MeasurementUnit } from "@/app/(protected)/settings/measurement-unit/interfaces";
 
-type Props = Pick<
-  UseProductFormReturn,
-  | "activeShopId"
-  | "createMutation"
-  | "updateMutation"
-  | "register"
-  | "onSubmit"
-  | "reset"
-  | "productModal"
-  | "editProductModal"
-  | "initialForm"
-  | "control"
-  | "errors"
-> & {
+import type { Control, FieldErrors, UseFormRegister } from "react-hook-form";
+import { Switch } from "@/components/ui/switch";
+
+type Props = {
+  register: UseFormRegister<CreateProductDto>;
+  control: Control<CreateProductDto>;
+  errors: FieldErrors<CreateProductDto>;
+  onSubmit: () => void;
+  onCancel: () => void;
+  isEdit: boolean;
+  isSubmitting: boolean;
   suppliers: Supplier[];
   suppliersLoading: boolean;
   measurementUnits: MeasurementUnit[];
   measurementUnitsLoading: boolean;
 };
 
-export const ProductForm = ({
-  activeShopId,
-  createMutation,
-  updateMutation,
+export default function ProductForm({
   register,
-  onSubmit,
-  reset,
-  productModal,
-  editProductModal,
-  initialForm,
   control,
   errors,
+  onSubmit,
+  onCancel,
+  isEdit,
+  isSubmitting,
   suppliers,
   suppliersLoading,
   measurementUnits,
   measurementUnitsLoading,
-}: Props) => {
+}: Props) {
   const [
     watchName,
     watchCost,
     watchSalePrice,
     watchStock,
-    watchShopId,
     watchMeasurementUnitId,
   ] = useWatch<CreateProductDto>({
     control,
-    name: [
-      "name",
-      "costPrice",
-      "salePrice",
-      "stock",
-      "shopId",
-      "measurementUnitId",
-    ],
+    name: ["name", "costPrice", "salePrice", "stock", "measurementUnitId"],
   });
 
   const salePriceValue =
@@ -80,7 +63,6 @@ export const ProductForm = ({
 
   const canSubmit = Boolean(
     normalizedName &&
-      watchShopId &&
       salePriceValue > 0 &&
       costPriceValue < salePriceValue &&
       stockValue > 0 &&
@@ -214,7 +196,7 @@ export const ProductForm = ({
             </p>
           )}
         </div>
-        {editProductModal.isOpen && (
+        {isEdit && (
           <Controller
             control={control}
             name="isActive"
@@ -236,29 +218,18 @@ export const ProductForm = ({
         )}
       </div>
       <ModalFooter>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => {
-            productModal.close();
-            editProductModal.close();
-            reset({ ...initialForm, shopId: activeShopId || "" });
-          }}>
+        <Button type="button" variant="outline" onClick={onCancel}>
           Cancelar
         </Button>
-        <Button
-          type="submit"
-          disabled={
-            !canSubmit || createMutation.isPending || updateMutation.isPending
-          }>
-          {createMutation.isPending || updateMutation.isPending
+        <Button type="submit" disabled={!canSubmit || isSubmitting}>
+          {isSubmitting
             ? "Guardando..."
-            : editProductModal.isOpen
+            : isEdit
             ? "Actualizar producto"
             : "Crear producto"}
         </Button>
       </ModalFooter>
     </form>
   );
-};
+}
 

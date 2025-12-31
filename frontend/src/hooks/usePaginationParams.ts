@@ -14,65 +14,72 @@ interface UsePaginationOptions {
   defaultLimit?: number;
 }
 
-export function usePaginationParams(options: UsePaginationOptions = {}) {
-  const { debounceDelay = 500, defaultPage = 1, defaultLimit = 10 } = options;
+export function usePaginationParams(debounceDelay: number = 500) {
+  const { params, updateParams, resetParams } = useQueryParams({
+    debounceDelay,
+    debounceKeys: ["search"],
+  });
 
-  const { params, setParams, resetParams } = useQueryParams<PaginationParams>();
+  // Valores con defaults
+  const search = (params.search as string) || "";
+  const page = Number(params.page) || 1;
+  const limit = Number(params.limit) || 10;
 
-  const search = params.search ?? "";
-  const page = Number(params.page) || defaultPage;
-  const limit = Number(params.limit) || defaultLimit;
-
-  // Solo para queries / efectos
+  // Aplicar debounce solo para usarlo en queries, no para la URL
   const debouncedSearch = useDebounce(search, debounceDelay);
 
   /**
-   * Actualiza búsqueda y resetea página
+   * Actualiza la búsqueda (con debounce) y resetea la página a 1
    */
   const setSearch = useCallback(
     (value: string) => {
-      setParams({ search: value, page: "1" });
+      updateParams({ search: value, page: 1 });
     },
-    [setParams],
+    [updateParams],
   );
 
   /**
-   * Cambia página
+   * Actualiza la página
    */
   const setPage = useCallback(
     (value: number) => {
-      setParams({ page: String(value) });
+      updateParams({ page: value });
     },
-    [setParams],
+    [updateParams],
   );
 
   /**
-   * Cambia límite y vuelve a página 1
+   * Actualiza el límite y resetea a página 1
    */
   const setLimit = useCallback(
     (value: number) => {
-      setParams({
-        limit: String(value),
-        page: "1",
-      });
+      updateParams({ limit: value, page: 1 });
     },
-    [setParams],
+    [updateParams],
   );
 
+  /**
+   * Resetea todos los parámetros a sus valores por defecto
+   */
+  const reset = useCallback(() => {
+    resetParams();
+  }, [resetParams]);
+
   return {
-    // Estado
+    // Valores actuales
     search,
     page,
     limit,
+    debouncedSearch, // Para usar en queries
 
-    // Para queries
-    debouncedSearch,
-
-    // Acciones
+    // Setters
     setSearch,
     setPage,
     setLimit,
-    reset: resetParams,
+    reset,
+
+    // Utilidad para actualizar múltiples a la vez
+    updateParams,
   };
 }
 

@@ -8,7 +8,11 @@ interface Props {
   handleOpenCreate: () => void;
 }
 
-export const ProductHeader = ({ handleOpenCreate, search, setSearch }: Props) => {
+export default function ProductHeader({
+  handleOpenCreate,
+  search,
+  setSearch,
+}: Props) {
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
@@ -29,4 +33,5 @@ export const ProductHeader = ({ handleOpenCreate, search, setSearch }: Props) =>
       </div>
     </div>
   );
-};
+}
+

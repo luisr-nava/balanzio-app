@@ -1,9 +1,6 @@
 import { useModalStore } from "../modal.store";
 import { ModalType } from "../modal.types";
 
-/**
- * Hook para interactuar con un modal específico
- */
 export const useModal = <TData = unknown>(
   modalType: Exclude<ModalType, null>,
 ) => {

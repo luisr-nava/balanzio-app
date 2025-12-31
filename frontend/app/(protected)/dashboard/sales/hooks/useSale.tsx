@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { useProductQuery } from "../../products/hooks/product.query";
+import { useProductQuery } from "../../../../../features/products/hooks/useProductQuery";
 import { Product } from "../../products/interfaces";
 import { CreateSaleDto, SaleItem } from "../interfaces";
 import { useShopStore } from "@/features/shop/shop.store";

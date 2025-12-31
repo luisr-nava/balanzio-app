@@ -5,10 +5,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type ReactNode } from "react";
 import { NotificationBell } from "@/components/notifications/notification-bell";
-import { UserMenu } from "@/app/(auth)/components/user-menu";
 import { MobileSidebar } from "@/components/layout/mobile-sidebar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { UserMenu } from "@/features/auth/components";
 
 export default function SetupLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();

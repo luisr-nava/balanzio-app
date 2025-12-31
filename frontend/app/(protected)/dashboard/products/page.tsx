@@ -1,26 +1,23 @@
 "use client";
-
-import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Modal } from "@/components/ui/modal";
-import { useProducts } from "./hooks/useProducts";
-import { Loading } from "../../components/loading";
-import { ProductHeader } from "./components/product-header";
-import { TableProducts } from "./components/table-products";
-import { useProductForm } from "./hooks/useProductForm";
-import { ProductForm } from "./components/product-form";
-import { Empty } from "./components/empty";
-import { ShopLoading } from "@/components/shop-loading";
-import { usePaginationParams } from "../../hooks/useQueryParams";
-import { ShopEmpty } from "@/components/shop-emty";
+import { useProducts } from "../../../../features/products/hooks/useProducts";
 import { supplierApi } from "@/lib/api/supplier.api";
-import { Pagination } from "../../components";
 import { useMeasurementUnits } from "@/app/(protected)/settings/measurement-unit/hooks";
 import { useShopStore } from "@/features/shop/shop.store";
+import EmptyTable from "@/components/empty-table";
+import { usePaginationParams } from "@/src/hooks/usePaginationParams";
+import { Loading } from "@/components/loading";
+import {
+  ModalProduct,
+  ProductHeader,
+  TableProducts,
+} from "@/features/products/components";
+import { useProductModals } from "@/features/products/hooks/useProductModals";
 
 export default function ProductosPage() {
   const { activeShopId } = useShopStore();
 
+  const { openCreate, openEdit } = useProductModals();
   const { search, setSearch, debouncedSearch, page, limit, setPage, setLimit } =
     usePaginationParams(300);
   const { products, productsLoading, pagination, isFetching } = useProducts(
@@ -29,15 +26,6 @@ export default function ProductosPage() {
     limit,
     Boolean(activeShopId),
   );
-  const form = useProductForm();
-  const {
-    productModal,
-    editProductModal,
-    initialForm,
-    setValue,
-    reset,
-    getValues,
-  } = form;
 
   // ? Move to supplier hook
   const { data: suppliers = [], isLoading: suppliersLoading } = useQuery({
@@ -49,33 +37,10 @@ export default function ProductosPage() {
   const { measurementUnits, isLoading: measurementUnitsLoading } =
     useMeasurementUnits();
 
-  useEffect(() => {
-    if (activeShopId) {
-      setValue("shopId", activeShopId);
-    }
-  }, [activeShopId, setValue]);
-
-  useEffect(() => {
-    if (!measurementUnits.length) return;
-    if (editProductModal.isOpen) return;
-    const current = getValues("measurementUnitId");
-    if (!current) {
-      setValue("measurementUnitId", measurementUnits[0].id);
-    }
-  }, [
-    editProductModal.isOpen,
-    getValues,
-    measurementUnits,
-    productModal.isOpen,
-    setValue,
-  ]);
-
-  if (!activeShopId) return <ShopEmpty />;
-
   return (
     <div className="space-y-4">
       <ProductHeader
-        handleOpenCreate={form.handleOpenCreate}
+        handleOpenCreate={openCreate}
         search={search}
         setSearch={setSearch}
       />
@@ -83,54 +48,28 @@ export default function ProductosPage() {
         <Loading />
       ) : !products || products.length === 0 ? (
         <>
-          <Empty />
+          <EmptyTable title={"No hay productos cargados."} />
         </>
       ) : (
         <div className="p-5 space-y-4">
-          <TableProducts products={products} handleEdit={form.handleEdit} />
-          <Pagination
-            page={page}
-            totalPages={pagination?.totalPages ?? 1}
+          <TableProducts
+            products={products}
+            handleEdit={openEdit}
             limit={limit}
-            onPageChange={(nextPage) => {
-              if (nextPage < 1) return;
-              setPage(nextPage);
-            }}
-            onLimitChange={(nextLimit) => setLimit(nextLimit)}
-            isLoading={isFetching}
-            totalItems={pagination?.total ?? 0}
+            page={page}
+            setLimit={setLimit}
+            setPage={setPage}
+            pagination={pagination!}
+            isFetching={isFetching}
           />
         </div>
       )}
-
-      <Modal
-        isOpen={productModal.isOpen || editProductModal.isOpen}
-        onClose={() => {
-          productModal.close();
-          editProductModal.close();
-          reset({ ...initialForm, shopId: activeShopId || "" });
-        }}
-        title={editProductModal.isOpen ? "Editar producto" : "Crear producto"}
-        description="Completa los datos del producto"
-        size="lg">
-        <ProductForm
-          activeShopId={form.activeShopId}
-          createMutation={form.createMutation}
-          updateMutation={form.updateMutation}
-          register={form.register}
-          onSubmit={form.onSubmit}
-          reset={form.reset}
-          productModal={form.productModal}
-          editProductModal={form.editProductModal}
-          initialForm={form.initialForm}
-          control={form.control}
-          errors={form.errors}
-          suppliers={suppliers}
-          suppliersLoading={suppliersLoading}
-          measurementUnits={measurementUnits}
-          measurementUnitsLoading={measurementUnitsLoading}
-        />
-      </Modal>
+      <ModalProduct
+        suppliers={suppliers}
+        suppliersLoading={suppliersLoading}
+        measurementUnits={measurementUnits}
+        measurementUnitsLoading={measurementUnitsLoading}
+      />
     </div>
   );
 }

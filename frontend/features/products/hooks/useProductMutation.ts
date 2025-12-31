@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CreateProductDto } from "../interfaces";
+import { CreateProductDto } from "../types";
 import { createProductAction } from "../actions/create.product.action";
 import { updateProductAction } from "../actions/update.product.action";
 import { getErrorMessage } from "@/lib/error-handler";

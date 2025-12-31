@@ -1,4 +1,4 @@
-import { useProductQuery } from "./product.query";
+import { useProductQuery } from "./useProductQuery";
 
 export const useProducts = (
   search: string,
@@ -6,13 +6,8 @@ export const useProducts = (
   limit: number = 10,
   enabled: boolean = true,
 ) => {
-  const {
-    products,
-    productsLoading,
-    pagination,
-    isFetching,
-    refetch,
-  } = useProductQuery({ search, page, limit, enabled });
+  const { products, productsLoading, pagination, isFetching, refetch } =
+    useProductQuery({ search, page, limit, enabled });
 
   return {
     products,
@@ -22,3 +17,4 @@ export const useProducts = (
     refetch,
   };
 };
+

@@ -3,7 +3,7 @@ import {
   CreateProductDto,
   CreateProductResponse,
   Product,
-} from "../interfaces";
+} from "../types";
 
 export const createProductAction = async (
   payload: Partial<CreateProductDto>,

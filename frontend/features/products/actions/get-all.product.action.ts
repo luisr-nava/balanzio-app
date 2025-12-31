@@ -1,18 +1,10 @@
 import { kioscoApi } from "@/lib/kioscoApi";
-import { Product } from "../interfaces";
-export interface GetAllProductResponse {
-  message: string;
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-  data: Product[];
-}
+import { GetAllProductResponse, Product } from "../types";
+import { Pagination } from "@/src/types";
+
 export const GetAllProductAction = async (
   shopId: string,
-  params: { search?: string; page?: number; limit?: number },
+  params: Pagination,
 ): Promise<{
   products: Product[];
   pagination: GetAllProductResponse["pagination"];
@@ -31,3 +23,4 @@ export const GetAllProductAction = async (
     pagination: data.pagination,
   };
 };
+

@@ -130,7 +130,7 @@ export function ReportsTable({
                     {currencyFormatter.format(openingAmount)}
                   </TableCell>
                   <TableCell className="text-right font-medium">
-                    {currencyFormatter.format(report.closingAmount!)}
+                    {/* {currencyFormatter.format(report.closingAmount!)} */}
                   </TableCell>
                   <TableCell
                     className={`text-right font-semibold ${differenceClass}`}>

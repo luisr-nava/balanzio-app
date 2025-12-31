@@ -64,7 +64,6 @@ export function useCashRegisterReports({
         month,
         year,
       }),
-    keepPreviousData: true,
     staleTime: 1000 * 60,
     enabled: shouldFetch,
   });
@@ -78,3 +77,4 @@ export function useCashRegisterReports({
     error: query.error,
   };
 }
+
