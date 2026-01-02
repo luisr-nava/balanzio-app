@@ -5,7 +5,7 @@ import { useShopStore } from "@/features/shop/shop.store";
 
 export const useLogout = () => {
   const clearAuth = useAuthStore((state) => state.clearAuth);
-  const clearShops = useShopStore((state) => state.clearShops);
+  const setActiveShopId = useShopStore((state) => state.setActiveShopId);
 
   const { mutate, isPending } = useLogoutMutation();
 
@@ -13,7 +13,7 @@ export const useLogout = () => {
     mutate(undefined, {
       onSuccess: () => {
         clearAuth();
-        clearShops();
+        setActiveShopId(null);
         toast.success("Sesión cerrada", {
           description: "Has cerrado sesión correctamente",
         });
@@ -25,7 +25,6 @@ export const useLogout = () => {
         });
 
         clearAuth();
-        clearShops();
       },
     });
   };

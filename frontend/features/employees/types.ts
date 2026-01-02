@@ -6,7 +6,6 @@ export interface Employee {
   email: string;
   phone?: string | null;
   role: EmployeeRole;
-  shopId: string;
   shopName?: string;
   isActive: boolean;
   dni?: string | null;
@@ -16,14 +15,18 @@ export interface Employee {
   notes?: string | null;
   profileImage?: string | null;
   emergencyContact?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
+  shopIds?: string[];
+}
+export interface EmployeeAuth {
+  message: string;
+  userId: string;
 }
 
 export interface CreateEmployeeDto {
+  id: string;
   fullName: string;
   email: string;
-  password: string;
+  password?: string;
   dni: string;
   phone?: string | null;
   address?: string | null;
@@ -49,3 +52,4 @@ export interface GetEmployeesResponse {
   };
   data: Employee[];
 }
+

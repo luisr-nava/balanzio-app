@@ -1,5 +1,4 @@
 "use client";
-import { useShopStore } from "@/features/shop/shop.store";
 import { usePaginationParams } from "@/src/hooks/usePaginationParams";
 import { Loading } from "@/components/loading";
 import { useCustomerModals, useCustomers } from "@/features/clients/hooks";
@@ -45,36 +44,6 @@ export default function ClientesPage() {
       )}
 
       <ModalClient />
-
-      {/* <Modal
-        isOpen={Boolean(deleteTarget)}
-        onClose={() => setDeleteTarget(null)}
-        title="Eliminar cliente"
-        description="Esta acción es permanente y no podrás recuperar el registro.">
-        <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            ¿Seguro que deseas eliminar a{" "}
-            <span className="font-semibold">{deleteTarget?.fullName}</span>?
-            Esta acción no se puede deshacer.
-          </p>
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setDeleteTarget(null)}
-              disabled={form.deleteMutation.isPending}>
-              Cancelar
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={confirmDelete}
-              disabled={form.deleteMutation.isPending}>
-              {form.deleteMutation.isPending
-                ? "Eliminando..."
-                : "Eliminar definitivamente"}
-            </Button>
-          </div>
-        </div>
-      </Modal> */}
     </div>
   );
 }

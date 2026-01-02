@@ -16,7 +16,6 @@ export const useAuthStore = create<AuthState>()(
       setAuth: (data) => {
         // Guardar en cookies
         Cookies.set("token", data.token, { expires: 7 }); // 7 días
-
         // Actualizar estado
         set({
           user: data.user,
@@ -36,8 +35,6 @@ export const useAuthStore = create<AuthState>()(
       clearAuth: () => {
         // Limpiar cookies
         Cookies.remove("token");
-        Cookies.remove("refreshToken");
-        Cookies.remove("projectId");
 
         // Resetear estado
         set({
@@ -95,3 +92,4 @@ export const useAuthStore = create<AuthState>()(
     },
   ),
 );
+

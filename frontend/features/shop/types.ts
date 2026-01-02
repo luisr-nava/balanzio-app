@@ -77,13 +77,9 @@ export interface UpdateShopDto {
 }
 
 export interface ShopState {
-  shops: Shop[];
   activeShopId: string | null;
   shouldForceStoreSelection: boolean;
-  setShops: (shops: Shop[]) => void;
-  setActiveShopId: (shopId: string) => void;
+  setActiveShopId: (shopId: string | null) => void;
   setShouldForceStoreSelection: (force: boolean) => void;
-  clearShops: () => void;
 }
-
 

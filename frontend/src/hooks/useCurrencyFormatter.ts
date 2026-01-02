@@ -1,10 +1,13 @@
 // hooks/useCurrencyFormatter.ts
+import { useShopQuery } from "@/features/shop/hooks/useShopQuery";
 import { useShopStore } from "@/features/shop/shop.store";
 
 const FALLBACK_LOCALE = "es-AR";
 
 export function useCurrencyFormatter(maximumFractionDigits: number = 0) {
-  const { shops, activeShopId } = useShopStore();
+  const { activeShopId } = useShopStore();
+
+  const { shops } = useShopQuery();
 
   const activeShop = shops.find((s) => s.id === activeShopId);
 

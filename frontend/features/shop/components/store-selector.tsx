@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   Card,
@@ -21,16 +21,19 @@ import { useShopMutation } from "@/features/shop/hooks/useShopMutation";
 import { useCurrencySymbols } from "@/src/hooks/useCurrencySymbols";
 import { useCountriesWithLabels } from "@/src/hooks/useCountriesWithLabels";
 import { useShopStore } from "../shop.store";
+import { useShopQuery } from "../hooks/useShopQuery";
 
 const MIN_NAME_LENGTH = 4;
 
 export function StoreSelector() {
-const { shops, activeShopId, setActiveShopId, setShouldForceStoreSelection } =
-  useShopStore();
+  const { setActiveShopId, setShouldForceStoreSelection } = useShopStore();
+  const { shops } = useShopQuery();
   const { mutate, isPending } = useShopMutation();
   const currencySymbols = useCurrencySymbols();
 
-  const [selectedShopId, setSelectedShopId] = useState<string | null>(null);
+  const [selectedShopId, setSelectedShopId] = useState<string | null>(
+    shops?.[0]?.id ?? null,
+  );
   const countries = useCountriesWithLabels();
 
   const {
@@ -48,7 +51,6 @@ const { shops, activeShopId, setActiveShopId, setShouldForceStoreSelection } =
       currencyCode: "",
     },
   });
-  const effectiveSelectedShopId = selectedShopId ?? shops?.[0]?.id ?? null;
 
   const onSubmit = handleSubmit(async (values) => {
     mutate(values, {
@@ -63,8 +65,13 @@ const { shops, activeShopId, setActiveShopId, setShouldForceStoreSelection } =
         });
       },
     });
+    reset();
   });
-
+  useEffect(() => {
+    if (!selectedShopId && shops.length > 0) {
+      setSelectedShopId(shops[0].id);
+    }
+  }, [shops, selectedShopId]);
   return (
     <div
       className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
@@ -93,7 +100,7 @@ const { shops, activeShopId, setActiveShopId, setShouldForceStoreSelection } =
                       key={shop.id}
                       onClick={() => setSelectedShopId(shop.id)}
                       className={`w-full text-left border rounded-lg p-4 transition hover:border-primary ${
-                        effectiveSelectedShopId === shop.id
+                        selectedShopId === shop.id
                           ? "border-primary bg-primary/5"
                           : "border-muted"
                       }`}>
@@ -123,11 +130,11 @@ const { shops, activeShopId, setActiveShopId, setShouldForceStoreSelection } =
                 <Button
                   className="w-full"
                   onClick={() => {
-                    if (!effectiveSelectedShopId) return;
-                    setActiveShopId(effectiveSelectedShopId);
+                    if (!selectedShopId) return;
+                    setActiveShopId(selectedShopId);
                     setShouldForceStoreSelection(false);
                   }}
-                  disabled={!effectiveSelectedShopId}>
+                  disabled={!selectedShopId}>
                   Usar tienda seleccionada
                 </Button>
               </div>
@@ -254,5 +261,4 @@ const { shops, activeShopId, setActiveShopId, setShouldForceStoreSelection } =
     </div>
   );
 }
-
 

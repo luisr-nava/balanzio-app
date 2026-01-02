@@ -16,11 +16,13 @@ import { SubscriptionPlanType } from "@/lib/types/subscription";
 import { useTheme } from "next-themes";
 import { redirect } from "next/navigation";
 import { useShopStore } from "@/features/shop/shop.store";
+import { useShopQuery } from "@/features/shop/hooks/useShopQuery";
 
 export default function UserMenu() {
   const { user, plan } = useAuth();
   const { logout, isLoading } = useLogout();
-  const { shops, activeShopId, setActiveShopId } = useShopStore();
+  const { activeShopId, setActiveShopId } = useShopStore();
+  const { shops } = useShopQuery();
   const { theme, setTheme } = useTheme();
 
   // Obtener iniciales del nombre completo
