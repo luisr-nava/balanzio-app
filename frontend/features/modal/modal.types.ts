@@ -11,6 +11,7 @@ export type ModalType =
   | "editSale"
   | "createCustomer"
   | "editCustomer"
+  | "deleteCustomer"
   | "createEmployee"
   | "editEmployee"
   | null;

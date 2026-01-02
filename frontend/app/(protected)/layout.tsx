@@ -22,7 +22,7 @@ function PrivateLayoutContent({ children }: { children: React.ReactNode }) {
   const { activeShopId } = useShopStore();
 
   if (isLoading) {
-    return <Loading text="Verificando autenticación..." />;
+    return <Loading />;
   }
 
   if (!activeShopId) {

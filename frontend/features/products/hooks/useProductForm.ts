@@ -1,4 +1,3 @@
-import { useShallow } from "zustand/react/shallow";
 import {
   usePoductCreateMutation,
   useProductUpdateMutation,
@@ -6,7 +5,7 @@ import {
 import { CreateProductDto, Product } from "../types";
 import { useForm } from "react-hook-form";
 import { useShopStore } from "@/features/shop/shop.store";
-import { useModal } from "@/features/modal/hooks/useModal";
+import { toast } from "sonner";
 
 const initialForm: CreateProductDto = {
   name: "",
@@ -49,12 +48,29 @@ export const useProductForm = (editProduct?: Product, onClose?: () => void) => {
     };
 
     if (editProduct) {
-      updateMutation.mutate({
-        id: editProduct.id,
-        payload: { ...basePayload, isActive },
-      });
+      updateMutation.mutate(
+        {
+          id: editProduct.id,
+          payload: { ...basePayload, isActive },
+        },
+        {
+          onSuccess: () => {
+            toast.success("Producto actualizado");
+          },
+          onError: () => {
+            toast.error("No se pudo actualizar el producto");
+          },
+        },
+      );
     } else {
-      createMutation.mutate(basePayload);
+      createMutation.mutate(basePayload, {
+        onSuccess: () => {
+          toast.success("Producto creado");
+        },
+        onError: () => {
+          toast.error("No se pudo crear el producto");
+        },
+      });
     }
 
     onClose?.();

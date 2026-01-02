@@ -4,7 +4,6 @@ import { useProducts } from "../../../../features/products/hooks/useProducts";
 import { supplierApi } from "@/lib/api/supplier.api";
 import { useMeasurementUnits } from "@/app/(protected)/settings/measurement-unit/hooks";
 import { useShopStore } from "@/features/shop/shop.store";
-import EmptyTable from "@/components/empty-table";
 import { usePaginationParams } from "@/src/hooks/usePaginationParams";
 import { Loading } from "@/components/loading";
 import {
@@ -27,7 +26,7 @@ export default function ProductosPage() {
     Boolean(activeShopId),
   );
 
-  // ? Move to supplier hook
+  // ? TODO: Move to supplier hook
   const { data: suppliers = [], isLoading: suppliersLoading } = useQuery({
     queryKey: ["suppliers", activeShopId, "for-products"],
     queryFn: () => supplierApi.listByShop(activeShopId || ""),
@@ -46,10 +45,6 @@ export default function ProductosPage() {
       />
       {productsLoading ? (
         <Loading />
-      ) : !products || products.length === 0 ? (
-        <>
-          <EmptyTable title={"No hay productos cargados."} />
-        </>
       ) : (
         <div className="p-5 space-y-4">
           <TableProducts
