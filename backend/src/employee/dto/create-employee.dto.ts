@@ -8,15 +8,19 @@ import {
   IsUUID,
   IsArray,
   ArrayNotEmpty,
+  MinLength,
+  MaxLength,
+  Matches,
 } from 'class-validator';
 
 export class CreateEmployeeDto {
   @IsString()
+  @IsUUID()
+  id: string;
+  
+  @IsString()
   @Length(3, 50)
   fullName: string;
-
-  @IsUUID()
-  userId: string;
 
   @IsArray()
   @ArrayNotEmpty()
