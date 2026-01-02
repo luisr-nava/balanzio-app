@@ -90,16 +90,29 @@ export class CustomerService {
         orderBy: { fullName: 'asc' },
         skip,
         take: limit,
-        select: {
-          id: true,
-          fullName: true,
-          email: true,
-          phone: true,
-          dni: true,
-          creditLimit: true,
-          currentBalance: true,
-          isActive: true,
-          createdAt: true,
+        include: {
+          shop: {
+            select: {
+              name: true,
+              id: true,
+              projectId: true,
+            },
+          },
+          sales: {
+            where: { paymentStatus: { in: ['PENDING', 'PARTIAL', 'OVERDUE'] } },
+            select: {
+              id: true,
+              totalAmount: true,
+              saleDate: true,
+              paymentStatus: true,
+            },
+            orderBy: { saleDate: 'desc' },
+            take: 10,
+          },
+          accountMovements: {
+            orderBy: { createdAt: 'desc' },
+            take: 20,
+          },
         },
       }),
       this.prisma.customer.count({ where }),
