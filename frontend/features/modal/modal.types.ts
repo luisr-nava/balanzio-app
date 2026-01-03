@@ -14,6 +14,9 @@ export type ModalType =
   | "deleteCustomer"
   | "createEmployee"
   | "editEmployee"
+  | "createExpense"
+  | "editExpense"
+  | "deleteExpense"
   | null;
 
 export interface ModalStoreState {

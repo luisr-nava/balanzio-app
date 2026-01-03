@@ -1,0 +1,2 @@
+export {useCashRegisterStateQuery}  from "./useCashRegisterStateQuery";
+

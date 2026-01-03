@@ -1,35 +1,32 @@
+import { useShopStore } from "@/features/shop/shop.store";
+import { CreateExpenseDto, Expense } from "../types";
 import {
-  useCustomerCreateMutation,
-  useCustomerDeleteMutation,
-  useCustomerUpdateMutation,
-} from "./useCustomerMutation";
+  useExpenseCreateMutation,
+  useExpenseDeleteMutation,
+  useExpenseUpdateMutation,
+} from "./useExpenseMutations";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { useShopStore } from "@/features/shop/shop.store";
-import { CreateCustomerDto, Customer } from "../types";
 
-const initialForm: CreateCustomerDto = {
-  fullName: "",
-  email: "",
-  phone: "",
-  dni: "",
-  address: "",
-  creditLimit: 0,
-  notes: "",
+const initialForm: CreateExpenseDto = {
+  description: "",
+  amount: 0,
+  paymentMethodId: "",
+  cashRegisterId: "",
+  date: "",
   shopId: "",
 };
 
-export const useCustomerForm = (
-  editCustomer?: Customer,
-  deleteCustomer?: Customer,
-
+export const useExpenseForm = (
+  editExpense?: Expense,
+  deleteExpense?: Expense,
   onClose?: () => void,
 ) => {
   const { activeShopId } = useShopStore();
 
-  const createMutation = useCustomerCreateMutation();
-  const updateMutation = useCustomerUpdateMutation();
-  const deleteMutation = useCustomerDeleteMutation();
+  const createMutation = useExpenseCreateMutation();
+  const updateMutation = useExpenseUpdateMutation();
+  const deleteMutation = useExpenseDeleteMutation();
 
   const {
     register,
@@ -38,52 +35,53 @@ export const useCustomerForm = (
     setValue,
     getValues,
     control,
-    formState: { errors },
-  } = useForm<CreateCustomerDto>({
+    formState: { errors, isValid },
+  } = useForm<CreateExpenseDto>({
     defaultValues: initialForm,
+    mode: "onChange",
   });
 
   const onSubmit = handleSubmit((values) => {
-    const basePayload: CreateCustomerDto = {
+    const basePayload: CreateExpenseDto = {
       ...values,
       shopId: activeShopId!,
     };
-    if (editCustomer) {
+    if (editExpense) {
       updateMutation.mutate(
         {
-          id: editCustomer.id,
+          id: editExpense.id,
           payload: basePayload,
         },
         {
           onSuccess: () => {
-            toast.success("Cliente actualizado");
+            toast.success("Gasto actualizado");
           },
           onError: () => {
             toast.error("No se pudo actualizar el cliente");
           },
         },
       );
-    } else if (deleteCustomer) {
+    } else if (deleteExpense) {
       deleteMutation.mutate(
         {
-          id: deleteCustomer.id,
+          id: deleteExpense.id,
         },
         {
           onSuccess: () => {
-            toast.success("Cliente eliminado correctamente");
+            toast.success("Gasto eliminado correctamente");
           },
           onError: () => {
-            toast.error("No se pudo eliminar el cliente");
+            toast.error("No se pudo eliminar el gasto");
           },
         },
       );
     } else {
       createMutation.mutate(basePayload, {
         onSuccess: () => {
-          toast.success("Cliente creado");
+          toast.success("Gasto creado");
         },
         onError: () => {
-          toast.error("No se pudo crear el cliente");
+          toast.error("No se pudo crear el gasto");
         },
       });
     }
@@ -104,11 +102,10 @@ export const useCustomerForm = (
     onSubmit,
     initialForm,
     setValue,
+    isValid,
     control,
     getValues,
     errors,
   };
 };
-
-export type UseCustomerFormReturn = ReturnType<typeof useCustomerForm>;
 

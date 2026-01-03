@@ -128,7 +128,7 @@ export default function CustomerForm({
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancelar
         </Button>
-        <Button type="submit" disabled={!canSubmit}>
+        <Button type="submit" disabled={!canSubmit} variant="default">
           {isSubmitting
             ? "Guardando..."
             : isEdit
@@ -139,4 +139,5 @@ export default function CustomerForm({
     </form>
   );
 }
+
 

@@ -1,165 +1,78 @@
 "use client";
 
-import { useAuth } from "@/features/auth/hooks";
-import { ShopLoading } from "@/components/shop-loading";
-import { Modal } from "@/components/ui/modal";
-import {
-  AccessRestrictedCard,
-  Pagination,
-  SelectShopCard,
-} from "@/app/(protected)/components";
 import { usePaymentMethods } from "@/app/(protected)/settings/payment-method/hooks";
-import { ExpenseHeader, ExpenseForm, ExpenseTable } from "./components";
-import { useExpense } from "./hooks/useExpense";
-import { Button } from "@/components/ui/button";
 import { useShopStore } from "@/features/shop/shop.store";
+import { useCashRegisterStateQuery } from "@/features/cash-register/hooks/useCashRegisterStateQuery";
+import {
+  ExpenseHeader,
+  ModalExpense,
+  TableExpense,
+} from "@/features/expenses/components";
+import { useExpenseModals, useExpenses } from "@/features/expenses/hooks";
+import { usePaginationParams } from "@/src/hooks/usePaginationParams";
+import { Loading } from "@/components/loading";
+import { useState } from "react";
+import { OpenCashRegisterModal } from "@/features/cash-register/components";
 
 export default function ExpensesPage() {
-  const { user } = useAuth();
-  const isOwner = user?.role === "OWNER";
-  const { activeShopId } = useShopStore();
-
-  const {
-    search,
-    setSearch,
+  const { openCreate, openEdit, openDelete } = useExpenseModals();
+  const { search, setSearch, debouncedSearch, page, limit, setPage, setLimit } =
+    usePaginationParams(300);
+  const { expenses, expensesLoading, pagination, isFetching } = useExpenses(
+    debouncedSearch,
     page,
     limit,
-    setPage,
-    setLimit,
-    pagination,
-    expenses,
-    expensesLoading,
-    isFetching,
-    isModalOpen,
-    editingExpense,
-    deleteTarget,
-    deletingId,
-    handleSubmit,
-    handleOpenCreate,
-    handleEdit,
-    handleCancelEdit,
-    handleDelete,
-    closeDeleteModal,
-    confirmDelete,
-    createMutation,
-    updateMutation,
-    deleteMutation,
-    startDate,
-    endDate,
-    setStartDate,
-    setEndDate,
-    dateError,
-    openCashLoading,
-    openCashFetching,
-  } = useExpense({ isOwner, activeShopId });
+  );
+
+  const { activeShopId } = useShopStore();
+  const { data } = useCashRegisterStateQuery(activeShopId!);
+  const hasOpenCashRegister = data?.hasOpenCashRegister === true;
+  const [openCashModal, setOpenCashRegisterModal] = useState(false);
+  const handleCreateExpense = () => {
+    if (!hasOpenCashRegister) {
+      setOpenCashRegisterModal(true);
+      return;
+    }
+
+    openCreate();
+  };
 
   const {
     paymentMethods,
     isLoading: paymentMethodsLoading,
     isFetching: paymentMethodsFetching,
   } = usePaymentMethods();
-
-  if (!isOwner) {
-    return <AccessRestrictedCard />;
-  }
-
-  if (!activeShopId) {
-    return (
-      <SelectShopCard description="Debes elegir una tienda activa para gestionar los gastos." />
-    );
-  }
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <ExpenseHeader
+        handleOpenCreate={handleCreateExpense}
         search={search}
         setSearch={setSearch}
-        startDate={startDate}
-        endDate={endDate}
-        setStartDate={setStartDate}
-        setEndDate={setEndDate}
-        dateError={dateError}
-        handleOpenCreate={handleOpenCreate}
       />
-
-      <ExpenseTable
-        expenses={expenses}
-        isLoading={expensesLoading}
-        isFetching={isFetching}
-        onEdit={(expense) => {
-          handleEdit(expense);
-        }}
-        onDelete={handleDelete}
-        deletingId={deletingId}
-        paymentMethods={paymentMethods}
-      />
-
-      {expenses.length > 0 && (
-        <Pagination
-          page={page}
-          totalPages={pagination?.totalPages ?? 1}
-          limit={limit}
-          onPageChange={(nextPage) => {
-            if (nextPage < 1) return;
-            setPage(nextPage);
-          }}
-          onLimitChange={(nextLimit) => setLimit(nextLimit)}
-          isLoading={isFetching}
-          totalItems={pagination?.total ?? 0}
-        />
-      )}
-
-      <Modal
-        isOpen={isModalOpen}
-        onClose={handleCancelEdit}
-        title={editingExpense ? "Editar gasto" : "Nuevo gasto"}
-        // description={`Tienda: ${activeShop?.name || activeShopId}`}
-        >
-        <ExpenseForm
-          onSubmit={handleSubmit}
-          isSubmitting={
-            createMutation.isPending ||
-            updateMutation.isPending ||
-            openCashLoading ||
-            openCashFetching
-          }
-          editingExpense={editingExpense}
-          onCancelEdit={handleCancelEdit}
-          paymentMethods={paymentMethods}
-          paymentMethodsLoading={paymentMethodsLoading}
-          paymentMethodsFetching={paymentMethodsFetching}
-        />
-      </Modal>
-
-      <Modal
-        isOpen={Boolean(deleteTarget)}
-        onClose={closeDeleteModal}
-        title="Eliminar gasto"
-        description="Esta acción es permanente y no podrás recuperar el registro.">
-        <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            ¿Seguro que deseas eliminar{" "}
-            <span className="font-semibold">{deleteTarget?.description}</span>?
-            Esta acción no se puede deshacer.
-          </p>
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={closeDeleteModal}
-              disabled={deleteMutation.isPending}>
-              Cancelar
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={confirmDelete}
-              disabled={deleteMutation.isPending}>
-              {deleteMutation.isPending
-                ? "Eliminando..."
-                : "Eliminar definitivamente"}
-            </Button>
-          </div>
+      {expensesLoading ? (
+        <Loading />
+      ) : (
+        <div className="p-5 space-y-4">
+          <TableExpense
+            expenses={expenses}
+            handleEdit={openEdit}
+            limit={limit}
+            page={page}
+            setLimit={setLimit}
+            setPage={setPage}
+            pagination={pagination!}
+            isFetching={isFetching}
+            paymentMethods={paymentMethods}
+            handleDelete={openDelete}
+          />
         </div>
-      </Modal>
+      )}
+      <ModalExpense />
+      <OpenCashRegisterModal
+        open={openCashModal}
+        onOpenChange={setOpenCashRegisterModal}
+        shopId={activeShopId!}
+      />
     </div>
   );
 }

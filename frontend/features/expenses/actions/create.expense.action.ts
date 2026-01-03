@@ -1,5 +1,5 @@
 import { kioscoApi } from "@/lib/kioscoApi";
-import type { CreateExpenseDto, Expense } from "../interfaces";
+import type { CreateExpenseDto, Expense } from "../types";
 
 export const createExpenseAction = async (
   payload: CreateExpenseDto,
@@ -7,3 +7,4 @@ export const createExpenseAction = async (
   const { data } = await kioscoApi.post<Expense>("/expense", payload);
   return data;
 };
+

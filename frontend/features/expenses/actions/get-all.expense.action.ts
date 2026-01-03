@@ -1,5 +1,5 @@
 import { kioscoApi } from "@/lib/kioscoApi";
-import type { Expense, GetExpensesResponse } from "../interfaces";
+import type { Expense, GetExpensesResponse } from "../types";
 import type { Pagination } from "@/app/(protected)/interfaces";
 
 type GetExpensesParams = {

@@ -24,10 +24,10 @@ export interface Expense {
 export interface CreateExpenseDto {
   description: string;
   amount: number;
-  shopId: string;
   paymentMethodId: string;
   cashRegisterId: string;
   date: string;
+  shopId: string;
 }
 
 export interface GetExpensesResponse {
@@ -41,3 +41,5 @@ export interface GetExpensesResponse {
     totalAmount?: number;
   };
 }
+
+

@@ -1,5 +1,5 @@
 import { kioscoApi } from "@/lib/kioscoApi";
-import type { CreateExpenseDto, Expense } from "../interfaces";
+import type { CreateExpenseDto, Expense } from "../types";
 
 export const updateExpenseAction = async (
   id: string,
@@ -8,3 +8,4 @@ export const updateExpenseAction = async (
   const { data } = await kioscoApi.patch<Expense>(`/expense/${id}`, payload);
   return data;
 };
+

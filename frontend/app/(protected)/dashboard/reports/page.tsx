@@ -1,12 +1,12 @@
 "use client";
 
 import { useAuth } from "@/features/auth/hooks";
-import { useCashRegisterReports } from "@/features/cash-register/hooks/useReportsQuery";
+import { useCashRegisterReports } from "@/features/reports/hooks/useReportsQuery";
 import {
   ReportsFilters,
   ReportsResults,
-} from "@/features/cash-register/components";
-import { useCashRegisterReportFilters } from "@/features/cash-register/hooks/useCashRegisterReportFilters";
+} from "@/features/reports/components";
+import { useCashRegisterReportFilters } from "@/features/reports/hooks/useCashRegisterReportFilters";
 
 const MIN_REPORT_YEAR = 2020;
 
