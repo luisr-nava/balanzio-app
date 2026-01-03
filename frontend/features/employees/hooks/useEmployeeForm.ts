@@ -5,6 +5,7 @@ import {
   useEmployeeUpdateMutation,
 } from "./useEmployeeMutations";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 const initialForm: CreateEmployeeDto = {
   id: "",
@@ -14,7 +15,7 @@ const initialForm: CreateEmployeeDto = {
   dni: "",
   phone: "",
   address: "",
-  hireDate: "",
+  hireDate: undefined,
   role: "EMPLOYEE",
   salary: 0,
   notes: "",
@@ -42,7 +43,40 @@ export const useEmployeeForm = (
     defaultValues: initialForm,
   });
 
-  const onSubmit = () => {};
+  const onSubmit = handleSubmit((values) => {
+    const basePayload: CreateEmployeeDto = {
+      ...values,
+      shopIds: [activeShopId!],
+      hireDate: values.hireDate || undefined,
+    };
+    if (editEmployee) {
+      updateMutation.mutate(
+        {
+          id: editEmployee.id,
+          payload: basePayload,
+        },
+        {
+          onSuccess: () => {
+            toast.success("Empleado actualizado");
+          },
+          onError: () => {
+            toast.error("No se pudo actualizar el empleado");
+          },
+        },
+      );
+    } else {
+      createMutation.mutate(basePayload, {
+        onSuccess: () => {
+          toast.success("Empleado creado");
+        },
+        onError: () => {
+          toast.error("No se pudo crear el empleado");
+        },
+      });
+    }
+    onClose?.();
+    reset();
+  });
 
   return {
     register,
@@ -57,4 +91,5 @@ export const useEmployeeForm = (
     isLoadingUpdate: updateMutation.isPending,
   };
 };
+
 

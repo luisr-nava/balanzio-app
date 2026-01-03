@@ -81,6 +81,7 @@ export default function UserMenu() {
           </DropdownMenuItem>
         ) : (
           shops.map((shop) => {
+            if (!shop.id) return null;
             const isActive = shop.id === activeShopId;
             return (
               <DropdownMenuItem

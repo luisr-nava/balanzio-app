@@ -58,6 +58,7 @@ export function StoreSelector() {
         toast.success("Tienda creada", {
           description: "Seleccionamos tu nueva tienda para continuar",
         });
+        // invalidar Query
       },
       onError: () => {
         toast.error("Error al crear", {
@@ -95,6 +96,7 @@ export function StoreSelector() {
             {shops ? (
               <div className="space-y-3">
                 {shops.map((shop, index) => {
+                  if (!shop.id) return null;
                   return (
                     <button
                       key={shop.id}

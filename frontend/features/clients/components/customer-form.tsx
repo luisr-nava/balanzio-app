@@ -122,7 +122,7 @@ export default function CustomerForm({
         </div>
       </div>
       <ModalFooter>
-        <Button type="button" variant="outline" onClick={() => {}}>
+        <Button type="button" variant="outline" onClick={onCancel}>
           Cancelar
         </Button>
         <Button type="submit" disabled={!canSubmit}>
@@ -136,4 +136,5 @@ export default function CustomerForm({
     </form>
   );
 }
+
 

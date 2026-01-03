@@ -91,8 +91,7 @@ export const useCustomerForm = (
       });
     }
     onClose?.();
-    updateMutation.reset();
-    deleteMutation.reset();
+    reset();
   });
 
   return {

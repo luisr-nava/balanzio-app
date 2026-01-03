@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
 import { CreateEmployeeDto, Employee, EmployeeRole } from "../types";
+import { useShopQuery } from "@/features/shop/hooks/useShopQuery";
+import { ModalFooter } from "@/components/ui/modal";
 
 interface EmployeeFormProps {
   register: UseFormRegister<CreateEmployeeDto>;
@@ -30,8 +32,9 @@ export default function EmployeeForm({
   isEdit,
   isSubmitting,
 }: EmployeeFormProps) {
+  const { shops } = useShopQuery();
   return (
-    <form className="space-y-4" onSubmit={() => {}}>
+    <form className="space-y-4" onSubmit={onSubmit}>
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="fullName">Nombre completo</Label>
@@ -52,19 +55,14 @@ export default function EmployeeForm({
         </div>
       </div>
 
-      {/* {!editingEmployee && (
-        <div className="space-y-2">
-          <Label htmlFor="password">
-            Contraseña
-            <RequiredMark />
-          </Label>
-          <PasswordInput
-            id="password"
-            placeholder="Mínimo 8 caracteres"
-            {...register("password", { required: !editingEmployee })}
-          />
-        </div>
-      )} */}
+      <div className="space-y-2">
+        <Label htmlFor="password">Contraseña</Label>
+        <PasswordInput
+          id="password"
+          placeholder="Mínimo 8 caracteres"
+          {...register("password", { required: true })}
+        />
+      </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
@@ -141,34 +139,18 @@ export default function EmployeeForm({
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="role">Rol</Label>
-        <div className="rounded-md border bg-muted/60 px-3 py-2 text-sm text-muted-foreground">
-          Empleado (por defecto)
-        </div>
-        <input type="hidden" {...register("role")} value="EMPLOYEE" />
-      </div>
-
-      {/* <div className="flex flex-wrap gap-2">
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting
-            ? editingEmployee
-              ? "Guardando..."
-              : "Creando..."
-            : editingEmployee
-            ? "Actualizar empleado"
-            : "Crear empleado"}
+      <ModalFooter>
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Cancelar
         </Button>
-        {editingEmployee && (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancelEdit}
-            disabled={isSubmitting}>
-            Cancelar edición
-          </Button>
-        )}
-      </div> */}
+        <Button type="submit">
+          {isSubmitting
+            ? "Guardando..."
+            : isEdit
+            ? "Actualizar cliente"
+            : "Crear cliente"}
+        </Button>
+      </ModalFooter>
     </form>
   );
 }

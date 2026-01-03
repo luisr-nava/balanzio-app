@@ -23,7 +23,7 @@ export interface EmployeeAuth {
 }
 
 export interface CreateEmployeeDto {
-  id: string;
+  id?: string;
   fullName: string;
   email: string;
   password?: string;
@@ -36,7 +36,7 @@ export interface CreateEmployeeDto {
   profileImage?: string | null;
   emergencyContact?: string | null;
   role: Exclude<EmployeeRole, "OWNER"> | "OWNER";
-  shopIds: string[];
+  shopIds?: string[];
   isActive?: boolean;
 }
 

@@ -17,8 +17,11 @@ export const useEmployeeCreateMutation = () => {
 
   return useMutation({
     mutationFn: async (payload: CreateEmployeeDto) => {
+      console.log({ payload });
+      const { shopIds, id, ...rest } = payload;
       // Primero creamos el usuario en el servicio de Auth.
-      const authResponse = await createAuthUserAction(payload);
+      const authResponse = await createAuthUserAction(rest);
+      console.log({ authResponse });
 
       // Obtenemos el ID generado por Auth.
       const userId = authResponse.userId;
