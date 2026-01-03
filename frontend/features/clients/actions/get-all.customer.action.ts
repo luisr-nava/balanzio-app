@@ -1,6 +1,6 @@
 import { kioscoApi } from "@/lib/kioscoApi";
-import type { Customer, GetAllCustomerResponse } from "../interfaces";
 import { Pagination } from "@/app/(protected)/interfaces";
+import { Customer, GetAllCustomerResponse } from "../types";
 
 export const getAllCustomerAction = async (
   shopId: string,

@@ -42,7 +42,7 @@ export interface CreateEmployeeDto {
 
 export type UpdateEmployeeDto = Partial<CreateEmployeeDto>;
 
-export interface GetEmployeesResponse {
+export interface GetAllEmployeesResponse {
   message?: string;
   meta: {
     total: number;
