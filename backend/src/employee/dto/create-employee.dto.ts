@@ -11,13 +11,14 @@ import {
   MinLength,
   MaxLength,
   Matches,
+  IsDate,
 } from 'class-validator';
 
 export class CreateEmployeeDto {
   @IsString()
   @IsUUID()
   id: string;
-  
+
   @IsString()
   @Length(3, 50)
   fullName: string;
@@ -46,8 +47,8 @@ export class CreateEmployeeDto {
   @IsString()
   address?: string;
 
+  @IsDate()
   @IsOptional()
-  @IsDateString()
   hireDate?: string;
 
   @IsOptional()
