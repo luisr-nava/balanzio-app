@@ -47,7 +47,8 @@ export class EmployeeController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('role') role?: string,
-    @Query('isActive', new ParseBoolPipe({ optional: true })) isActive?: boolean,
+    @Query('isActive', new ParseBoolPipe({ optional: true }))
+    isActive?: boolean,
     @Query('search') search?: string,
   ) {
     return this.employeeService.findAll(

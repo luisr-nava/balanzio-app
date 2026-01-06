@@ -684,7 +684,7 @@ model Customer {
   address  String?
 
   // Cuenta corriente
-  creditLimit    Float @default(0) // Límite de crédito
+  creditLimit    Float? // Límite de crédito
   currentBalance Float @default(0) // Saldo actual (lo que debe)
 
   // Estado
@@ -701,7 +701,7 @@ model Customer {
   payments         CustomerPayment[]
   accountMovements CustomerAccountMovement[]
 
-  @@unique([shopId, dni]) // DNI único por tienda
+  @@unique([shopId, dni], map: "Customer_shopId_dni_unique") // DNI único por tienda
   @@index([shopId, isActive])
 }
 

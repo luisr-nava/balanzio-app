@@ -84,7 +84,8 @@ export class SaleService {
       // Si es venta a cr�dito, verificar l�mite
       if (paymentMethod.code === 'ACCOUNT') {
         // Calcularemos el total despu�s, por ahora solo verificamos que tenga l�mite
-        if (customer.creditLimit === 0) {
+        const creditLimit = customer.creditLimit ?? 0;
+        if (creditLimit === 0) {
           throw new BadRequestException(
             'El cliente no tiene cr�dito habilitado',
           );
@@ -191,10 +192,11 @@ export class SaleService {
         throw new BadRequestException('Cliente no encontrado');
       }
 
+      const creditLimit = customer.creditLimit ?? 0;
       const newBalance = customer.currentBalance + totalAmount;
-      if (newBalance > customer.creditLimit) {
+      if (newBalance > creditLimit) {
         throw new BadRequestException(
-          `El total de la venta (${totalAmount}) excede el l�mite de cr�dito disponible. L�mite: ${customer.creditLimit}, Deuda actual: ${customer.currentBalance}, Disponible: ${customer.creditLimit - customer.currentBalance}`,
+          `El total de la venta (${totalAmount}) excede el límite de crédito disponible. Límite: ${creditLimit}, Deuda actual: ${customer.currentBalance}, Disponible: ${creditLimit - customer.currentBalance}`,
         );
       }
     }

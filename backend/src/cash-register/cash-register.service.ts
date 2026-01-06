@@ -195,7 +195,9 @@ export class CashRegisterService {
     }
 
     if (user.role === 'OWNER' && shop.ownerId !== user.id) {
-      throw new ForbiddenException('No tenés permiso para acceder a esta tienda');
+      throw new ForbiddenException(
+        'No tenés permiso para acceder a esta tienda',
+      );
     }
 
     if (user.role === 'MANAGER') {
@@ -204,7 +206,9 @@ export class CashRegisterService {
       });
 
       if (!managerAssignment) {
-        throw new ForbiddenException('No tenés permiso para acceder a esta tienda');
+        throw new ForbiddenException(
+          'No tenés permiso para acceder a esta tienda',
+        );
       }
     }
 
@@ -233,7 +237,10 @@ export class CashRegisterService {
             select: { cashRegisterId: true, type: true, amount: true },
           });
 
-    const movementsByRegister = new Map<string, Pick<CashMovement, 'type' | 'amount'>[]>();
+    const movementsByRegister = new Map<
+      string,
+      Pick<CashMovement, 'type' | 'amount'>[]
+    >();
     movements.forEach((movement) => {
       const list = movementsByRegister.get(movement.cashRegisterId) ?? [];
       list.push({ type: movement.type, amount: movement.amount });
@@ -264,13 +271,13 @@ export class CashRegisterService {
         movementsByRegister.get(register.id) ?? [],
       );
 
-      const actorId = register.openedByUserId ?? register.employeeId ?? 'unknown';
+      const actorId =
+        register.openedByUserId ?? register.employeeId ?? 'unknown';
       const actorRecord = actorById.get(actorId);
       const fullName =
         actorRecord?.fullName ?? register.openedByName ?? 'Usuario desconocido';
       const role =
-        actorRecord?.role ??
-        (actorId === shop.ownerId ? 'OWNER' : 'EMPLOYEE');
+        actorRecord?.role ?? (actorId === shop.ownerId ? 'OWNER' : 'EMPLOYEE');
 
       return {
         id: register.id,

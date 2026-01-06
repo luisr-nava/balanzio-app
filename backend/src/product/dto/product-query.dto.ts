@@ -1,10 +1,5 @@
 import { Type } from 'class-transformer';
-import {
-  IsBoolean,
-  IsOptional,
-  IsString,
-  IsUUID,
-} from 'class-validator';
+import { IsBoolean, IsOptional, IsString, IsUUID } from 'class-validator';
 import { SearchQueryWithShopDto } from '../../common/dto';
 
 export class ProductQueryDto extends SearchQueryWithShopDto {

@@ -84,9 +84,7 @@ export class CustomerService {
     }
 
     if (hasDebt !== undefined) {
-      where.currentBalance = hasDebt
-        ? { gt: 0 }
-        : { lte: 0 };
+      where.currentBalance = hasDebt ? { gt: 0 } : { lte: 0 };
     }
 
     const skip = (page - 1) * limit;

@@ -1,11 +1,12 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import type { JwtPayload } from '../auth-client/interfaces/jwt-payload.interface';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import {
-  AnalyticsQueryDto,
-  AnalyticsType,
-} from './dto/analytics-query.dto';
+import { AnalyticsQueryDto, AnalyticsType } from './dto/analytics-query.dto';
 import {
   BucketUnit,
   endOfMonth,
@@ -74,7 +75,10 @@ export type DashboardAnalyticsResult = {
 export class AnalyticsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getAnalytics(query: AnalyticsQueryDto, user: JwtPayload): Promise<AnalyticsResponse> {
+  async getAnalytics(
+    query: AnalyticsQueryDto,
+    user: JwtPayload,
+  ): Promise<AnalyticsResponse> {
     const shop = await this.prisma.shop.findUnique({
       where: { id: query.shopId },
       select: { id: true, projectId: true, timezone: true, ownerId: true },
@@ -86,7 +90,10 @@ export class AnalyticsService {
 
     await this.ensureShopAccess(shop.id, shop.projectId, user);
 
-    const periodRange = resolveAnalyticsPeriodRange(query, shop.timezone ?? 'UTC');
+    const periodRange = resolveAnalyticsPeriodRange(
+      query,
+      shop.timezone ?? 'UTC',
+    );
     const modules = this.getModulesForType(query.type);
 
     const metrics = await this.buildMetricsForModules(
@@ -98,7 +105,11 @@ export class AnalyticsService {
     );
 
     const [topProducts, bestSale] = await Promise.all([
-      this.buildTopProducts(shop.id, periodRange.startDate, periodRange.endDate),
+      this.buildTopProducts(
+        shop.id,
+        periodRange.startDate,
+        periodRange.endDate,
+      ),
       this.buildBestSaleForPeriod(
         shop.id,
         periodRange.startDate,
@@ -108,12 +119,14 @@ export class AnalyticsService {
       ),
     ]);
 
-    const summaryTopProducts: TopProductSummary[] = topProducts.map((entry) => ({
-      productId: entry.productId,
-      name: entry.name,
-      quantity: entry.quantitySold,
-      totalAmount: entry.totalAmount,
-    }));
+    const summaryTopProducts: TopProductSummary[] = topProducts.map(
+      (entry) => ({
+        productId: entry.productId,
+        name: entry.name,
+        quantity: entry.quantitySold,
+        totalAmount: entry.totalAmount,
+      }),
+    );
 
     return {
       period: periodRange.period,
@@ -139,7 +152,13 @@ export class AnalyticsService {
   ): Promise<AnalyticsResponse['metrics']> {
     const entries = await Promise.all(
       modules.map(async (module) => {
-        const metric = await this.buildSeriesForModule(module, shopId, startDate, endDate, bucketUnit);
+        const metric = await this.buildSeriesForModule(
+          module,
+          shopId,
+          startDate,
+          endDate,
+          bucketUnit,
+        );
         return [module, metric] as const;
       }),
     );
@@ -175,7 +194,10 @@ export class AnalyticsService {
     };
   }
 
-  private getDashboardPeriods(timezone: string, reference = new Date()): DashboardPeriods {
+  private getDashboardPeriods(
+    timezone: string,
+    reference = new Date(),
+  ): DashboardPeriods {
     const weekStart = startOfWeek(reference, timezone);
     const weekEnd = endOfWeek(reference, timezone);
     const monthStart = startOfMonth(reference, timezone);
@@ -236,7 +258,12 @@ export class AnalyticsService {
       case 'sales':
         return this.buildSalesSeries(shopId, startDate, endDate, bucketUnit);
       case 'purchases':
-        return this.buildPurchasesSeries(shopId, startDate, endDate, bucketUnit);
+        return this.buildPurchasesSeries(
+          shopId,
+          startDate,
+          endDate,
+          bucketUnit,
+        );
       case 'incomes':
         return this.buildIncomesSeries(shopId, startDate, endDate, bucketUnit);
       case 'expenses':
@@ -288,7 +315,10 @@ export class AnalyticsService {
 
     // Prisma groupBy (saleDate) + _sum.totalAmount
     return this.buildSeriesFromGroups(
-      groups.map((group) => ({ date: group.saleDate, amount: group._sum.totalAmount ?? 0 })),
+      groups.map((group) => ({
+        date: group.saleDate,
+        amount: group._sum.totalAmount ?? 0,
+      })),
       startDate,
       endDate,
       bucketUnit,
@@ -313,7 +343,10 @@ export class AnalyticsService {
     });
 
     return this.buildSeriesFromGroups(
-      groups.map((group) => ({ date: group.purchaseDate, amount: group._sum.totalAmount ?? 0 })),
+      groups.map((group) => ({
+        date: group.purchaseDate,
+        amount: group._sum.totalAmount ?? 0,
+      })),
       startDate,
       endDate,
       bucketUnit,
@@ -337,7 +370,10 @@ export class AnalyticsService {
     });
 
     return this.buildSeriesFromGroups(
-      groups.map((group) => ({ date: group.date, amount: group._sum.amount ?? 0 })),
+      groups.map((group) => ({
+        date: group.date,
+        amount: group._sum.amount ?? 0,
+      })),
       startDate,
       endDate,
       bucketUnit,
@@ -361,7 +397,10 @@ export class AnalyticsService {
     });
 
     return this.buildSeriesFromGroups(
-      groups.map((group) => ({ date: group.date, amount: group._sum.amount ?? 0 })),
+      groups.map((group) => ({
+        date: group.date,
+        amount: group._sum.amount ?? 0,
+      })),
       startDate,
       endDate,
       bucketUnit,
@@ -378,10 +417,10 @@ export class AnalyticsService {
       startDate && endDate
         ? { gte: startDate, lte: endDate }
         : startDate
-        ? { gte: startDate }
-        : endDate
-        ? { lte: endDate }
-        : undefined;
+          ? { gte: startDate }
+          : endDate
+            ? { lte: endDate }
+            : undefined;
     const saleWhere: Prisma.SaleWhereInput = {
       shopId,
       status: 'COMPLETED',
@@ -407,7 +446,9 @@ export class AnalyticsService {
       include: { product: true },
     });
 
-    const productMap = new Map(products.map((product) => [product.id, product]));
+    const productMap = new Map(
+      products.map((product) => [product.id, product]),
+    );
 
     return groups.map((entry) => {
       const shopProduct = productMap.get(entry.shopProductId);
@@ -452,10 +493,12 @@ export class AnalyticsService {
 
     if (!sale.employee && ownerId) {
       ownerFullName =
-        (await this.prisma.employee.findUnique({
-          where: { id: ownerId },
-          select: { fullName: true },
-        }))?.fullName ?? null;
+        (
+          await this.prisma.employee.findUnique({
+            where: { id: ownerId },
+            select: { fullName: true },
+          })
+        )?.fullName ?? null;
     }
 
     return {
@@ -523,7 +566,12 @@ export class AnalyticsService {
       bucketMap.set(label, (bucketMap.get(label) ?? 0) + entry.amount);
     }
 
-    return this.buildSeriesFromBucketMap(bucketMap, startDate, endDate, bucketUnit);
+    return this.buildSeriesFromBucketMap(
+      bucketMap,
+      startDate,
+      endDate,
+      bucketUnit,
+    );
   }
 
   private buildSeriesFromBucketMap(
@@ -583,5 +631,4 @@ export class AnalyticsService {
     next.setUTCHours(0, 0, 0, 0);
     return next;
   }
-
 }
