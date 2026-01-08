@@ -20,8 +20,8 @@ import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 import type { CashMovement } from '@prisma/client';
 import { ReportDistributionService } from './report-distribution.service';
 import {
-  GetCashRegisterStateResponseDto,
   GetOpenCashRegistersResponseDto,
+  CashRegisterStateDto,
 } from './dto/cash-register-state.dto';
 
 @Injectable()
@@ -149,25 +149,72 @@ export class CashRegisterService {
   async getUserOpenCashRegisterState(
     shopId: string,
     user: JwtPayload,
-  ): Promise<GetCashRegisterStateResponseDto> {
+  ): Promise<CashRegisterStateDto> {
     await this.validateShopAccess(shopId, user);
 
     const openRegister = await this.prisma.cashRegister.findFirst({
       where: {
         shopId,
-        openedByUserId: user.id,
         status: 'OPEN',
       },
-      select: { id: true },
+      select: {
+        id: true,
+        openedAt: true,
+        openingAmount: true,
+        openedByUserId: true,
+        openedByName: true,
+        employeeId: true,
+      },
       orderBy: { openedAt: 'desc' },
     });
 
-    return {
-      message: 'Estado actual de la caja',
-      data: {
-        hasOpenCashRegister: Boolean(openRegister),
-        cashRegisterId: openRegister?.id,
+    if (!openRegister) {
+      return {
+        hasOpenCashRegister: false,
+      };
+    }
+
+    const movementTotals = await this.prisma.cashMovement.groupBy({
+      by: ['type'],
+      where: {
+        cashRegisterId: openRegister.id,
+        type: { in: ['INCOME', 'EXPENSE'] },
       },
+      _sum: { amount: true },
+    });
+
+    let totalIncomes = 0;
+    let totalExpenses = 0;
+    for (const total of movementTotals) {
+      if (total.type === 'INCOME') {
+        totalIncomes = total._sum.amount ?? 0;
+      } else if (total.type === 'EXPENSE') {
+        totalExpenses = total._sum.amount ?? 0;
+      }
+    }
+
+    const currentAmount =
+      openRegister.openingAmount + totalIncomes - totalExpenses;
+
+    const actorId = openRegister.openedByUserId ?? openRegister.employeeId;
+    const actor = actorId
+      ? await this.prisma.employee.findUnique({
+          where: { id: actorId },
+          select: { fullName: true },
+        })
+      : null;
+    const openedBy =
+      actor?.fullName ??
+      openRegister.openedByName ??
+      'Usuario desconocido';
+
+    return {
+      hasOpenCashRegister: true,
+      cashRegisterId: openRegister.id,
+      openedAt: openRegister.openedAt.toISOString(),
+      openedBy,
+      openingAmount: openRegister.openingAmount,
+      currentAmount,
     };
   }
 

@@ -1,12 +1,15 @@
-export class CashRegisterStateDto {
-  hasOpenCashRegister!: boolean;
-  cashRegisterId?: string;
-}
-
-export class GetCashRegisterStateResponseDto {
-  message!: string;
-  data!: CashRegisterStateDto;
-}
+export type CashRegisterStateDto =
+  | {
+      hasOpenCashRegister: false;
+    }
+  | {
+      hasOpenCashRegister: true;
+      cashRegisterId: string;
+      openedAt: string;
+      openedBy: string;
+      openingAmount: number;
+      currentAmount: number;
+    };
 
 export class OpenCashRegisterActorDto {
   id!: string;
