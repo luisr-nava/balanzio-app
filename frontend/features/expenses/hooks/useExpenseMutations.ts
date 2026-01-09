@@ -14,7 +14,7 @@ export const useExpenseCreateMutation = () => {
   return useMutation({
     mutationFn: (payload: CreateExpenseDto) => createExpenseAction(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["expenses", activeShopId] });
     },
   });
 };
@@ -31,7 +31,7 @@ export const useExpenseUpdateMutation = () => {
       payload: Partial<CreateExpenseDto>;
     }) => updateExpenseAction(id, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["expenses", activeShopId] });
     },
   });
 };
@@ -43,7 +43,7 @@ export const useExpenseDeleteMutation = () => {
   return useMutation({
     mutationFn: ({ id }: { id: string }) => deleteExpenseAction(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["expenses", activeShopId] });
     },
   });
 };

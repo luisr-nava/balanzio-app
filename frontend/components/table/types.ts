@@ -4,7 +4,7 @@ export type SortDirection = "asc" | "desc";
 
 export interface TableColumn<T> {
   header: string;
-  cell: (row: T) => React.ReactNode;
+  cell: (row: T, index?: number) => React.ReactNode;
 
   // sorting
   sortable?: boolean;
