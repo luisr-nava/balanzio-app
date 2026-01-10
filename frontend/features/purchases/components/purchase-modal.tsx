@@ -5,17 +5,25 @@ import PurchaseForm from "./purchase-form";
 import { Product } from "../../products/types";
 import { useEffect } from "react";
 import { usePaymentMethods } from "@/app/(protected)/settings/payment-method/hooks";
+import { Button } from "@/components/ui/button";
+import PurchaseDelete from "./purchase-delete";
+import { Form } from "@/components/ui/form";
+import { PaymentMethod } from "@/app/(protected)/settings/payment-method/interfaces";
 
 interface ModalPurchaseProps {
   cashRegisterId?: string;
   products: Product[];
   suppliers: Supplier[];
+  paymentMethods: PaymentMethod[];
+
   modals: ReturnType<typeof usePurchaseModals>;
 }
 export default function PurchaseModal({
   cashRegisterId,
   suppliers,
   products,
+  paymentMethods,
+
   modals,
 }: ModalPurchaseProps) {
   const {
@@ -60,8 +68,6 @@ export default function PurchaseModal({
     resetForm();
   };
 
-  const { paymentMethods } = usePaymentMethods();
-
   const isSubmitting = isLoadingCreate || isLoadingUpdate || isLoadingDelete;
   useEffect(() => {
     if (createPurchaseModal.isOpen && !isEdit) {
@@ -74,25 +80,42 @@ export default function PurchaseModal({
     <Modal
       isOpen={openModal}
       onClose={handleClose}
-      title={isEdit ? "Editar compra" : "Crear compra"}
-      description="Completa los datos de la compra"
+      title={
+        editPurchaseModal.isOpen
+          ? "Editar compra"
+          : deletePurchaseModal
+            ? "Eliminar compra"
+            : "Crear compra"
+      }
+      description={deletePurchaseModal ? "" : "Completa los datos de la compra"}
       size="lg"
     >
-      <PurchaseForm
-        form={form}
-        onSubmit={onSubmit}
-        onCancel={handleClose}
-        isEdit={isEdit}
-        isSubmitting={isSubmitting}
-        suppliers={suppliers}
-        items={items}
-        addItem={addItem}
-        removeItem={removeItem}
-        updateItem={updateItem}
-        isLastItemComplete={isLastItemComplete}
-        products={products}
-        paymentMethods={paymentMethods}
-      />
+      {deletePurchaseModal.isOpen ? (
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <PurchaseDelete
+              handleClose={handleClose}
+              isLoadingDelete={isLoadingDelete}
+            />
+          </form>
+        </Form>
+      ) : (
+        <PurchaseForm
+          form={form}
+          onSubmit={onSubmit}
+          onCancel={handleClose}
+          isEdit={isEdit}
+          isSubmitting={isSubmitting}
+          suppliers={suppliers}
+          items={items}
+          addItem={addItem}
+          removeItem={removeItem}
+          updateItem={updateItem}
+          isLastItemComplete={isLastItemComplete}
+          products={products}
+          paymentMethods={paymentMethods}
+        />
+      )}
     </Modal>
   );
 }

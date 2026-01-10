@@ -1,3 +1,5 @@
+export { default as PurchaseExpanded } from "../components/purchase-expanded";
+
 export { usePurchases } from "./usePurchases";
 
 export { usePurchaseQuery } from "./usePurchaseQuery";

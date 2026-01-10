@@ -68,11 +68,22 @@ export interface GetAllPurchaseResponse {
 }
 export interface CreatePurchaseResponse {
   message: string;
-  data: {
-    purchase: Purchase;
-  };
+  data: Purchase | { purchase: Purchase };
 }
 
 export interface DeletePurchaseResponse {
   deletionReason: string;
+}
+
+export interface PurchaseFormValues extends CreatePurchaseDto {
+  deletionReason?: string;
+}
+export interface PurchasesQueryData {
+  purchases: Purchase[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }

@@ -1,3 +1,5 @@
+import { TableCell, TableRow } from "./ui/table";
+
 export default function EmptyTable({
   title,
   colSpan,
@@ -6,13 +8,10 @@ export default function EmptyTable({
   colSpan: number;
 }) {
   return (
-    <tr>
-      <td
-        colSpan={colSpan}
-        className="text-muted-foreground py-8 text-center text-sm"
-      >
+    <TableRow key="empty-row">
+      <TableCell colSpan={colSpan} className="py-6 text-center">
         {title}
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 }

@@ -8,13 +8,18 @@ import {
   PurchaseModal,
   usePurchaseColumns,
 } from "@/features/purchases/components";
-import { usePurchaseModals, usePurchases } from "@/features/purchases/hooks";
+import {
+  PurchaseExpanded,
+  usePurchaseModals,
+  usePurchases,
+} from "@/features/purchases/hooks";
 import { Purchase } from "@/features/purchases/types";
 import { useShopStore } from "@/features/shop/shop.store";
 import { supplierApi } from "@/lib/api/supplier.api";
 import { usePaginationParams } from "@/src/hooks/usePaginationParams";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { usePaymentMethods } from "../../settings/payment-method/hooks";
 
 export default function ComprasPage() {
   const { activeShopId } = useShopStore();
@@ -36,6 +41,7 @@ export default function ComprasPage() {
     supplierId?: string;
   }>({});
   const { products } = useProductQuery();
+  const { paymentMethods } = usePaymentMethods();
   // ? TODO: Move to supplier hook
   const { data: suppliers = [], isLoading: suppliersLoading } = useQuery({
     queryKey: ["suppliers", activeShopId, "for-products"],
@@ -50,6 +56,13 @@ export default function ComprasPage() {
     page,
     limit,
   });
+  useEffect(() => {
+    if (!pagination) return;
+
+    if (page > pagination.totalPages && pagination.totalPages > 0) {
+      setPage(pagination.totalPages);
+    }
+  }, [pagination?.totalPages, page]);
   const purchasesColums = usePurchaseColumns();
   return (
     <div className="space-y-4">
@@ -92,7 +105,14 @@ export default function ComprasPage() {
               onClick: purchaseModals.openDelete,
             },
           ]}
-          // renderExpandedContent={(e) => <ProductExpanded product={e} />}
+          renderExpandedContent={(e) => (
+            <PurchaseExpanded
+              purchase={e}
+              products={products}
+              suppliers={suppliers}
+              paymentMethods={paymentMethods}
+            />
+          )}
           pagination={{
             page,
             limit,
@@ -108,6 +128,7 @@ export default function ComprasPage() {
         modals={purchaseModals}
         suppliers={suppliers}
         products={products}
+        paymentMethods={paymentMethods}
       />
     </div>
   );

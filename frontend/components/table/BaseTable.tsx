@@ -36,6 +36,8 @@ export function BaseTable<T>({
   const isExpandable = Boolean(renderExpandedContent);
 
   const { sortedData, sortBy, toggleSort } = useTableSort(data, columns);
+  const getColumnKey = (col: TableColumn<T>, index: number) =>
+    col.id ?? col.header ?? `col-${index}`;
 
   return (
     <Table className="overflow-hidden rounded-md border">
@@ -44,10 +46,11 @@ export function BaseTable<T>({
         <TableRow>
           {columns.map((col, index) => {
             const isSorted = sortBy?.index === index;
+            const columnKey = getColumnKey(col, index);
 
             return (
               <TableHead
-                key={col.header}
+                key={columnKey}
                 className={`select-none ${col.align === "right" ? "text-right" : ""} ${col.sortable ? "group hover:bg-muted/50 cursor-pointer" : ""}`}
                 onClick={col.sortable ? () => toggleSort(index) : undefined}
               >
@@ -74,7 +77,7 @@ export function BaseTable<T>({
             );
           })}
 
-          {actions && <TableHead className="text-right">Acción</TableHead>}
+          {actions && <TableHead className="text-right" key="actions-header" >Acción</TableHead>}
         </TableRow>
       </TableHeader>
 
@@ -83,8 +86,9 @@ export function BaseTable<T>({
         {sortedData.length === 0 ? (
           <EmptyTable colSpan={7} title="No hay datos cargados" />
         ) : (
-          sortedData.map((row) => {
-            const id = getRowId(row);
+          sortedData.map((row, rowIndex) => {
+            const rawId = getRowId(row);
+            const id = rawId || `row-${rowIndex}`;
             const isOpen = expandedRow === id;
 
             return (
@@ -97,9 +101,9 @@ export function BaseTable<T>({
                       : undefined
                   }
                 >
-                  {columns.map((col) => (
+                  {columns.map((col, index) => (
                     <TableCell
-                      key={col.header}
+                      key={getColumnKey(col, index)}
                       className={col.align === "right" ? "text-right" : ""}
                     >
                       {col.cell(row)}
@@ -108,13 +112,15 @@ export function BaseTable<T>({
 
                   {actions && (
                     <TableCell
+                      key="actions"
                       align="right"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <TableActions
                         row={row}
-                        actions={actions(row).map((a) => ({
+                        actions={actions(row).map((a, index) => ({
                           ...a,
+                          key: a.type ?? index,
                           disabled: a.disabled?.(row),
                         }))}
                       />
@@ -123,7 +129,7 @@ export function BaseTable<T>({
                 </TableRow>
 
                 {isExpandable && isOpen && (
-                  <TableRow className="bg-muted/40">
+                  <TableRow key={`${id}-expanded`} className="bg-muted/40">
                     <TableCell
                       colSpan={columns.length + (actions ? 1 : 0)}
                       className="p-0"

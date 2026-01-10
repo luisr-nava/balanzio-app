@@ -1,5 +1,10 @@
 import { useShopStore } from "@/features/shop/shop.store";
-import { CreatePurchaseDto, Purchase, PurchaseItemForm } from "../types";
+import {
+  CreatePurchaseDto,
+  Purchase,
+  PurchaseFormValues,
+  PurchaseItemForm,
+} from "../types";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useEffect } from "react";
 import {
@@ -50,7 +55,7 @@ export const usePurchaseForm = (
   const updateMutation = usePurchaseUpdateMutation();
   const deleteMutation = usePurchaseDeleteMutation();
 
-  const form = useForm<CreatePurchaseDto>({
+  const form = useForm<PurchaseFormValues>({
     defaultValues: initialForm,
     mode: "onChange",
   });
@@ -129,8 +134,8 @@ export const usePurchaseForm = (
     });
   };
 
-  const onSubmit = async (values: CreatePurchaseDto) => {
-    const payload: CreatePurchaseDto = {
+  const onSubmit = async (values: PurchaseFormValues) => {
+    const payload: PurchaseFormValues = {
       ...values,
       shopId: activeShopId!,
       items: values.items.map((item) => ({
@@ -160,7 +165,10 @@ export const usePurchaseForm = (
 
     if (deletePurchase) {
       deleteMutation.mutate(
-        { id: deletePurchase.id },
+        {
+          id: deletePurchase.id,
+          deletionReason: values.deletionReason!,
+        },
         {
           onSuccess: () => {
             onClose?.();

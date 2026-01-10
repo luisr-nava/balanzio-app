@@ -3,6 +3,7 @@ import React from "react";
 export type SortDirection = "asc" | "desc";
 
 export interface TableColumn<T> {
+  id?: string;
   header: string;
   cell: (row: T, index?: number) => React.ReactNode;
 

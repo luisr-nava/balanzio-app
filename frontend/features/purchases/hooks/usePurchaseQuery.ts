@@ -11,7 +11,6 @@ interface UsePurchaseQueryParams {
 
 export const usePurchaseQuery = (params: UsePurchaseQueryParams) => {
   const { activeShopId } = useShopStore();
-
   const query = useQuery({
     queryKey: [
       "purchases",
