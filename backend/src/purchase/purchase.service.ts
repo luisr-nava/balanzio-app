@@ -31,6 +31,17 @@ type PurchaseWithItems = Prisma.PurchaseGetPayload<{
   };
 }>;
 
+const purchaseResponseInclude = {
+  shop: { select: { name: true } },
+  supplier: { select: { id: true } },
+  paymentMethod: { select: { id: true } },
+  items: true,
+} as const;
+
+type PurchaseWithRelations = Prisma.PurchaseGetPayload<{
+  include: typeof purchaseResponseInclude;
+}>;
+
 @Injectable()
 export class PurchaseService {
   constructor(
@@ -124,7 +135,19 @@ export class PurchaseService {
       return purchase;
     });
 
-    return purchase;
+    const purchaseWithRelations = await this.prisma.purchase.findUnique({
+      where: { id: purchase.id },
+      include: purchaseResponseInclude,
+    });
+
+    if (!purchaseWithRelations) {
+      throw new NotFoundException('La compra no existe');
+    }
+
+    return {
+      message: 'Compra creada correctamente',
+      data: this.mapPurchaseResponse(purchaseWithRelations),
+    };
   }
 
   private async validateShopAccess(shopId: string, user: JwtPayload) {
@@ -321,19 +344,7 @@ export class PurchaseService {
     const [purchases, total] = await Promise.all([
       this.prisma.purchase.findMany({
         where: filters,
-        include: {
-          shop: { select: { name: true } },
-          supplier: { select: { name: true } },
-          items: {
-            include: {
-              shopProduct: {
-                include: {
-                  product: { select: { name: true } },
-                },
-              },
-            },
-          },
-        },
+        include: purchaseResponseInclude,
         orderBy: { purchaseDate: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
@@ -352,27 +363,9 @@ export class PurchaseService {
         limit,
         totalPages: Math.ceil(total / limit),
       },
-      data: purchases.map((p) => ({
-        id: p.id,
-        shopId: p.shopId,
-        shopName: p.shop.name,
-        supplierId: p.supplierId,
-        supplierName: p.supplier?.name,
-        paymentMethodId: p.paymentMethodId,
-        totalAmount: p.totalAmount,
-        itemsCount: p.items.length,
-        purchaseDate: p.purchaseDate,
-        status: p.status,
-        notes: p.notes,
-        items: p.items.map((item) => ({
-          id: item.id,
-          shopProductId: item.shopProductId,
-          productName: item.shopProduct.product.name,
-          quantity: item.quantity,
-          unitCost: item.unitCost,
-          subtotal: item.subtotal,
-        })),
-      })),
+      data: purchases.map((purchase) =>
+        this.mapPurchaseResponse(purchase),
+      ),
     };
   }
 
@@ -547,32 +540,12 @@ export class PurchaseService {
         notes: updatePurchaseDto.notes,
         supplierId: updatePurchaseDto.supplierId ?? purchase.supplierId,
       },
-      include: {
-        shop: { select: { name: true } },
-        supplier: { select: { name: true } },
-        items: {
-          include: {
-            shopProduct: {
-              include: {
-                product: { select: { name: true } },
-              },
-            },
-          },
-        },
-      },
+      include: purchaseResponseInclude,
     });
 
     return {
       message: 'Compra actualizada correctamente',
-      data: {
-        id: updated.id,
-        shopName: updated.shop.name,
-        supplierName: updated.supplier?.name,
-        totalAmount: updated.totalAmount,
-        purchaseDate: updated.purchaseDate,
-        notes: updated.notes,
-        itemsCount: updated.items.length,
-      },
+      data: this.mapPurchaseResponse(updated),
     };
   }
 
@@ -582,15 +555,22 @@ export class PurchaseService {
     updatePurchaseDto: UpdatePurchaseDto,
     user: JwtPayload,
   ) {
-    const newItems = updatePurchaseDto.items!;
+    const rawNewItems = updatePurchaseDto.items!;
     const currentItems = purchase.items;
     const modifiedProductIds = new Set<string>();
+    const newItems = this.normalizePurchaseItems(rawNewItems);
+    const newItemsByKey = new Map(
+      newItems.map((item) => [this.buildPurchaseItemKey(item), item]),
+    );
+    const currentItemsByKey = new Map(
+      currentItems.map((item) => [this.buildPurchaseItemKey(item), item]),
+    );
 
     const result = await this.prisma.$transaction(async (tx) => {
       // 1. Procesar items existentes: comparar y actualizar o eliminar
       for (const currentItem of currentItems) {
-        const newItem = newItems.find(
-          (ni) => ni.shopProductId === currentItem.shopProductId,
+        const newItem = newItemsByKey.get(
+          this.buildPurchaseItemKey(currentItem),
         );
 
         if (!newItem) {
@@ -646,9 +626,7 @@ export class PurchaseService {
 
       // 2. Procesar items nuevos
       for (const newItem of newItems) {
-        const exists = currentItems.find(
-          (ci) => ci.shopProductId === newItem.shopProductId,
-        );
+        const exists = currentItemsByKey.get(this.buildPurchaseItemKey(newItem));
 
         if (!exists) {
           // Item nuevo: agregarlo y sumar stock
@@ -699,36 +677,61 @@ export class PurchaseService {
           supplierId: updatePurchaseDto.supplierId ?? purchase.supplierId,
           totalAmount: newTotalAmount,
         },
-        include: {
-          shop: { select: { name: true } },
-          supplier: { select: { name: true } },
-          items: {
-            include: {
-              shopProduct: {
-                include: {
-                  product: { select: { name: true } },
-                },
-              },
-            },
-          },
-        },
+        include: purchaseResponseInclude,
       });
 
       return {
         message: 'Compra e items actualizados correctamente',
-        data: {
-          id: updated.id,
-          shopName: updated.shop.name,
-          supplierName: updated.supplier?.name,
-          totalAmount: updated.totalAmount,
-          purchaseDate: updated.purchaseDate,
-          notes: updated.notes,
-          itemsCount: updated.items.length,
-        },
+        data: this.mapPurchaseResponse(updated),
       };
     });
 
     return result;
+  }
+
+  private normalizePurchaseItems(items: PurchaseItemDto[]) {
+    const byKey = new Map<string, PurchaseItemDto>();
+
+    for (const item of items) {
+      const key = this.buildPurchaseItemKey(item);
+      const existing = byKey.get(key);
+
+      if (existing) {
+        existing.quantity += item.quantity;
+        existing.subtotal += item.subtotal;
+        continue;
+      }
+
+      byKey.set(key, { ...item });
+    }
+
+    return Array.from(byKey.values());
+  }
+
+  private buildPurchaseItemKey(item: { shopProductId: string; unitCost: number }) {
+    return `${item.shopProductId}::${item.unitCost}`;
+  }
+
+  private mapPurchaseResponse(purchase: PurchaseWithRelations) {
+    const purchaseMeta = purchase as PurchaseWithRelations & {
+      createdAt?: Date;
+      updatedAt?: Date;
+    };
+
+    return {
+      id: purchase.id,
+      shopId: purchase.shopId,
+      shopName: purchase.shop.name,
+      supplierId: purchase.supplier?.id ?? null,
+      paymentMethodId: purchase.paymentMethod?.id ?? purchase.paymentMethodId,
+      items: purchase.items,
+      itemsCount: purchase.items.length,
+      totalAmount: purchase.totalAmount ?? null,
+      purchaseDate: purchase.purchaseDate,
+      notes: purchase.notes ?? null,
+      createdAt: purchaseMeta.createdAt ?? null,
+      updatedAt: purchaseMeta.updatedAt ?? null,
+    };
   }
 
   async getDeletionHistory(user: JwtPayload, query: PurchaseQuery) {
