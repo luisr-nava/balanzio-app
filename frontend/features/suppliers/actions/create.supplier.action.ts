@@ -1,9 +1,12 @@
 import { kioscoApi } from "@/lib/kioscoApi";
-import { CreateSupplierDto, Supplier } from "../types";
+import { CreateSupplierDto, CreateSupplierResponse, Supplier } from "../types";
 
 export const createSupplierAction = async (
   payload: CreateSupplierDto
 ): Promise<Supplier> => {
-  const { data } = await kioscoApi.post<Supplier>("/supplier", payload);
-  return data;
+  const { data } = await kioscoApi.post<CreateSupplierResponse>(
+    "/supplier",
+    payload
+  );
+  return data.data;
 };

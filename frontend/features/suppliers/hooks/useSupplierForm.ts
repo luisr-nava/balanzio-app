@@ -7,6 +7,7 @@ import {
 } from "./useSupplierMutations";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { useEffect } from "react";
 
 const initialForm: CreateSupplierDto = {
   name: "",
@@ -15,13 +16,29 @@ const initialForm: CreateSupplierDto = {
   email: "",
   address: "",
   notes: "",
-  categoryId: "",
+  categoryId: null,
   shopIds: [],
 };
 
+function mapIncomeToForm(
+  supplier: Supplier,
+  initialForm: CreateSupplierDto
+): CreateSupplierDto {
+  return {
+    ...initialForm,
+    name: supplier.name,
+    address: supplier.address,
+    phone: supplier.phone,
+    categoryId: supplier.category?.id ?? null,
+    email: supplier.email,
+    notes: supplier.notes,
+    shopIds: supplier.supplierShop?.map((s) => s.shopId) ?? [],
+  };
+}
 export const useSupplierForm = (
   editSupplier?: Supplier,
   deleteSupplier?: Supplier,
+  isEdit?: boolean,
   onClose?: () => void
 ) => {
   const { activeShopId } = useShopStore();
@@ -29,19 +46,12 @@ export const useSupplierForm = (
   const createMutation = useSupplierCreateMutation();
   const updateMutation = useSupplierUpdateMutation();
   const deleteMutation = useSupplierDeleteMutation();
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setValue,
-    getValues,
-    control,
-    formState: { errors, isValid },
-  } = useForm<CreateSupplierDto>({
+  const form = useForm<CreateSupplierDto>({
     defaultValues: initialForm,
-    mode: "onChange",
   });
-  const onSubmit = handleSubmit((values) => {
+
+  const onSubmit = async (values: CreateSupplierDto) => {
+    // const onSubmit = handleSubmit((values) => {
     const basePayload: CreateSupplierDto = {
       ...values,
       shopIds: [activeShopId!],
@@ -54,10 +64,12 @@ export const useSupplierForm = (
         },
         {
           onSuccess: () => {
-            toast.success("Gasto actualizado");
+            toast.success("Proveedor actualizado");
+            onClose?.();
+            form.reset({ ...initialForm });
           },
           onError: () => {
-            toast.error("No se pudo actualizar el cliente");
+            toast.error("No se pudo actualizar el proveedor");
           },
         }
       );
@@ -68,27 +80,42 @@ export const useSupplierForm = (
         },
         {
           onSuccess: () => {
-            toast.success("Gasto eliminado correctamente");
+            toast.success("Proveedor eliminado correctamente");
+            onClose?.();
+            form.reset({ ...initialForm });
           },
           onError: () => {
-            toast.error("No se pudo eliminar el gasto");
+            toast.error("No se pudo eliminar el proveedor");
           },
         }
       );
     } else {
       createMutation.mutate(basePayload, {
         onSuccess: () => {
-          toast.success("Gasto creado");
+          toast.success("Proveedor creado");
+          onClose?.();
+          form.reset({ ...initialForm });
         },
         onError: () => {
-          toast.error("No se pudo crear el gasto");
+          toast.error("No se pudo crear el proveedor");
         },
       });
     }
-    onClose?.();
-    reset();
-  });
+  };
+
+  useEffect(() => {
+    if (!isEdit) {
+      form.reset(initialForm);
+      return;
+    }
+
+    if (editSupplier) {
+      form.reset(mapIncomeToForm(editSupplier, initialForm));
+    }
+  }, [isEdit, editSupplier]);
+
   return {
+    form,
     activeShopId,
     createMutation,
     updateMutation,
@@ -96,14 +123,7 @@ export const useSupplierForm = (
     isLoadingCreate: createMutation.isPending,
     isLoadingUpdate: updateMutation.isPending,
     isLoadingDelete: deleteMutation.isPending,
-    register,
-    reset,
     onSubmit,
     initialForm,
-    setValue,
-    isValid,
-    control,
-    getValues,
-    errors,
   };
 };

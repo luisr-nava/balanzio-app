@@ -83,11 +83,13 @@ export default function PurchaseModal({
       title={
         editPurchaseModal.isOpen
           ? "Editar compra"
-          : deletePurchaseModal
+          : deletePurchaseModal.isOpen
             ? "Eliminar compra"
             : "Crear compra"
       }
-      description={deletePurchaseModal ? "" : "Completa los datos de la compra"}
+      description={
+        deletePurchaseModal.isOpen ? "" : "Completa los datos de la compra"
+      }
       size="lg"
     >
       {deletePurchaseModal.isOpen ? (

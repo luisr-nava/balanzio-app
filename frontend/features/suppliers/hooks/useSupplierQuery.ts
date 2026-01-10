@@ -3,41 +3,26 @@ import { getSuppliersAction } from "../actions";
 import { useShopStore } from "@/features/shop/shop.store";
 
 interface UseSupplierQueryParams {
-  search: string;
-  page: number;
+  search?: string;
+  page?: number;
   limit?: number;
   enabled?: boolean;
-  startDate?: string;
-  endDate?: string;
 }
-export const useSupplierQuery = ({
-  search,
-  page,
-  limit = 10,
-  enabled = true,
-  startDate,
-  endDate,
-}: UseSupplierQueryParams) => {
+export const useSupplierQuery = (params: UseSupplierQueryParams) => {
   const { activeShopId } = useShopStore();
   const query = useQuery({
     queryKey: [
       "suppliers",
       activeShopId,
-      search,
-      page,
-      limit,
-      startDate,
-      endDate,
+      params.page,
+      params.limit,
+      params.search ?? "",
     ],
     queryFn: () =>
       getSuppliersAction(activeShopId!, {
-        search,
-        limit,
-        page,
-        startDate,
-        endDate,
+        ...params,
       }),
-    enabled: enabled && Boolean(activeShopId),
+    enabled: Boolean(activeShopId),
     staleTime: 1000 * 30,
     placeholderData: (prev) => prev,
   });

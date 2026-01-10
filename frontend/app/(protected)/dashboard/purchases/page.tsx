@@ -3,7 +3,7 @@
 import { BaseHeader } from "@/components/header/BaseHeader";
 import { Loading } from "@/components/loading";
 import { BaseTable } from "@/components/table/BaseTable";
-import { useProductQuery, useProducts } from "@/features/products/hooks";
+import { useProductQuery } from "@/features/products/hooks";
 import {
   PurchaseModal,
   usePurchaseColumns,
@@ -14,16 +14,12 @@ import {
   usePurchases,
 } from "@/features/purchases/hooks";
 import { Purchase } from "@/features/purchases/types";
-import { useShopStore } from "@/features/shop/shop.store";
-import { supplierApi } from "@/lib/api/supplier.api";
 import { usePaginationParams } from "@/src/hooks/usePaginationParams";
-import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { usePaymentMethods } from "../../settings/payment-method/hooks";
+import { useSupplierQuery } from "@/features/suppliers/hooks";
 
 export default function ComprasPage() {
-  const { activeShopId } = useShopStore();
-
   const purchaseModals = usePurchaseModals();
 
   const {
@@ -42,14 +38,7 @@ export default function ComprasPage() {
   }>({});
   const { products } = useProductQuery();
   const { paymentMethods } = usePaymentMethods();
-  // ? TODO: Move to supplier hook
-  const { data: suppliers = [], isLoading: suppliersLoading } = useQuery({
-    queryKey: ["suppliers", activeShopId, "for-products"],
-    queryFn: () => supplierApi.listByShop(activeShopId || ""),
-
-    enabled: Boolean(activeShopId),
-    staleTime: 1000 * 30,
-  });
+  const { suppliers } = useSupplierQuery({});
   const { purchase, purchaseLoading, pagination, isFetching } = usePurchases({
     ...filters,
     search: debouncedSearch,

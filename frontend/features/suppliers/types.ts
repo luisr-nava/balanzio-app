@@ -1,3 +1,11 @@
+export interface SupplierShop {
+  shopId: string;
+}
+
+export interface SupplierCategory {
+  id: string;
+  name: string;
+}
 export interface Supplier {
   id: string;
   name: string;
@@ -6,10 +14,13 @@ export interface Supplier {
   email?: string | null;
   address?: string | null;
   notes?: string | null;
+
   categoryId?: string | null;
-  categoryName?: string | null;
-  shopId?: string;
-  shopIds?: string[];
+  category?: SupplierCategory | null;
+
+  supplierShop: SupplierShop[];
+
+  isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -27,12 +38,16 @@ export interface CreateSupplierDto {
 
 export interface GetSuppliersResponse {
   message?: string;
-  data: Supplier[];
-  meta: {
+  suppliers: Supplier[];
+  pagination: {
     total: number;
     page: number;
     limit: number;
     totalPages: number;
     totalAmount?: number;
   };
+}
+export interface CreateSupplierResponse {
+  message: string;
+  data: Supplier;
 }

@@ -68,7 +68,7 @@ export interface GetAllPurchaseResponse {
 }
 export interface CreatePurchaseResponse {
   message: string;
-  data: Purchase | { purchase: Purchase };
+  data: Purchase;
 }
 
 export interface DeletePurchaseResponse {

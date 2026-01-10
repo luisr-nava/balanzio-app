@@ -1,15 +1,15 @@
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { Button } from "@/components/ui/button";
+import { UseFormReturn } from "react-hook-form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { CreateSupplierDto } from "../types";
+import { BaseForm } from "@/components/form/BaseForm";
+import { FormGrid } from "@/components/form/FormGrid";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import type { Shop } from "@/lib/types/shop";
-import { Supplier } from "../types";
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
 export interface SupplierFormValues {
   name: string;
@@ -22,251 +22,153 @@ export interface SupplierFormValues {
   shopIds: string[];
 }
 
-interface SupplierFormProps {
-  onSubmit: (values: SupplierFormValues) => void;
+interface Props {
+  form: UseFormReturn<CreateSupplierDto>;
+  onSubmit: (values: CreateSupplierDto) => void;
+  onCancel: () => void;
+  isEdit: boolean;
   isSubmitting: boolean;
-  editingSupplier?: Supplier | null;
-  onCancelEdit: () => void;
-  shops: Shop[];
-  isOwner: boolean;
-  activeShopId: string | null;
-  categories: { id: string; name: string }[];
-  loadMoreCategories?: () => void;
-  hasMoreCategories?: boolean;
-  isLoadingCategories?: boolean;
 }
 
-const DEFAULT_VALUES: SupplierFormValues = {
-  name: "",
-  contactName: "",
-  phone: "",
-  email: "",
-  address: "",
-  notes: "",
-  categoryId: "",
-  shopIds: [],
-};
-
 export default function SupplierForm({
+  form,
   onSubmit,
+  onCancel,
+  isEdit,
   isSubmitting,
-  editingSupplier,
-  onCancelEdit,
-  shops,
-  isOwner,
-  activeShopId,
-  categories,
-  loadMoreCategories,
-  hasMoreCategories,
-  isLoadingCategories,
-}: SupplierFormProps) {
-  const form = useForm<SupplierFormValues>({
-    defaultValues: DEFAULT_VALUES,
-  });
-
-  const RequiredMark = () => (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <span className="text-destructive ml-1" aria-label="Requerido">
-          *
-        </span>
-      </TooltipTrigger>
-      <TooltipContent>Campo requerido por el backend</TooltipContent>
-    </Tooltip>
-  );
-
-  useEffect(() => {
-    if (editingSupplier) {
-      form.reset({
-        name: editingSupplier.name,
-        contactName: editingSupplier.contactName || "",
-        phone: editingSupplier.phone || "",
-        email: editingSupplier.email || "",
-        address: editingSupplier.address || "",
-        notes: editingSupplier.notes || "",
-        categoryId: editingSupplier.categoryId || "",
-        shopIds:
-          editingSupplier.shopIds ||
-          (editingSupplier.shopId
-            ? [editingSupplier.shopId]
-            : activeShopId
-              ? [activeShopId]
-              : []),
-      });
-    } else {
-      form.reset({
-        ...DEFAULT_VALUES,
-        shopIds: activeShopId ? [activeShopId] : [],
-      });
-    }
-  }, [editingSupplier, form, activeShopId]);
-
-  const handleSubmit = form.handleSubmit((values) =>
-    onSubmit({
-      ...values,
-      contactName: values.contactName?.trim() || null,
-      phone: values.phone?.trim() || null,
-      email: values.email?.trim() || null,
-      address: values.address?.trim() || null,
-      notes: values.notes?.trim() || null,
-      categoryId: values.categoryId?.trim() || null,
-      shopIds: values.shopIds.length
-        ? values.shopIds
-        : activeShopId
-          ? [activeShopId]
-          : [],
-    })
-  );
-
+}: Props) {
   return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
-      <div className="space-y-2">
-        <Label htmlFor="name">
-          Nombre
-          <RequiredMark />
-        </Label>
-        <Input
-          id="name"
-          placeholder="Proveedor S.A."
-          {...form.register("name", { required: true })}
-        />
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="contactName">Persona de contacto</Label>
-          <Input
-            id="contactName"
-            placeholder="Nombre contacto"
-            {...form.register("contactName")}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="phone">Teléfono</Label>
-          <Input
-            id="phone"
-            placeholder="+54 9 11 1234 5678"
-            {...form.register("phone")}
-          />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="contacto@proveedor.com"
-          {...form.register("email")}
-        />
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="address">Dirección</Label>
-          <Input
-            id="address"
-            placeholder="Calle 123"
-            {...form.register("address")}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="notes">Notas</Label>
-          <Input
-            id="notes"
-            placeholder="Notas internas"
-            {...form.register("notes")}
-          />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="categoryId">Categoría (opcional)</Label>
-        <div className="space-y-2">
-          <select
-            id="categoryId"
-            className="border-input focus-visible:ring-ring w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:ring-2 focus-visible:outline-none"
-            {...form.register("categoryId")}
-          >
-            <option value="">Sin categoría</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
-          {hasMoreCategories && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={loadMoreCategories}
-              disabled={isLoadingCategories}
-            >
-              {isLoadingCategories ? "Cargando..." : "Cargar más categorías"}
-            </Button>
+    <BaseForm
+      form={form}
+      onSubmit={onSubmit}
+      onCancel={onCancel}
+      submitLabel={isEdit ? "Actualizar egreso" : "Crear egreso"}
+      isSubmitting={isSubmitting}
+    >
+      <FormGrid cols={2}>
+        <FormField
+          control={form.control}
+          name="name"
+          rules={{ required: "El nombre del proveedor es obligatorio" }}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                Nombre del proveedor <span className="text-destructive">*</span>
+              </FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="Proveedor S.A." />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label>
-          Tiendas
-          <RequiredMark />
-        </Label>
-        <div className="max-h-40 space-y-2 overflow-y-auto rounded-md border p-3">
-          {shops.length === 0 ? (
-            <p className="text-muted-foreground text-sm">
-              No hay tiendas disponibles.
-            </p>
-          ) : (
-            shops.map((shop) => {
-              const checked = form.watch("shopIds").includes(shop.id);
-              return (
-                <label
-                  key={shop.id}
-                  className="flex items-center gap-2 text-sm"
-                >
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={(e) => {
-                      const current = form.watch("shopIds") || [];
-                      const next = e.target.checked
-                        ? [...current, shop.id]
-                        : current.filter((id) => id !== shop.id);
-                      form.setValue("shopIds", next);
-                    }}
-                  />
-                  <span>{shop.name}</span>
-                </label>
-              );
-            })
+        />
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Telefono</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="+54 9 11 1234 5678"
+                  {...field}
+                  value={field.value ?? ""}
+                />
+              </FormControl>
+            </FormItem>
           )}
-        </div>
-      </div>
+        />
+      </FormGrid>
+      <FormGrid cols={2}>
+        <FormField
+          control={form.control}
+          name="contactName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Persona de contacto</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  placeholder="Luis"
+                  value={field.value ?? ""}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input
+                  type="email"
+                  placeholder="contacto@proveedor.com"
+                  {...field}
+                  value={field.value ?? ""}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+      </FormGrid>
+      <FormGrid cols={2}>
+        <FormField
+          control={form.control}
+          name="address"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Dirección</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  placeholder="Calle 123"
+                  value={field.value ?? ""}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        {/* TODO: Traer las categorias de  */}
+        <FormField
+          control={form.control}
+          name="categoryId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Categoría</FormLabel>
+              <FormControl>
+                <Input
+                  type="email"
+                  placeholder="contacto@proveedor.com"
+                  {...field}
+                  value={field.value ?? ""}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+      </FormGrid>
 
-      <div className="flex flex-wrap gap-2">
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting
-            ? editingSupplier
-              ? "Guardando..."
-              : "Creando..."
-            : editingSupplier
-              ? "Actualizar proveedor"
-              : "Crear proveedor"}
-        </Button>
-        {editingSupplier && (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancelEdit}
-            disabled={isSubmitting}
-          >
-            Cancelar edición
-          </Button>
-        )}
-      </div>
-    </form>
+      <FormGrid cols={1}>
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Notas</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  placeholder="Notas internas"
+                  value={field.value ?? ""}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+      </FormGrid>
+    </BaseForm>
   );
 }

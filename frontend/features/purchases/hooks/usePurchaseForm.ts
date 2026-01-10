@@ -194,7 +194,6 @@ export const usePurchaseForm = (
       },
     });
   };
-  console.log(editPurchase);
 
   useEffect(() => {
     if (!isEdit) {

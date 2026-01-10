@@ -16,10 +16,9 @@ import { useState } from "react";
 import { useProductModals, useProducts } from "@/features/products/hooks";
 import { BaseTable } from "@/components/table/BaseTable";
 import { BaseHeader } from "@/components/header/BaseHeader";
+import { useSupplierQuery } from "@/features/suppliers/hooks";
 
 export default function ProductsPage() {
-  const { activeShopId } = useShopStore();
-
   const productsModals = useProductModals();
 
   const {
@@ -45,13 +44,7 @@ export default function ProductsPage() {
     limit,
   });
 
-  // ? TODO: Move to supplier hook
-  const { data: suppliers = [], isLoading: suppliersLoading } = useQuery({
-    queryKey: ["suppliers", activeShopId, "for-products"],
-    queryFn: () => supplierApi.listByShop(activeShopId || ""),
-    enabled: Boolean(activeShopId),
-    staleTime: 1000 * 30,
-  });
+  const { suppliers } = useSupplierQuery({});
   const { measurementUnits, isLoading: measurementUnitsLoading } =
     useMeasurementUnits();
 

@@ -4,7 +4,7 @@ interface UseProductsParams {
   search?: string;
   categoryId?: string;
   supplierId?: string;
-  page: number;
+  page?: number;
   limit?: number;
   enabled?: boolean;
 }
