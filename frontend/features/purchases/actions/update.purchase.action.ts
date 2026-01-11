@@ -1,12 +1,5 @@
 import { kioscoApi } from "@/lib/kioscoApi";
-import {
-  CreatePurchaseDto,
-  CreatePurchaseResponse,
-  Purchase,
-} from "../types";
-
-const resolvePurchase = (response: CreatePurchaseResponse): Purchase =>
-  "purchase" in response.data ? response.data.purchase : response.data;
+import { CreatePurchaseDto, CreatePurchaseResponse, Purchase } from "../types";
 
 export const updatePurchaseAction = async (
   id: string,
@@ -17,5 +10,5 @@ export const updatePurchaseAction = async (
     payload
   );
 
-  return resolvePurchase(data);
+  return data.data;
 };

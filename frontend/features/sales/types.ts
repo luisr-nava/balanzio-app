@@ -28,3 +28,8 @@ export interface CreateSaleDto {
   }>;
   paymentMethodId?: string;
 }
+
+export interface CreateSaleResponse {
+  message: string;
+  data: Sale;
+}

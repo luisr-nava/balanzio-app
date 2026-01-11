@@ -1,4 +1,4 @@
-import { Product } from "../../products/interfaces";
+
 import { PaymentMethod } from "@/app/(protected)/settings/payment-method/interfaces";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -13,7 +13,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SaleItem } from "../interfaces";
+import { SaleItem } from "../types";
+import { Product } from "@/features/products/types";
 
 const matchesShopProductId = (product: Product, identifier: string) =>
   product.shopProductId === identifier ||
@@ -38,7 +39,7 @@ type CartContentProps = {
   paymentMethodsLoading: boolean;
   onPaymentMethodChange: (methodId: string) => void;
 };
-export const CartContent = ({
+export default function ProductCardContent({
   items = [],
   products,
   notes,
@@ -55,7 +56,7 @@ export const CartContent = ({
   paymentMethods = [],
   paymentMethodsLoading,
   onPaymentMethodChange,
-}: CartContentProps) => {
+}: CartContentProps) {
   const safeItems = items ?? [];
   return (
     <div className="mt-6 hidden md:w-2/5 lg:mt-0 lg:block lg:w-1/5">
@@ -200,4 +201,4 @@ export const CartContent = ({
       </Card>
     </div>
   );
-};
+}

@@ -13,15 +13,12 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { ShopLoading } from "@/components/shop-loading";
-import { ShopEmpty } from "@/components/shop-emty";
 import { useSale } from "./hooks/useSale";
-import { CartContent } from "./components/cart-content";
-import { CardProduct } from "./components/card-product";
 import { useShopStore } from "@/features/shop/shop.store";
+import { ProductCard, ProductCardContent } from "@/features/sales/components";
 
 export default function VentasPage() {
-  const { activeShopId, activeShopLoading } = useShopStore();
+  const { activeShopId } = useShopStore();
 
   const {
     isCartOpen,
@@ -39,10 +36,6 @@ export default function VentasPage() {
     notes,
     setNotes,
     productsLoading,
-    // paymentMethods,
-    // paymentMethodsLoading,
-    // paymentMethodId,
-    // handlePaymentMethodChange,
     resolveShopProductId,
   } = useSale();
 
@@ -55,17 +48,6 @@ export default function VentasPage() {
     return map;
   }, [items]);
 
-  if (!activeShopId) return <ShopEmpty />;
-
-  if (activeShopLoading) return <ShopLoading />;
-
-  {
-    /* <CardHeader className="pb-2">
-    <CardDescription>
-      Toca un producto para agregarlo al carrito.
-    </CardDescription>
-  </CardHeader> */
-  }
   return (
     <div className="space-y-6 pb-16 lg:pb-0">
       <div className="lg:flex lg:items-start lg:gap-4">
@@ -90,7 +72,7 @@ export default function VentasPage() {
                     const isAddDisabled = stock <= 0 || quantityInCart >= stock;
 
                     return (
-                      <CardProduct
+                      <ProductCard
                         key={product.id}
                         product={product}
                         incrementProduct={incrementProduct}
@@ -104,7 +86,7 @@ export default function VentasPage() {
           </Card>
         </div>
 
-        <CartContent
+        <ProductCardContent
           items={items}
           products={products}
           notes={notes}
@@ -117,10 +99,6 @@ export default function VentasPage() {
           listClassName="max-h-[60vh]"
           totalItems={totalItems}
           totalAmount={total}
-          // paymentMethods={paymentMethods}
-          // paymentMethodsLoading={paymentMethodsLoading}
-          // paymentMethodId={paymentMethodId}
-          // onPaymentMethodChange={handlePaymentMethodChange}
         />
       </div>
 
@@ -169,7 +147,7 @@ export default function VentasPage() {
               </DrawerDescription>
             </DrawerHeader>
             <div className="space-y-4 px-4 pb-2">
-              <CartContent
+              <ProductCardContent
                 items={items}
                 products={products}
                 notes={notes}
@@ -182,10 +160,6 @@ export default function VentasPage() {
                 listClassName="max-h-[45vh]"
                 totalItems={totalItems}
                 totalAmount={total}
-                // paymentMethods={paymentMethods}
-                // paymentMethodsLoading={paymentMethodsLoading}
-                // paymentMethodId={paymentMethodId}
-                // onPaymentMethodChange={handlePaymentMethodChange}
               />
             </div>
           </DrawerContent>

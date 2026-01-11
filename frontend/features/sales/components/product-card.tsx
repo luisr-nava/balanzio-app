@@ -1,16 +1,16 @@
+import { Product } from "@/features/products/types";
 import { motion } from "framer-motion";
-import { Product } from "../../products/interfaces";
 
 type CardProductProps = {
   product: Product;
   incrementProduct: (product: Product) => void;
   isAddDisabled?: boolean;
 };
-export const CardProduct = ({
+export default function ProductCard({
   product,
   incrementProduct,
   isAddDisabled = false,
-}: CardProductProps) => {
+}: CardProductProps) {
   const stock = Math.max(0, Number(product.stock ?? 0));
   const shouldDisable = isAddDisabled;
   const cardStateClasses = shouldDisable
@@ -57,4 +57,4 @@ export const CardProduct = ({
       </div>
     </motion.button>
   );
-};
+}
