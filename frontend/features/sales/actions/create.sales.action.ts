@@ -1,7 +1,7 @@
 import { kioscoApi } from "@/lib/kioscoApi";
 import { CreateSaleDto, CreateSaleResponse, Sale } from "../types";
 
-export const CreateSale = async (
+export const createSaleAction = async (
   payload: Partial<CreateSaleDto>
 ): Promise<Sale> => {
   const { data } = await kioscoApi.post<CreateSaleResponse>("/sale", payload);

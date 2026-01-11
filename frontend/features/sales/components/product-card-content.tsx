@@ -1,10 +1,7 @@
-
-import { PaymentMethod } from "@/app/(protected)/settings/payment-method/interfaces";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
-import { Separator } from "@radix-ui/react-dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -13,53 +10,45 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SaleItem } from "../types";
+import { CartUI, CheckoutUI } from "../types";
 import { Product } from "@/features/products/types";
+import { Separator } from "@/components/ui/separator";
+import { Controller, UseFormReturn } from "react-hook-form";
+import { SaleFormValues } from "../hooks/useSaleForm";
+import { useCurrencyFormatter } from "@/src/hooks/useCurrencyFormatter";
 
 const matchesShopProductId = (product: Product, identifier: string) =>
   product.shopProductId === identifier ||
   product.id === identifier ||
   product.productId === identifier;
 
-type CartContentProps = {
-  items: SaleItem[];
-  products: Product[];
-  notes: string;
-  onNotesChange: (value: string) => void;
-  incrementProduct: (productId: string) => void;
-  decrementProduct: (productId: string) => void;
-  clearCart: () => void;
-  handleSubmit: () => void;
-  isSubmitting: boolean;
-  listClassName?: string;
-  totalItems: number;
-  totalAmount: number;
-  paymentMethodId?: string;
-  paymentMethods: PaymentMethod[];
-  paymentMethodsLoading: boolean;
-  onPaymentMethodChange: (methodId: string) => void;
+type ProductCardContentProps = {
+  form: UseFormReturn<SaleFormValues>;
+  cart: CartUI;
+  checkout: CheckoutUI;
 };
+
 export default function ProductCardContent({
-  items = [],
-  products,
-  notes,
-  onNotesChange,
-  incrementProduct,
-  decrementProduct,
-  clearCart,
-  handleSubmit,
-  isSubmitting,
-  listClassName,
-  totalItems,
-  totalAmount,
-  paymentMethodId,
-  paymentMethods = [],
-  paymentMethodsLoading,
-  onPaymentMethodChange,
-}: CartContentProps) {
+  form,
+  cart,
+  checkout,
+}: ProductCardContentProps) {
+  const {
+    items,
+    products,
+    totalItems,
+    totalAmount,
+    increment,
+    decrement,
+    clear,
+  } = cart;
+
+  const { canSubmit, isSubmitting, onSubmit, paymentMethods } = checkout;
+  
+  const formatCurrency = useCurrencyFormatter();
   const safeItems = items ?? [];
   return (
-    <div className="mt-6 hidden md:w-2/5 lg:mt-0 lg:block lg:w-1/5">
+    <div className={``}>
       <Card className="bg-background sticky top-20 rounded-md border shadow-lg">
         <CardHeader>
           <CardTitle>Carrito</CardTitle>
@@ -76,10 +65,9 @@ export default function ProductCardContent({
                   matchesShopProductId(p, item.shopProductId)
                 );
                 const productName = product?.name || "Producto";
-                const unitPrice = Number(
-                  item.unitPrice || product?.salePrice || 0
-                );
+                const unitPrice = Number(product?.salePrice || 0);
                 const quantity = Number(item.quantity || 0);
+                const subtotal = unitPrice * quantity;
                 const stock = product?.stock ?? 0;
                 const isIncrementDisabled = stock <= 0 || quantity >= stock;
                 return (
@@ -99,9 +87,7 @@ export default function ProductCardContent({
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() =>
-                            decrementProduct(item.shopProductId || "")
-                          }
+                          onClick={() => decrement(item.shopProductId || "")}
                         >
                           -
                         </Button>
@@ -112,9 +98,7 @@ export default function ProductCardContent({
                           size="sm"
                           variant="outline"
                           disabled={isIncrementDisabled}
-                          onClick={() =>
-                            incrementProduct(item.shopProductId || "")
-                          }
+                          onClick={() => increment(item.shopProductId || "")}
                         >
                           +
                         </Button>
@@ -122,9 +106,7 @@ export default function ProductCardContent({
                     </div>
                     <div className="text-muted-foreground mt-2 flex justify-between text-base">
                       <span>Subtotal</span>
-                      <span>
-                        ${Number(item.subtotal || 0).toLocaleString("es-AR")}
-                      </span>
+                      <span>{formatCurrency(subtotal)}</span>
                     </div>
                   </motion.div>
                 );
@@ -136,62 +118,77 @@ export default function ProductCardContent({
 
           <div className="flex items-center justify-between text-lg font-semibold">
             <span>Total ítems: {totalItems}</span>
-            <span>${totalAmount.toLocaleString("es-AR")}</span>
+            <span>{formatCurrency(totalAmount)}</span>
           </div>
 
           <div className="space-y-3">
             <div className="grid gap-1">
-              <Label>Método de pago</Label>
-              <Select
-                value={paymentMethodId ?? ""}
-                onValueChange={onPaymentMethodChange}
-                aria-label="Seleccionar método de pago"
-                disabled={paymentMethodsLoading || paymentMethods.length === 0}
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={
-                      paymentMethodsLoading
-                        ? "Cargando métodos..."
-                        : "Seleccioná un método"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {paymentMethods.map((method) => (
-                    <SelectItem key={method.id} value={method.id}>
-                      {method.name}
-                    </SelectItem>
-                  ))}
-                  {!paymentMethodsLoading && paymentMethods.length === 0 && (
-                    <SelectItem value="__no-methods" disabled>
-                      Sin métodos disponibles
-                    </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
+              <Controller
+                control={form.control}
+                name="paymentMethodId"
+                rules={{ required: "El método de pago es requerido" }}
+                render={({ field, fieldState }) => (
+                  <div className="grid gap-1">
+                    <Label>
+                      Método de pago <span className="text-destructive">*</span>
+                    </Label>
+
+                    <Select
+                      key={field.value}
+                      value={field.value ?? ""}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sin método de pago" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {paymentMethods.map((u) => (
+                          <SelectItem key={u.id} value={u.id}>
+                            {u.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    {fieldState.error && (
+                      <p className="text-destructive text-xs">
+                        {fieldState.error.message}
+                      </p>
+                    )}
+                  </div>
+                )}
+              />
             </div>
             <div className="grid gap-1">
-              <Label>Notas</Label>
-              <Input
-                value={notes}
-                onChange={(e) => onNotesChange(e.target.value)}
-                placeholder="Observaciones de la venta"
+              <Controller
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                  <div className="grid gap-1">
+                    <Label>Notas</Label>
+                    <Input
+                      {...field}
+                      value={field.value ?? ""}
+                      placeholder="Observaciones de la venta"
+                    />
+                  </div>
+                )}
               />
             </div>
             <div className="flex gap-2">
               <Button
                 className="flex-1"
                 variant="outline"
-                onClick={clearCart}
-                disabled={safeItems.length === 0 || isSubmitting}
+                onClick={clear}
+                disabled={items.length === 0 || isSubmitting}
               >
                 Vaciar
               </Button>
+
               <Button
                 className="flex-1"
-                disabled={isSubmitting}
-                onClick={handleSubmit}
+                disabled={isSubmitting || !canSubmit}
+                onClick={onSubmit}
               >
                 {isSubmitting ? "Guardando..." : "Cobrar"}
               </Button>

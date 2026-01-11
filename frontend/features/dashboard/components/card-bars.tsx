@@ -1,5 +1,4 @@
 import { CardContent } from "@/components/ui/card";
-import { Period } from "@/utils";
 import { ChartOptions } from "chart.js";
 import { Bar } from "react-chartjs-2";
 import {
@@ -10,6 +9,8 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+export type Period = "week" | "month" | "year";
+
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 export function formatTooltipTitle(label: string, period: Period) {
   switch (period) {

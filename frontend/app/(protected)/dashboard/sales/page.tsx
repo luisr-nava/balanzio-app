@@ -1,170 +1,95 @@
 "use client";
-
-import { useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
 import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
-import { useSale } from "./hooks/useSale";
-import { useShopStore } from "@/features/shop/shop.store";
-import { ProductCard, ProductCardContent } from "@/features/sales/components";
+  MobileCheckoutBar,
+  ProductCard,
+  ProductCardContent,
+} from "@/features/sales/components";
+import {
+  useSaleCart,
+  useSaleCreateFlow,
+  useSaleDerivedState,
+  useSaleForm,
+} from "@/features/sales/hooks";
+import { useProductQuery } from "@/features/products/hooks";
+import { usePaymentMethods } from "../../settings/payment-method/hooks";
 
 export default function VentasPage() {
-  const { activeShopId } = useShopStore();
+  const form = useSaleForm();
 
   const {
-    isCartOpen,
-    setIsCartOpen,
-    products,
-    total,
-    incrementProduct,
-    incrementProductById,
-    decrementProduct,
-    handleSubmit,
-    totalItems,
-    isSubmitting,
-    clearCart,
     items,
-    notes,
-    setNotes,
-    productsLoading,
+    incrementProduct,
+    decrementProduct,
+    totalItems,
     resolveShopProductId,
-  } = useSale();
+    incrementProductById,
+  } = useSaleCart(form);
+  const { submitSale, isSubmitting } = useSaleCreateFlow(form);
+  const { products } = useProductQuery({});
+  const { paymentMethods } = usePaymentMethods();
+  const paymentMethodId = form.watch("paymentMethodId");
+  const { totalAmount, productsForGrid } = useSaleDerivedState({
+    items,
+    products,
+    resolveShopProductId,
+  });
 
-  const quantityByShopProductId = useMemo(() => {
-    const map = new Map<string, number>();
-    items.forEach((item) => {
-      if (!item.shopProductId) return;
-      map.set(item.shopProductId, Number(item.quantity || 0));
-    });
-    return map;
-  }, [items]);
+  const canSubmit =
+    items.length > 0 && Boolean(paymentMethodId) && !isSubmitting;
 
+  const cart = {
+    items,
+    products,
+    totalItems,
+    totalAmount,
+    increment: (productId: string) => incrementProductById(productId, products),
+    decrement: decrementProduct,
+    clear: () => form.setValue("items", []),
+  };
+
+  const checkout = {
+    canSubmit,
+    isSubmitting,
+    onSubmit: submitSale,
+    paymentMethods,
+  };
   return (
     <div className="space-y-6 pb-16 lg:pb-0">
       <div className="lg:flex lg:items-start lg:gap-4">
         <div className="space-y-4 lg:w-4/5">
           <Card className="h-full lg:max-h-[80vh]">
             <CardContent className="h-full space-y-4 lg:overflow-y-auto">
-              {productsLoading ? (
-                <p className="text-muted-foreground text-sm">
-                  Cargando productos...
-                </p>
-              ) : products.length === 0 ? (
+              {products.length === 0 ? (
                 <p className="text-muted-foreground text-sm">
                   No hay productos disponibles en esta tienda.
                 </p>
               ) : (
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:pr-1 xl:grid-cols-5">
-                  {products.map((product) => {
-                    const resolvedShopProductId = resolveShopProductId(product);
-                    const stock = Math.max(0, Number(product.stock ?? 0));
-                    const quantityInCart =
-                      quantityByShopProductId.get(resolvedShopProductId) ?? 0;
-                    const isAddDisabled = stock <= 0 || quantityInCart >= stock;
-
-                    return (
-                      <ProductCard
-                        key={product.id}
-                        product={product}
-                        incrementProduct={incrementProduct}
-                        isAddDisabled={isAddDisabled}
-                      />
-                    );
-                  })}
+                  {productsForGrid.map(({ product, isAddDisabled }) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      incrementProduct={incrementProduct}
+                      isAddDisabled={isAddDisabled}
+                    />
+                  ))}
                 </div>
               )}
             </CardContent>
           </Card>
         </div>
 
-        <ProductCardContent
-          items={items}
-          products={products}
-          notes={notes}
-          onNotesChange={setNotes}
-          incrementProduct={incrementProductById}
-          decrementProduct={decrementProduct}
-          clearCart={clearCart}
-          handleSubmit={handleSubmit}
-          isSubmitting={isSubmitting}
-          listClassName="max-h-[60vh]"
-          totalItems={totalItems}
-          totalAmount={total}
-        />
+        <div className="mt-6 hidden md:w-2/5 lg:mt-0 lg:block lg:w-1/5">
+          <ProductCardContent form={form} cart={cart} checkout={checkout} />
+        </div>
       </div>
 
-      <Drawer open={isCartOpen} onOpenChange={setIsCartOpen}>
-        <div className="lg:hidden">
-          <div className="fixed right-4 bottom-4 left-4 z-40">
-            <div className="bg-background/95 flex items-center gap-3 rounded-full border px-4 py-3 shadow-lg backdrop-blur">
-              <div className="min-w-0">
-                <p className="text-muted-foreground text-xs">Carrito</p>
-                <p className="truncate font-semibold">
-                  {totalItems} ítems · ${total.toLocaleString("es-AR")}
-                </p>
-              </div>
-              <div className="ml-auto flex items-center gap-2">
-                <DrawerTrigger asChild>
-                  <Button size="sm" variant="outline">
-                    Ver
-                  </Button>
-                </DrawerTrigger>
-                <Button
-                  size="sm"
-                  onClick={handleSubmit}
-                  disabled={isSubmitting || items.length === 0}
-                >
-                  {isSubmitting ? "Guardando..." : "Cobrar"}
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          <DrawerContent className="pb-6">
-            <DrawerHeader className="relative flex flex-col items-center gap-1 pb-2">
-              <DrawerClose asChild>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  aria-label="Cerrar carrito"
-                  className="absolute top-2 right-2"
-                >
-                  <X className="h-5 w-5" />
-                </Button>
-              </DrawerClose>
-              <DrawerTitle>Carrito</DrawerTitle>
-              <DrawerDescription>
-                Revisa tu carrito antes de cobrar.
-              </DrawerDescription>
-            </DrawerHeader>
-            <div className="space-y-4 px-4 pb-2">
-              <ProductCardContent
-                items={items}
-                products={products}
-                notes={notes}
-                onNotesChange={setNotes}
-                incrementProduct={incrementProductById}
-                decrementProduct={decrementProduct}
-                clearCart={clearCart}
-                handleSubmit={handleSubmit}
-                isSubmitting={isSubmitting}
-                listClassName="max-h-[45vh]"
-                totalItems={totalItems}
-                totalAmount={total}
-              />
-            </div>
-          </DrawerContent>
-        </div>
-      </Drawer>
+      <div className="flex lg:hidden">
+        <MobileCheckoutBar cart={cart} checkout={checkout}>
+          <ProductCardContent form={form} cart={cart} checkout={checkout} />
+        </MobileCheckoutBar>
+      </div>
     </div>
   );
 }
