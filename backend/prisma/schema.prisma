@@ -140,6 +140,7 @@ model Sale {
   employee        Employee?                @relation(fields: [employeeId], references: [id])
   paymentMethod   PaymentMethod            @relation(fields: [paymentMethodId], references: [id])
   items           SaleItem[]
+  history         SaleItemHistory[]
   saleReturns     SaleReturn[]             @relation("SaleToReturn")
   accountMovement CustomerAccountMovement?
   cashMovement    CashMovement?
@@ -187,6 +188,20 @@ model SaleItem {
   shopProduct ShopProduct @relation(fields: [shopProductId], references: [id])
 
   createdAt DateTime @default(now())
+}
+
+model SaleItemHistory {
+  id            String   @id @default(uuid())
+  saleId        String
+  shopProductId String
+  previousQty   Int
+  newQty        Int
+  changedAt     DateTime @default(now())
+  changedBy     String?
+
+  sale Sale @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  @@index([saleId])
 }
 
 // Enums para ventas

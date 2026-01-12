@@ -233,6 +233,9 @@ export class SaleService {
               },
             },
           },
+          history: {
+            orderBy: { changedAt: 'desc' },
+          },
         },
       });
 
@@ -375,6 +378,9 @@ export class SaleService {
             },
           },
         },
+        history: {
+          orderBy: { changedAt: 'desc' },
+        },
       },
       orderBy: { saleDate: 'desc' },
     });
@@ -483,6 +489,9 @@ export class SaleService {
             },
           },
         },
+        history: {
+          orderBy: { changedAt: 'desc' },
+        },
       },
     });
 
@@ -518,13 +527,183 @@ export class SaleService {
       );
     }
 
-    return this.prisma.sale.update({
-      where: { id },
-      data: {
-        notes: dto.notes,
-        invoiceNumber: dto.invoiceNumber,
-        invoiceType: dto.invoiceType,
-      },
+    const { items } = dto;
+
+    if (!items) {
+      return this.prisma.sale.update({
+        where: { id },
+        data: {
+          notes: dto.notes,
+          invoiceNumber: dto.invoiceNumber,
+          invoiceType: dto.invoiceType,
+          paymentMethodId: dto.paymentMethodId,
+          discountAmount: dto.discountAmount,
+          customerId: dto.customerId,
+        },
+      });
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const currentItems = await tx.saleItem.findMany({
+        where: { saleId: id },
+        select: {
+          shopProductId: true,
+          quantity: true,
+          unitPrice: true,
+          discount: true,
+          taxRate: true,
+        },
+      });
+
+      const currentByProduct = new Map(
+        currentItems.map((item) => [item.shopProductId, item]),
+      );
+      const incomingByProduct = new Map(
+        items.map((item) => [item.shopProductId, item.quantity]),
+      );
+
+      const historyEntries: Prisma.SaleItemHistoryCreateManyInput[] = [];
+
+      for (const [shopProductId, newQty] of incomingByProduct.entries()) {
+        const currentItem = currentByProduct.get(shopProductId);
+        if (!currentItem) {
+          historyEntries.push({
+            saleId: id,
+            shopProductId,
+            previousQty: 0,
+            newQty,
+            changedBy: user.id,
+          });
+          continue;
+        }
+
+        if (currentItem.quantity !== newQty) {
+          historyEntries.push({
+            saleId: id,
+            shopProductId,
+            previousQty: currentItem.quantity,
+            newQty,
+            changedBy: user.id,
+          });
+        }
+      }
+
+      for (const [shopProductId, currentItem] of currentByProduct.entries()) {
+        if (!incomingByProduct.has(shopProductId)) {
+          historyEntries.push({
+            saleId: id,
+            shopProductId,
+            previousQty: currentItem.quantity,
+            newQty: 0,
+            changedBy: user.id,
+          });
+        }
+      }
+
+      if (historyEntries.length > 0) {
+        await tx.saleItemHistory.createMany({
+          data: historyEntries,
+        });
+      }
+
+      const missingProductIds = items
+        .map((item) => item.shopProductId)
+        .filter((shopProductId) => !currentByProduct.has(shopProductId));
+
+      const shopProductsById = new Map<string, { salePrice: number; taxRate: number }>();
+
+      if (missingProductIds.length > 0) {
+        const shopProducts = await tx.shopProduct.findMany({
+          where: {
+            id: { in: missingProductIds },
+            shopId: sale.shopId,
+            isActive: true,
+          },
+          include: {
+            product: true,
+          },
+        });
+
+        if (shopProducts.length !== missingProductIds.length) {
+          throw new BadRequestException(
+            'Algunos productos no existen o no est�n activos',
+          );
+        }
+
+        for (const shopProduct of shopProducts) {
+          shopProductsById.set(shopProduct.id, {
+            salePrice: shopProduct.salePrice,
+            taxRate: shopProduct.product.taxRate || 0,
+          });
+        }
+      }
+
+      const itemsData = items.map((item) => {
+        const existingItem = currentByProduct.get(item.shopProductId);
+
+        if (existingItem) {
+          const subtotal = existingItem.unitPrice * item.quantity;
+          const taxAmount =
+            ((subtotal - existingItem.discount) * existingItem.taxRate) / 100;
+          const total = subtotal - existingItem.discount + taxAmount;
+
+          return {
+            saleId: id,
+            shopProductId: item.shopProductId,
+            quantity: item.quantity,
+            unitPrice: existingItem.unitPrice,
+            subtotal,
+            discount: existingItem.discount,
+            taxRate: existingItem.taxRate,
+            taxAmount,
+            total,
+          };
+        }
+
+        const shopProduct = shopProductsById.get(item.shopProductId);
+        if (!shopProduct) {
+          throw new BadRequestException('Producto inv�lido para la venta');
+        }
+
+        const discount = 0;
+        const subtotal = shopProduct.salePrice * item.quantity;
+        const taxAmount = ((subtotal - discount) * shopProduct.taxRate) / 100;
+        const total = subtotal - discount + taxAmount;
+
+        return {
+          saleId: id,
+          shopProductId: item.shopProductId,
+          quantity: item.quantity,
+          unitPrice: shopProduct.salePrice,
+          subtotal,
+          discount,
+          taxRate: shopProduct.taxRate,
+          taxAmount,
+          total,
+        };
+      });
+
+      await tx.saleItem.deleteMany({
+        where: { saleId: id },
+      });
+
+      if (itemsData.length > 0) {
+        await tx.saleItem.createMany({
+          data: itemsData,
+        });
+      }
+
+      return tx.sale.update({
+        where: { id },
+        data: {
+          notes: dto.notes,
+          invoiceNumber: dto.invoiceNumber,
+          invoiceType: dto.invoiceType,
+          paymentMethodId: dto.paymentMethodId,
+          discountAmount: dto.discountAmount,
+          customerId: dto.customerId,
+        },
+      });
     });
   }
 
