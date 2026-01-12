@@ -33,6 +33,8 @@ export class SaleController {
   findAll(
     @Param('shopId', ParseUUIDPipe) shopId: string,
     @GetUser() user: JwtPayload,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
     @Query('paymentMethodId') paymentMethodId?: string,
@@ -43,12 +45,18 @@ export class SaleController {
         ? (status as SaleStatus)
         : undefined;
 
-    return this.saleService.findAll(shopId, user, {
-      startDate,
-      endDate,
-      paymentMethodId,
-      status: parsedStatus,
-    });
+    return this.saleService.getSalesByShopPaginated(
+      shopId,
+      user,
+      {
+        startDate,
+        endDate,
+        paymentMethodId,
+        status: parsedStatus,
+      },
+      page,
+      limit,
+    );
   }
 
   @Get(':id')

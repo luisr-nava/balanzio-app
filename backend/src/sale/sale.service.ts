@@ -380,6 +380,93 @@ export class SaleService {
     });
   }
 
+  async getSalesByShopPaginated(
+    shopId: string,
+    user: JwtPayload,
+    filters: {
+      startDate?: string;
+      endDate?: string;
+      paymentMethodId?: string;
+      status?: SaleStatus;
+    },
+    page?: string,
+    limit?: string,
+  ) {
+    const shop = await this.prisma.shop.findUnique({
+      where: { id: shopId },
+    });
+
+    if (!shop || shop.projectId !== user.projectId) {
+      throw new ForbiddenException('No tenés acceso a esta tienda');
+    }
+
+    const parsedPage = Number(page ?? 1);
+    const parsedLimit = Number(limit ?? 10);
+    const safePage = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+    const safeLimit =
+      Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 10;
+
+    const where: Prisma.SaleWhereInput = { shopId };
+
+    if (filters.paymentMethodId) {
+      where.paymentMethodId = filters.paymentMethodId;
+    }
+
+    if (filters.status) {
+      where.status = filters.status;
+    }
+
+    if (filters.startDate || filters.endDate) {
+      const saleDate: Prisma.DateTimeFilter = {};
+      if (filters.startDate) saleDate.gte = new Date(filters.startDate);
+      if (filters.endDate) saleDate.lte = new Date(filters.endDate);
+      where.saleDate = saleDate;
+    }
+
+    const [data, totalItems] = await Promise.all([
+      this.prisma.sale.findMany({
+        where,
+        include: {
+          customer: {
+            select: {
+              id: true,
+              fullName: true,
+            },
+          },
+          employee: {
+            select: {
+              id: true,
+              fullName: true,
+            },
+          },
+          items: {
+            include: {
+              shopProduct: {
+                include: {
+                  product: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { saleDate: 'desc' },
+        skip: (safePage - 1) * safeLimit,
+        take: safeLimit,
+      }),
+      this.prisma.sale.count({ where }),
+    ]);
+
+    return {
+      data,
+      meta: {
+        page: safePage,
+        limit: safeLimit,
+        totalItems,
+        totalPages: Math.ceil(totalItems / safeLimit),
+      },
+    };
+  }
+
   async findOne(id: string, user: JwtPayload) {
     const sale = await this.prisma.sale.findUnique({
       where: { id },
