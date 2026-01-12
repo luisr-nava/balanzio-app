@@ -7,6 +7,7 @@ import {
   Min,
   MaxLength,
   IsEnum,
+  IsBoolean,
 } from 'class-validator';
 
 export class CreateProductDto {
@@ -50,6 +51,10 @@ export class CreateProductDto {
   @Min(0)
   @Max(27)
   taxRate?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  allowPriceOverride?: boolean;
 
   @IsOptional()
   @IsEnum(['Gravado', 'Exento', 'No Alcanzado'], {

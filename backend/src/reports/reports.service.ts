@@ -61,15 +61,16 @@ export class ReportsService {
         const key = item.shopProductId;
         const existing = acc[key];
         if (!existing) {
+          const quantity = Number(item.quantity);
           acc[key] = {
             shopProduct: item.shopProduct,
-            totalQuantity: item.quantity,
+            totalQuantity: quantity,
             totalRevenue: item.total,
           };
           return acc;
         }
 
-        existing.totalQuantity += item.quantity;
+        existing.totalQuantity += Number(item.quantity);
         existing.totalRevenue += item.total;
         return acc;
       },

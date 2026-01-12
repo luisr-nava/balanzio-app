@@ -158,7 +158,21 @@ export class SaleService {
       );
       if (!shopProduct) continue;
 
-      const unitPrice = shopProduct.salePrice;
+      const baseUnitPrice = shopProduct.salePrice;
+      const requestedUnitPrice =
+        item.unitPrice !== undefined ? item.unitPrice : baseUnitPrice;
+
+      if (
+        !shopProduct.product.allowPriceOverride &&
+        item.unitPrice !== undefined &&
+        item.unitPrice !== baseUnitPrice
+      ) {
+        throw new BadRequestException(
+          `El producto ${shopProduct.product.name} no permite editar el precio`,
+        );
+      }
+
+      const unitPrice = requestedUnitPrice;
       const itemSubtotal = unitPrice * item.quantity;
       const itemDiscount = item.discount || 0;
       const taxRate = shopProduct.product.taxRate || 0;
@@ -462,8 +476,31 @@ export class SaleService {
       this.prisma.sale.count({ where }),
     ]);
 
+    const saleIds = data.map((sale) => sale.id);
+    const histories = saleIds.length
+      ? await this.prisma.saleHistory.findMany({
+          where: { saleId: { in: saleIds } },
+          orderBy: { createdAt: 'asc' },
+        })
+      : [];
+
+    const historyBySaleId = new Map<string, unknown>();
+    for (const history of histories) {
+      if (!historyBySaleId.has(history.saleId)) {
+        historyBySaleId.set(history.saleId, history.snapshot);
+      }
+    }
+
+    const enrichedData = data.map((sale) => ({
+      ...sale,
+      changesSummary: buildChangesSummary(
+        historyBySaleId.get(sale.id) ?? null,
+        sale,
+      ),
+    }));
+
     return {
-      data,
+      data: enrichedData,
       meta: {
         page: safePage,
         limit: safeLimit,
@@ -567,7 +604,10 @@ export class SaleService {
       const currentQtyByProduct = new Map<string, number>();
       for (const item of oldSale.items) {
         const previousQty = currentQtyByProduct.get(item.shopProductId) ?? 0;
-        currentQtyByProduct.set(item.shopProductId, previousQty + item.quantity);
+        currentQtyByProduct.set(
+          item.shopProductId,
+          previousQty + Number(item.quantity),
+        );
       }
 
       const incomingQtyByProduct = new Map<string, number>();
@@ -659,7 +699,21 @@ export class SaleService {
         }
 
         const discount = item.discount ?? 0;
-        const unitPrice = shopProduct.salePrice;
+        const baseUnitPrice = shopProduct.salePrice;
+        const requestedUnitPrice =
+          item.unitPrice !== undefined ? item.unitPrice : baseUnitPrice;
+
+        if (
+          !shopProduct.product.allowPriceOverride &&
+          item.unitPrice !== undefined &&
+          item.unitPrice !== baseUnitPrice
+        ) {
+          throw new BadRequestException(
+            `El producto ${shopProduct.product.name} no permite editar el precio`,
+          );
+        }
+
+        const unitPrice = requestedUnitPrice;
         const subtotal = unitPrice * item.quantity;
         const taxRate = shopProduct.product.taxRate || 0;
         const taxAmount = ((subtotal - discount) * taxRate) / 100;
@@ -769,7 +823,8 @@ export class SaleService {
       for (const item of sale.items) {
         if (item.shopProduct.stock === null) continue;
 
-        const newStock = item.shopProduct.stock + item.quantity;
+        const quantity = Number(item.quantity);
+        const newStock = item.shopProduct.stock + quantity;
 
         await tx.shopProduct.update({
           where: { id: item.shopProductId },
@@ -779,7 +834,7 @@ export class SaleService {
         await this.stockService.updateStock({
           tx,
           shopProductId: item.shopProductId,
-          delta: item.quantity,
+          delta: quantity,
           userId: user.id,
           reason: 'sale_return',
           note: `Cancelación venta #${id.substring(0, 8)} - ${reason}`,
@@ -819,4 +874,191 @@ export class SaleService {
 
     return updatedSale;
   }
+}
+
+type SaleItemSnapshot = {
+  shopProductId: string;
+  quantity: number | Prisma.Decimal;
+  unitPrice: number;
+};
+
+type SaleSnapshot = {
+  totalAmount?: number;
+  items?: SaleItemSnapshot[];
+};
+
+type SaleHistorySnapshot = {
+  sale?: SaleSnapshot;
+  items?: SaleItemSnapshot[];
+};
+
+type SaleItemLike = SaleItemSnapshot & Record<string, unknown>;
+
+type SaleLike = {
+  totalAmount?: number;
+  updatedAt?: Date | string | null;
+  items?: SaleItemLike[];
+};
+
+function buildChangesSummary(snapshot: unknown, currentSale: SaleLike) {
+  if (!snapshot) {
+    return {
+      wasEdited: false,
+      lastEditedAt: null,
+      changes: {},
+    };
+  }
+
+  const isRecord = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null;
+
+  const parseItems = (items: unknown): SaleItemSnapshot[] => {
+    if (!Array.isArray(items)) return [];
+    return items
+      .filter((item): item is Record<string, unknown> => isRecord(item))
+      .map((item) => ({
+        shopProductId: String(item.shopProductId ?? ''),
+        quantity: Number(item.quantity ?? 0),
+        unitPrice: Number(item.unitPrice ?? 0),
+      }))
+      .filter((item) => item.shopProductId.length > 0);
+  };
+
+  const snapshotRecord = isRecord(snapshot) ? snapshot : null;
+  const snapshotSale = snapshotRecord?.sale && isRecord(snapshotRecord.sale)
+    ? (snapshotRecord.sale as SaleSnapshot)
+    : (snapshotRecord as SaleSnapshot | null);
+
+  const snapshotItems = snapshotRecord?.items
+    ? parseItems(snapshotRecord.items)
+    : parseItems(snapshotSale?.items);
+
+  if (!snapshotSale) {
+    return {
+      wasEdited: false,
+      lastEditedAt: null,
+      changes: {},
+    };
+  }
+
+  const toIsoString = (value: unknown) => {
+    if (!value) return null;
+    if (value instanceof Date) return value.toISOString();
+    if (typeof value === 'string') return value;
+    return null;
+  };
+
+  const buildItemMap = (items: any[]) => {
+    const map = new Map<string, { quantity: number; unitPrice: number }>();
+    for (const item of items ?? []) {
+      if (!item?.shopProductId) continue;
+      const shopProductId = String(item.shopProductId);
+      const quantity = Number(item.quantity ?? 0);
+      const unitPrice = Number(item.unitPrice ?? 0);
+      const existing = map.get(shopProductId);
+      if (existing) {
+        existing.quantity += quantity;
+        if (existing.unitPrice === 0 && unitPrice !== 0) {
+          existing.unitPrice = unitPrice;
+        }
+        continue;
+      }
+      map.set(shopProductId, { quantity, unitPrice });
+    }
+    return map;
+  };
+
+  const beforeMap = buildItemMap(snapshotItems);
+  const afterMap = buildItemMap(currentSale?.items ?? []);
+
+  const beforeUnits = Array.from(beforeMap.values()).reduce(
+    (sum, item) => sum + item.quantity,
+    0,
+  );
+  const afterUnits = Array.from(afterMap.values()).reduce(
+    (sum, item) => sum + item.quantity,
+    0,
+  );
+
+  const changes: {
+    totalAmount?: { before: number; after: number };
+    itemsUnits?: { before: number; after: number };
+    items?: {
+      added: { shopProductId: string; quantity: number }[];
+      removed: { shopProductId: string; quantity: number }[];
+      updated: {
+        shopProductId: string;
+        quantity?: { before: number; after: number };
+        unitPrice?: { before: number; after: number };
+      }[];
+    };
+  } = {};
+
+  const beforeTotal = Number(snapshotSale.totalAmount ?? 0);
+  const afterTotal = Number(currentSale?.totalAmount ?? 0);
+  if (beforeTotal !== afterTotal) {
+    changes.totalAmount = { before: beforeTotal, after: afterTotal };
+  }
+
+  if (beforeUnits !== afterUnits) {
+    changes.itemsUnits = { before: beforeUnits, after: afterUnits };
+  }
+
+  const added: { shopProductId: string; quantity: number }[] = [];
+  const removed: { shopProductId: string; quantity: number }[] = [];
+  const updated: {
+    shopProductId: string;
+    quantity?: { before: number; after: number };
+    unitPrice?: { before: number; after: number };
+  }[] = [];
+
+  for (const [shopProductId, afterItem] of afterMap) {
+    if (!beforeMap.has(shopProductId)) {
+      added.push({ shopProductId, quantity: afterItem.quantity });
+    }
+  }
+
+  for (const [shopProductId, beforeItem] of beforeMap) {
+    const afterItem = afterMap.get(shopProductId);
+    if (!afterItem) {
+      removed.push({ shopProductId, quantity: beforeItem.quantity });
+      continue;
+    }
+
+    const updatedEntry: {
+      shopProductId: string;
+      quantity?: { before: number; after: number };
+      unitPrice?: { before: number; after: number };
+    } = { shopProductId };
+
+    if (beforeItem.quantity !== afterItem.quantity) {
+      updatedEntry.quantity = {
+        before: beforeItem.quantity,
+        after: afterItem.quantity,
+      };
+    }
+
+    if (beforeItem.unitPrice !== afterItem.unitPrice) {
+      updatedEntry.unitPrice = {
+        before: beforeItem.unitPrice,
+        after: afterItem.unitPrice,
+      };
+    }
+
+    if (updatedEntry.quantity || updatedEntry.unitPrice) {
+      updated.push(updatedEntry);
+    }
+  }
+
+  if (added.length || removed.length || updated.length) {
+    changes.items = { added, removed, updated };
+  }
+
+  const wasEdited = Object.keys(changes).length > 0;
+
+  return {
+    wasEdited,
+    lastEditedAt: wasEdited ? toIsoString(currentSale?.updatedAt) : null,
+    changes,
+  };
 }

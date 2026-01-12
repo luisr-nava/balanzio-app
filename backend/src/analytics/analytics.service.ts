@@ -456,7 +456,7 @@ export class AnalyticsService {
         shopProductId: entry.shopProductId,
         productId: shopProduct?.productId ?? null,
         name: shopProduct?.product.name ?? null,
-        quantitySold: entry._sum.quantity ?? 0,
+        quantitySold: Number(entry._sum.quantity ?? 0),
         totalAmount: entry._sum.total ?? 0,
       };
     });

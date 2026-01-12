@@ -179,7 +179,7 @@ model SaleItem {
   shopProductId String
 
   // Cantidades y precios
-  quantity  Int
+  quantity  Decimal @db.Decimal(18, 6)
   unitPrice Float // Precio unitario al momento de la venta
   subtotal  Float // quantity * unitPrice
   discount  Float @default(0) // Descuento aplicado a este item
@@ -531,6 +531,7 @@ model Product {
   createdAt   DateTime @default(now())
   taxCategory String?
   taxRate     Float?
+  allowPriceOverride Boolean @default(false)
 
   supplierId String?
   supplier   Supplier? @relation(fields: [supplierId], references: [id])

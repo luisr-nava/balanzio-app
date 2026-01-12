@@ -924,12 +924,13 @@ export class CashRegisterService {
         const productId = item.shopProduct.product.id;
         const existing = productStats.get(productId);
 
-        const itemCost = item.quantity * item.shopProduct.costPrice;
+        const quantity = Number(item.quantity);
+        const itemCost = quantity * item.shopProduct.costPrice;
         const itemRevenue = item.total;
         const itemProfit = itemRevenue - itemCost;
 
         if (existing) {
-          existing.quantitySold += item.quantity;
+          existing.quantitySold += quantity;
           existing.totalRevenue += itemRevenue;
           existing.totalCost += itemCost;
           existing.profit += itemProfit;
@@ -937,7 +938,7 @@ export class CashRegisterService {
           productStats.set(productId, {
             productId,
             productName: item.shopProduct.product.name,
-            quantitySold: item.quantity,
+            quantitySold: quantity,
             totalRevenue: itemRevenue,
             totalCost: itemCost,
             profit: itemProfit,

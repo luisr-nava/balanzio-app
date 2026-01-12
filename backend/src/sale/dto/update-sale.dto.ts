@@ -18,13 +18,18 @@ export class UpdateSaleItemDto {
   shopProductId: string;
 
   @IsNumber()
-  @Min(1, { message: 'La cantidad debe ser al menos 1' })
+  @Min(0.000001, { message: 'La cantidad debe ser mayor a 0' })
   quantity: number;
 
   @IsNumber()
   @Min(0)
   @IsOptional()
   discount?: number;
+
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  unitPrice?: number;
 }
 
 // Solo permitir actualizar ciertos campos (no shopId)

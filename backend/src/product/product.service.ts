@@ -92,6 +92,7 @@ export class ProductService {
         barcode: createProductDto.barcode,
         taxRate: createProductDto.taxRate,
         taxCategory: createProductDto.taxCategory,
+        allowPriceOverride: createProductDto.allowPriceOverride ?? false,
         categoryId: createProductDto.categoryId,
         supplierId: createProductDto.supplierId,
         measurementUnitId: measurementUnit.id,
@@ -205,6 +206,8 @@ export class ProductService {
         barcode: updateProductDto.barcode ?? product.barcode,
         taxRate: updateProductDto.taxRate ?? product.taxRate,
         taxCategory: updateProductDto.taxCategory ?? product.taxCategory,
+        allowPriceOverride:
+          updateProductDto.allowPriceOverride ?? product.allowPriceOverride,
         categoryId:
           updateProductDto.categoryId !== undefined
             ? updateProductDto.categoryId
