@@ -16,13 +16,14 @@ export interface Sale {
   items: SaleItem[];
   createdAt?: string;
   updatedAt?: string;
+  paymentMethodId?: string;
 }
 export interface CreateSaleItemDto {
   shopProductId: string;
   quantity: number;
 }
 export interface CreateSaleDto {
-  shopId: string;
+  shopId?: string;
   customerId?: string;
   paymentMethodId?: string;
   discountAmount?: number;
@@ -36,8 +37,6 @@ export interface CreateSaleResponse {
   message: string;
   data: Sale;
 }
-
-
 
 export type CartUI = {
   items: SaleItem[];
@@ -55,3 +54,18 @@ export type CheckoutUI = {
   onSubmit: () => void;
   paymentMethods: PaymentMethod[];
 };
+
+export interface EditableSale {
+  id: string;
+  customerId?: string;
+  paymentMethodId?: string;
+  notes?: string;
+  invoiceNumber?: string;
+  invoiceType?: "TICKET" | "FACTURA_A" | "FACTURA_B";
+  items: EditableSaleItem[];
+}
+
+export interface EditableSaleItem {
+  shopProductId: string;
+  quantity: number;
+}

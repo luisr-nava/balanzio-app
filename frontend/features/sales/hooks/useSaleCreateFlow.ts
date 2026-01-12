@@ -1,14 +1,21 @@
 import { toast } from "sonner";
 import type { UseFormReturn } from "react-hook-form";
-import { useSaleCreateMutation } from "./useSaleCreateMutation";
+import {
+  useSaleCreateMutation,
+  useSaleUpdateMutation,
+} from "./useSaleCreateMutation";
 import { useShopStore } from "@/features/shop/shop.store";
 import { CreateSaleDto } from "../types";
 import { SaleFormValues } from "./useSaleForm";
 
-export const useSaleCreateFlow = (form: UseFormReturn<SaleFormValues>) => {
+export const useSaleCreateFlow = (
+  form: UseFormReturn<SaleFormValues>,
+  saleId?: string
+) => {
   const values = form.getValues();
   const { activeShopId } = useShopStore();
   const createSale = useSaleCreateMutation();
+  const updateSale = useSaleUpdateMutation();
 
   const submitSale = () => {
     if (!activeShopId) return;
@@ -25,7 +32,6 @@ export const useSaleCreateFlow = (form: UseFormReturn<SaleFormValues>) => {
     }
 
     const payload: CreateSaleDto = {
-      shopId: activeShopId,
       paymentMethodId: values.paymentMethodId,
       notes: values.notes || undefined,
       items: values.items.map((item) => ({
@@ -33,16 +39,32 @@ export const useSaleCreateFlow = (form: UseFormReturn<SaleFormValues>) => {
         quantity: item.quantity,
       })),
     };
-
-    createSale.mutate(payload, {
-      onSuccess: () => {
-        toast.success("Venta registrada");
-        form.reset();
-      },
-      onError: () => {
-        toast.error("No se pudo registrar la venta");
-      },
-    });
+    if (saleId) {
+      updateSale.mutate(
+        { saleId, payload },
+        {
+          onSuccess: () => {
+            toast.success("Venta actualizada");
+          },
+          onError: () => {
+            toast.error("No se pudo actualizar la venta");
+          },
+        }
+      );
+      return;
+    }
+    createSale.mutate(
+      { ...payload, shopId: activeShopId },
+      {
+        onSuccess: () => {
+          toast.success("Venta registrada");
+          form.reset();
+        },
+        onError: () => {
+          toast.error("No se pudo registrar la venta");
+        },
+      }
+    );
   };
 
   return {

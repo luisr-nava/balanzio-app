@@ -1,41 +1,24 @@
-import { useShopStore } from "@/features/shop/shop.store";
 import { useQuery } from "@tanstack/react-query";
+import { useShopStore } from "@/features/shop/shop.store";
+import {
+  getAllSalesAction,
+  SaleQueryParams,
+} from "../actions/get-all-sales.action";
 
-interface UsePurchaseQueryParams {
-  search?: string;
-  page?: number;
-  limit?: number;
-  enabled?: boolean;
-}
-
-export const useSalesHistoryQuery = (params: UsePurchaseQueryParams) => {
+export const useSalesQuery = (params: SaleQueryParams) => {
   const { activeShopId } = useShopStore();
+
   const query = useQuery({
-    queryKey: [
-      "sales",
-      activeShopId,
-      params.page,
-      params.limit,
-      params.search ?? "",
-    ],
-    queryFn: () => {
-      // getAllPurchaseAction(activeShopId!, {
-      //   ...params,
-      // }),
-    },
+    queryKey: ["sales", activeShopId],
+    queryFn: () => getAllSalesAction(activeShopId!, { ...params }),
     enabled: Boolean(activeShopId),
-    staleTime: 1000 * 30,
-    placeholderData: (prev) => prev,
   });
-
-  // const purchase = query.data?.purchases || [];
-  // const pagination = query.data?.pagination;
-
+  const sales = query.data?.sales || [];
+  const pagination = query.data?.pagination;
   return {
-    // purchase,
-    // pagination,
-    purchaseLoading: query.isLoading,
+    sales,
+    pagination,
+    isLoading: query.isLoading,
     isFetching: query.isFetching,
-    refetch: query.refetch,
   };
 };

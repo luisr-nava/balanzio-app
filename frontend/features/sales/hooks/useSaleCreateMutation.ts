@@ -3,6 +3,7 @@ import { useShopStore } from "@/features/shop/shop.store";
 import { CreateSaleDto } from "../types";
 import { createSaleAction } from "../actions";
 import { GetAllProductResponse, Product } from "@/features/products/types";
+import { updateSaleAction } from "../actions/update.sale.action";
 type ProductsQueryData = {
   products: Product[];
   pagination: GetAllProductResponse["pagination"];
@@ -49,6 +50,28 @@ export const useSaleCreateMutation = () => {
           queryKey: ["cash-register-state", activeShopId],
         });
       }
+    },
+  });
+};
+
+export const useSaleUpdateMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      saleId,
+      payload,
+    }: {
+      saleId: string;
+      payload: Parameters<typeof updateSaleAction>[1];
+    }) => updateSaleAction(saleId, payload),
+
+    onSuccess: (_, { saleId }) => {
+      // lista de ventas
+      queryClient.invalidateQueries({ queryKey: ["sales"] });
+
+      // venta editada
+      queryClient.invalidateQueries({ queryKey: ["sale", saleId] });
     },
   });
 };

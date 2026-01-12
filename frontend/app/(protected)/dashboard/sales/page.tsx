@@ -6,16 +6,21 @@ import {
   ProductCardContent,
 } from "@/features/sales/components";
 import {
+  useSaleByIdQuery,
   useSaleCart,
   useSaleCreateFlow,
   useSaleDerivedState,
   useSaleForm,
 } from "@/features/sales/hooks";
+import { mapSaleToForm } from "@/features/sales/hooks/useMapSaleToForm";
 import { useProductQuery } from "@/features/products/hooks";
 import { usePaymentMethods } from "../../settings/payment-method/hooks";
+import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 
 export default function VentasPage() {
   const form = useSaleForm();
+  const searchParams = useSearchParams();
 
   const {
     items,
@@ -25,7 +30,11 @@ export default function VentasPage() {
     resolveShopProductId,
     incrementProductById,
   } = useSaleCart(form);
-  const { submitSale, isSubmitting } = useSaleCreateFlow(form);
+  const editSaleId = searchParams.get("editSaleId");
+  const { submitSale, isSubmitting } = useSaleCreateFlow(
+    form,
+    editSaleId ?? undefined
+  );
   const { products } = useProductQuery({});
   const { paymentMethods } = usePaymentMethods();
   const paymentMethodId = form.watch("paymentMethodId");
@@ -54,6 +63,14 @@ export default function VentasPage() {
     onSubmit: submitSale,
     paymentMethods,
   };
+
+  const { sale } = useSaleByIdQuery(editSaleId || undefined);
+
+  useEffect(() => {
+    if (!sale) return;
+    form.reset(mapSaleToForm(sale));
+  }, [form, sale]);
+
   return (
     <div className="space-y-6 pb-16 lg:pb-0">
       <div className="lg:flex lg:items-start lg:gap-4">
@@ -85,7 +102,7 @@ export default function VentasPage() {
         </div>
       </div>
 
-      <div className="flex lg:hidden">
+      <div className="lg:hidden">
         <MobileCheckoutBar cart={cart} checkout={checkout}>
           <ProductCardContent form={form} cart={cart} checkout={checkout} />
         </MobileCheckoutBar>

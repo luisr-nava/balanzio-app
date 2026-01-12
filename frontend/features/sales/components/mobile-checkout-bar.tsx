@@ -9,7 +9,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { X } from "lucide-react";
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import ProductCardContent from "./product-card-content";
 import { CartUI, CheckoutUI } from "../types";
 import { useCurrencyFormatter } from "@/src/hooks/useCurrencyFormatter";
@@ -22,9 +22,23 @@ interface Props {
 export default function MobileCheckoutBar({ checkout, children, cart }: Props) {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const formatCurrency = useCurrencyFormatter();
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsCartOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", onResize);
+
+    return () => {
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
+
   return (
-    <Drawer open={isCartOpen} onOpenChange={setIsCartOpen}>
-      <div className="lg:hidden">
+    <div className="lg:hidden">
+      <Drawer open={isCartOpen} onOpenChange={setIsCartOpen}>
         <div className="fixed right-4 bottom-4 left-4 z-40">
           <div className="bg-background/95 flex items-center gap-3 rounded-full border px-4 py-3 shadow-lg backdrop-blur">
             <div className="min-w-0">
@@ -72,7 +86,7 @@ export default function MobileCheckoutBar({ checkout, children, cart }: Props) {
           </DrawerHeader>
           <div className="space-y-4 px-4 pb-2">{children}</div>
         </DrawerContent>
-      </div>
-    </Drawer>
+      </Drawer>
+    </div>
   );
 }
