@@ -8,6 +8,7 @@ export interface SaleItem {
   shopProduct: {
     id: string;
     salePrice: number;
+    allowPriceOverride?: boolean;
     product: {
       id: string;
       name: string;

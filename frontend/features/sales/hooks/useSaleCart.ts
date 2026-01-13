@@ -1,21 +1,23 @@
 import { Product } from "@/features/products/types";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useFieldArray, UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 import { SaleFormValues } from "./useSaleForm";
 
 export const useSaleCart = (form: UseFormReturn<SaleFormValues>) => {
-  const { control, watch } = form;
-  const { fields, append, update, remove } = useFieldArray({
+  const { control, watch, setValue } = form;
+  const { append, remove } = useFieldArray({
     control,
     name: "items",
   });
-  const items = watch("items");
+  const items = watch("items") ?? [];
   const [initialQuantities, setInitialQuantities] = useState<
     Map<string, number>
   >(new Map());
   const resolveShopProductId = (product: Product): string =>
     product.shopProductId || product.id || product.productId || "";
+  const resolveUnitPrice = (product: Product): number =>
+    Number(product.salePrice ?? 0);
 
   useEffect(() => {
     if (form.formState.isDirty) return;
@@ -52,9 +54,8 @@ export const useSaleCart = (form: UseFormReturn<SaleFormValues>) => {
     }
 
     if (index >= 0) {
-      update(index, {
-        ...items[index],
-        quantity: currentQty + 1,
+      setValue(`items.${index}.quantity`, currentQty + 1, {
+        shouldDirty: true,
       });
       return;
     }
@@ -62,6 +63,10 @@ export const useSaleCart = (form: UseFormReturn<SaleFormValues>) => {
     append({
       shopProductId,
       quantity: 1,
+      unitPrice: resolveUnitPrice(product),
+      allowPriceOverride: product.allowPriceOverride ?? false,
+      productName: product.name,
+      stock: product.stock ?? 0,
     });
   };
 
@@ -78,15 +83,18 @@ export const useSaleCart = (form: UseFormReturn<SaleFormValues>) => {
       return;
     }
 
-    update(index, {
-      ...current,
-      quantity,
-    });
+    setValue(`items.${index}.quantity`, quantity, { shouldDirty: true });
   };
 
-  const totalItems = useMemo(
-    () => items.reduce((acc, i) => acc + i.quantity, 0),
-    [items]
+  const totalItems = items.reduce(
+    (acc, item) => acc + Number(item.quantity || 0),
+    0
+  );
+
+  const totalAmount = items.reduce(
+    (acc, item) =>
+      acc + Number(item.quantity || 0) * Number(item.unitPrice || 0),
+    0
   );
 
   //   const totalAmount = useMemo(
@@ -100,10 +108,11 @@ export const useSaleCart = (form: UseFormReturn<SaleFormValues>) => {
     }
   };
   return {
-    items: fields,
+    items,
     incrementProduct,
     decrementProduct,
     totalItems,
+    totalAmount,
     // totalAmount,
     resolveShopProductId,
     incrementProductById,

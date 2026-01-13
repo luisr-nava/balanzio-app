@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type Props = {
   form: UseFormReturn<CreateProductDto>;
@@ -218,6 +219,25 @@ export default function ProductForm({
                 />
               </FormControl>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+      </FormGrid>
+      <FormGrid cols={1}>
+        <FormField
+          control={form.control}
+          name="allowPriceOverride"
+          render={({ field }) => (
+            <FormItem className="flex items-center gap-2">
+              <FormControl>
+                <Checkbox
+                  checked={Boolean(field.value)}
+                  onCheckedChange={(checked) =>
+                    field.onChange(checked === true)
+                  }
+                />
+              </FormControl>
+              <FormLabel>Permitir modificar precio en la venta</FormLabel>
             </FormItem>
           )}
         />

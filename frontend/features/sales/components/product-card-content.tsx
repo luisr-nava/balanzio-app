@@ -11,16 +11,10 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CartUI, CheckoutUI } from "../types";
-import { Product } from "@/features/products/types";
 import { Separator } from "@/components/ui/separator";
 import { Controller, UseFormReturn } from "react-hook-form";
 import { SaleFormValues } from "../hooks/useSaleForm";
 import { useCurrencyFormatter } from "@/src/hooks/useCurrencyFormatter";
-
-const matchesShopProductId = (product: Product, identifier: string) =>
-  product.shopProductId === identifier ||
-  product.id === identifier ||
-  product.productId === identifier;
 
 type ProductCardContentProps = {
   form: UseFormReturn<SaleFormValues>;
@@ -38,16 +32,16 @@ export default function ProductCardContent({
     products,
     totalItems,
     totalAmount,
-    increment,
+    incrementProductById,
     decrement,
     clear,
     getInitialQuantity,
   } = cart;
-
   const { canSubmit, isSubmitting, onSubmit, paymentMethods } = checkout;
-  
-  const formatCurrency = useCurrencyFormatter();
+
+  const formatCurrency = useCurrencyFormatter(2);
   const safeItems = items ?? [];
+  const formattedTotalAmount = formatCurrency(totalAmount);
   return (
     <div className={``}>
       <Card className="bg-background sticky top-20 rounded-md border shadow-lg">
@@ -62,18 +56,16 @@ export default function ProductCardContent({
               </p>
             ) : (
               safeItems.map((item, idx) => {
-                const product = products.find((p) =>
-                  matchesShopProductId(p, item.shopProductId)
-                );
-                const productName = product?.name || "Producto";
-                const unitPrice = Number(product?.salePrice || 0);
-                const quantity = Number(item.quantity || 0);
+                const productName = item?.productName || "Producto";
+                const unitPrice = Number(item?.unitPrice ?? 0);
+                const quantity = Number(item?.quantity ?? 0);
                 const subtotal = unitPrice * quantity;
-                const stock = Math.max(0, Number(product?.stock ?? 0));
+                const stock = Math.max(0, Number(item?.stock ?? 0));
                 const initialQty =
                   getInitialQuantity?.(item.shopProductId) ?? 0;
                 const maxAllowed = Math.max(0, stock + initialQty);
                 const isIncrementDisabled = quantity >= maxAllowed;
+                const canEditUnitPrice = item?.allowPriceOverride === true;
                 return (
                   <motion.div
                     key={`${item.shopProductId}-${idx}`}
@@ -83,9 +75,34 @@ export default function ProductCardContent({
                     <div className="grid w-full gap-3">
                       <div className="flex items-center justify-between">
                         <p className="truncate font-semibold">{productName}</p>
-                        <p className="text-muted-foreground text-base">
-                          ${unitPrice.toLocaleString("es-AR")} c/u
-                        </p>
+                        {canEditUnitPrice ? (
+                          <div className="flex items-center gap-2">
+                            <Label className="text-muted-foreground text-xs">
+                              Precio
+                            </Label>
+                            <Controller
+                              control={form.control}
+                              name={`items.${idx}.unitPrice`}
+                              render={({ field }) => (
+                                <Input
+                                  {...field}
+                                  type="number"
+                                  step="0.01"
+                                  inputMode="decimal"
+                                  className="h-8 w-28 text-right"
+                                  value={field.value ?? 0}
+                                  onChange={(e) =>
+                                    field.onChange(
+                                      e.target.value === ""
+                                        ? 0
+                                        : Number(e.target.value)
+                                    )
+                                  }
+                                />
+                              )}
+                            />
+                          </div>
+                        ) : null}
                       </div>
                       <div className="flex justify-end gap-2">
                         <Button
@@ -95,14 +112,38 @@ export default function ProductCardContent({
                         >
                           -
                         </Button>
-                        <span className="w-8 text-center font-semibold">
-                          {item.quantity}
-                        </span>
+                        <Controller
+                          control={form.control}
+                          name={`items.${idx}.quantity`}
+                          render={({ field }) => (
+                            <Input
+                              {...field}
+                              type="text"
+                              inputMode="decimal"
+                              className="h-8 w-20 text-center"
+                              value={field.value ?? ""}
+                              onChange={(e) => {
+                                const normalized = e.target.value.replace(
+                                  ",",
+                                  "."
+                                );
+                                const parsed = Number(normalized);
+                                if (Number.isNaN(parsed)) return;
+                                field.onChange(parsed);
+                              }}
+                            />
+                          )}
+                        />
                         <Button
                           size="sm"
                           variant="outline"
                           disabled={isIncrementDisabled}
-                          onClick={() => increment(item.shopProductId || "")}
+                          onClick={() =>
+                            incrementProductById(
+                              item.shopProductId || "",
+                              products
+                            )
+                          }
                         >
                           +
                         </Button>
@@ -122,7 +163,7 @@ export default function ProductCardContent({
 
           <div className="flex items-center justify-between text-lg font-semibold">
             <span>Total ítems: {totalItems}</span>
-            <span>{formatCurrency(totalAmount)}</span>
+            <span>{formattedTotalAmount}</span>
           </div>
 
           <div className="space-y-3">

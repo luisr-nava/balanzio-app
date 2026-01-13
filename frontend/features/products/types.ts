@@ -4,9 +4,11 @@ export interface Product {
   description?: string;
   barcode?: string;
   shopId: string;
+  basePrice?: number;
   costPrice: number;
   salePrice: number;
   stock: number;
+  allowPriceOverride?: boolean;
   supplierId?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -38,6 +40,7 @@ export interface CreateProductDto {
   categoryId?: string;
   isActive?: boolean;
   measurementUnitId?: string;
+  allowPriceOverride?: boolean;
 }
 
 export interface CreateProductResponse {

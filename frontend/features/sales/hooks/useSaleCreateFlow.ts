@@ -37,7 +37,8 @@ export const useSaleCreateFlow = (
       notes: values.notes || undefined,
       items: values.items.map((item) => ({
         shopProductId: item.shopProductId,
-        quantity: item.quantity,
+        quantity: Number(item.quantity ?? 0),
+        unitPrice: Number(item.unitPrice ?? 0),
       })),
     };
     if (saleId) {

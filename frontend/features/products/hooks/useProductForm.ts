@@ -19,6 +19,7 @@ const initialForm: CreateProductDto = {
   supplierId: "",
   isActive: true,
   measurementUnitId: "",
+  allowPriceOverride: false,
 };
 
 function mapProductToForm(
@@ -35,6 +36,7 @@ function mapProductToForm(
     stock: product.stock,
     supplierId: product.supplierId || "",
     isActive: product.isActive,
+    allowPriceOverride: product.allowPriceOverride ?? false,
     measurementUnitId: product.measurementUnit?.id
       ? String(product.measurementUnit.id)
       : "",

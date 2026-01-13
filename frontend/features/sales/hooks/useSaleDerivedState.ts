@@ -25,16 +25,10 @@ export const useSaleDerivedState = ({
 
   const totalAmount = useMemo(() => {
     return items.reduce((acc, item) => {
-      const product = products.find(
-        (p) => resolveShopProductId(p) === item.shopProductId
-      );
-
-      const unitPrice =
-        product?.finalSalePrice || product?.salePrice || product?.price || 0;
-
+      const unitPrice = Number(item.unitPrice ?? 0);
       return acc + unitPrice * item.quantity;
     }, 0);
-  }, [items, products, resolveShopProductId]);
+  }, [items]);
 
   const productsForGrid = useMemo(() => {
     return products.map((product) => {

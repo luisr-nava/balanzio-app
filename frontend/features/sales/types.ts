@@ -6,6 +6,9 @@ export interface SaleItem {
   shopProductId: string;
   productName?: string;
   quantity: number;
+  unitPrice?: number;
+  allowPriceOverride?: boolean;
+  stock?: number;
 }
 
 export interface Sale {
@@ -21,6 +24,7 @@ export interface Sale {
 export interface CreateSaleItemDto {
   shopProductId: string;
   quantity: number;
+  unitPrice: number;
 }
 export interface CreateSaleDto {
   shopId?: string;
@@ -47,6 +51,7 @@ export type CartUI = {
   decrement: (productId: string) => void;
   clear: () => void;
   getInitialQuantity?: (shopProductId: string) => number;
+  incrementProductById: (productId: string, products: Product[]) => void;
 };
 
 export type CheckoutUI = {
@@ -69,4 +74,5 @@ export interface EditableSale {
 export interface EditableSaleItem {
   shopProductId: string;
   quantity: number;
+  unitPrice?: number;
 }

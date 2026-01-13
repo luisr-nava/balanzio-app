@@ -27,6 +27,7 @@ export default function VentasPage() {
     incrementProduct,
     decrementProduct,
     totalItems,
+    totalAmount,
     resolveShopProductId,
     incrementProductById,
     getInitialQuantity,
@@ -40,7 +41,7 @@ export default function VentasPage() {
   const { paymentMethods } = usePaymentMethods();
   const paymentMethodId = form.watch("paymentMethodId");
   
-  const { totalAmount, productsForGrid } = useSaleDerivedState({
+  const { productsForGrid } = useSaleDerivedState({
     items,
     products,
     resolveShopProductId,
@@ -59,6 +60,7 @@ export default function VentasPage() {
     decrement: decrementProduct,
     clear: () => form.setValue("items", []),
     getInitialQuantity,
+    incrementProductById
   };
 
   const checkout = {
@@ -72,8 +74,21 @@ export default function VentasPage() {
 
   useEffect(() => {
     if (!sale) return;
-    form.reset(mapSaleToForm(sale));
-  }, [form, sale]);
+    const mapped = mapSaleToForm(sale);
+    const mergedItems = mapped.items.map((item) => {
+      const product = products.find(
+        (p) => String(p.shopProductId ?? "") === String(item.shopProductId)
+      );
+      if (!product) return item;
+      return {
+        ...item,
+        productName: item.productName || product.name,
+        allowPriceOverride:
+          item.allowPriceOverride ?? product.allowPriceOverride ?? false,
+      };
+    });
+    form.reset({ ...mapped, items: mergedItems });
+  }, [form, sale, products]);
 
   return (
     <div className="space-y-6 pb-16 lg:pb-0">

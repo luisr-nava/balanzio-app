@@ -9,7 +9,11 @@ export interface SaleFormValues {
 
   items: {
     shopProductId: string;
+    productName?: string;
     quantity: number;
+    unitPrice: number;
+    allowPriceOverride?: boolean;
+    stock?: number;
   }[];
 }
 export const useSaleForm = () =>
