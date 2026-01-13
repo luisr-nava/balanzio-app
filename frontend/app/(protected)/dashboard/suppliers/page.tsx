@@ -45,8 +45,6 @@ export default function SupplierPage() {
     }
   }, [pagination?.totalPages, page]);
 
-  console.log(suppliers);
-
   return (
     <div className="space-y-4">
       <BaseHeader

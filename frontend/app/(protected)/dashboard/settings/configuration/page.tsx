@@ -34,8 +34,7 @@ import type {
   MeasurementUnit,
   MeasurementUnitCategory,
 } from "../measurement-unit/interfaces";
-import { useShopStore } from "@/features/shop/shop.store";
-import CategoriesPanel from "@/features/settings/category/configuration/panels/categories-panel";
+import CategoriesPanel from "@/features/settings/configuration/panels/categories-panel";
 
 const BASE_UNIT_BY_CATEGORY: Record<
   MeasurementUnitCategory,

@@ -51,7 +51,6 @@ export const useSupplierForm = (
   });
 
   const onSubmit = async (values: CreateSupplierDto) => {
-    // const onSubmit = handleSubmit((values) => {
     const basePayload: CreateSupplierDto = {
       ...values,
       shopIds: [activeShopId!],
