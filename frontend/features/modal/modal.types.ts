@@ -24,6 +24,7 @@ export type ModalType =
   | "createPurchase"
   | "deletePurchase"
   | "updatePurchase"
+  | "deletePaymentMethod"
   | null;
 
 export interface ModalStoreState {

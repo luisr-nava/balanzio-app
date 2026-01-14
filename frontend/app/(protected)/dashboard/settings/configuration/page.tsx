@@ -1,40 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardTitle,
-} from "@/components/ui/card";
-import { useShallow } from "zustand/react/shallow";
-import { Package, Truck } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CategoryForm, CategoryList } from "../category/components";
-import { useCategory, useCategoryForm } from "../category/hooks";
-import {
-  PaymentMethodForm,
-  PaymentMethodTable,
-} from "../payment-method/components";
-import {
-  usePaymentMethodMutations,
-  usePaymentMethods,
-} from "../payment-method/hooks";
-import type { PaymentMethod } from "../payment-method/interfaces";
-import {
-  MeasurementUnitForm,
-  MeasurementUnitTable,
-} from "../measurement-unit/components";
-import {
-  useMeasurementUnitMutations,
-  useMeasurementUnits,
-} from "../measurement-unit/hooks";
 import type {
   MeasurementBaseUnit,
-  MeasurementUnit,
   MeasurementUnitCategory,
-} from "../measurement-unit/interfaces";
-import CategoriesPanel from "@/features/settings/configuration/panels/categories-panel";
+} from "../../../../../features/settings/configuration/panels/resources/measurement-unit/interfaces";
+import {
+  CategoriesPanel,
+  ResourcesPanel,
+} from "@/features/settings/configuration/panels";
 
 const BASE_UNIT_BY_CATEGORY: Record<
   MeasurementUnitCategory,
@@ -59,14 +34,7 @@ export default function ConfigurationPage() {
     {
       key: "payment-methods",
       label: "Métodos de pago",
-      Component: <>asdas</>,
-      // Component: PaymentMethodsPanel,
-    },
-    {
-      key: "measurement-units",
-      label: "Unidades de medida",
-      Component: <>ads</>,
-      // Component: MeasurementUnitsPanel,
+      Component: ResourcesPanel,
     },
   ];
 
@@ -161,163 +129,6 @@ export default function ConfigurationPage() {
   //   updateMutation: updateMeasurementUnit,
   //   deleteMutation: deleteMeasurementUnit,
   // } = useMeasurementUnitMutations();
-
-  // const [panel, setPanel] = useState<
-  //   "categories" | "payment-methods" | "measurement-units"
-  // >("categories");
-  // const [editingPaymentMethod, setEditingPaymentMethod] =
-  //   useState<PaymentMethod | null>(null);
-  // const [deletingPaymentMethodId, setDeletingPaymentMethodId] = useState<
-  //   string | null
-  // >(null);
-  // const [editingMeasurementUnit, setEditingMeasurementUnit] =
-  //   useState<MeasurementUnit | null>(null);
-  // const [deletingMeasurementUnitId, setDeletingMeasurementUnitId] = useState<
-  //   string | null
-  // >(null);
-
-  // const categoriesView = (
-  //   <div className="space-y-6">
-  //     <Card>
-  //       <CardContent className="grid gap-6 md:grid-cols-2">
-  //         <div>
-  //           <CardTitle>Productos</CardTitle>
-  //           <CardDescription className="pb-3">
-  //             Categorías para organizar tu catálogo.
-  //           </CardDescription>
-  //           <CategoryForm
-  //             type="product"
-  //             titlePlaceholder="Lácteos"
-  //             shops={shops}
-  //             isOwner={isOwner}
-  //             registerName={registerProduct}
-  //             selectedShopIds={productShopIds}
-  //             onToggleShop={(id) => toggleShopSelection("product", id)}
-  //             onSubmit={onSubmitProduct}
-  //             canSubmit={canCreateProduct}
-  //             isEditing={Boolean(editingProductId)}
-  //             onCancelEdit={cancelProductEdit}
-  //             pending={productPending}
-  //           />
-  //         </div>
-
-  //         <CategoryList
-  //           title="Listado de categorías"
-  //           icon={<Package className="text-primary h-5 w-5" />}
-  //           items={categoryProducts}
-  //           loading={categoryProductsLoading}
-  //           emptyText="Aún no tienes categorías para productos."
-  //           isOwner={isOwner}
-  //           onEdit={handleEditProduct}
-  //           hasNextPage={hasMoreProductCategories}
-  //           fetchNextPage={fetchNextProductCategories}
-  //           isFetchingNextPage={isFetchingNextProductCategories}
-  //         />
-  //       </CardContent>
-  //     </Card>
-
-  //     <Card>
-  //       <CardContent className="grid gap-6 md:grid-cols-2">
-  //         <div>
-  //           <CardTitle>Proveedores</CardTitle>
-  //           <CardDescription className="pb-3">
-  //             Clasifica tus proveedores por rubro o tipo de servicio.
-  //           </CardDescription>
-  //           <CategoryForm
-  //             type="supplier"
-  //             titlePlaceholder="Distribuidores"
-  //             shops={shops}
-  //             isOwner={isOwner}
-  //             registerName={registerSupplier}
-  //             selectedShopIds={supplierShopIds}
-  //             onToggleShop={(id) => toggleShopSelection("supplier", id)}
-  //             onSubmit={onSubmitSupplier}
-  //             canSubmit={canCreateSupplier}
-  //             isEditing={Boolean(editingSupplierId)}
-  //             onCancelEdit={cancelSupplierEdit}
-  //             pending={supplierPending}
-  //           />
-  //         </div>
-  //         <CategoryList
-  //           title="Listado de categorías"
-  //           icon={<Truck className="text-primary h-5 w-5" />}
-  //           items={categorySuppliers}
-  //           loading={categorySuppliersLoading}
-  //           emptyText="Aún no tienes categorías para proveedores."
-  //           isOwner={isOwner}
-  //           onEdit={handleEditSupplier}
-  //           hasNextPage={hasMoreSupplierCategories}
-  //           fetchNextPage={fetchNextSupplierCategories}
-  //           isFetchingNextPage={isFetchingNextSupplierCategories}
-  //         />
-  //       </CardContent>
-  //     </Card>
-  //   </div>
-  // );
-
-  // const paymentMethodsView = (
-  //   <div className="space-y-4">
-  //     <Card>
-  //       <CardContent className="space-y-4">
-  //         <div>
-  //           <CardTitle>Métodos de pago</CardTitle>
-  //           <CardDescription>
-  //             Agrega métodos de pago para usarlos en tus operaciones.
-  //           </CardDescription>
-  //         </div>
-  //         <PaymentMethodForm
-  //           onSubmit={(values) => {
-  //             if (!activeShopId) return;
-
-  //             const payload = {
-  //               name: values.name,
-  //               code: values.code.toUpperCase(),
-  //               description: values.description,
-  //             };
-
-  //             if (editingPaymentMethod) {
-  //               updatePaymentMethod.mutate(
-  //                 { id: editingPaymentMethod.id, payload },
-  //                 {
-  //                   onSuccess: () => setEditingPaymentMethod(null),
-  //                 }
-  //               );
-  //               return;
-  //             }
-
-  //             createPaymentMethod.mutate(
-  //               { shopId: activeShopId, ...payload },
-  //               {
-  //                 onSuccess: () => setEditingPaymentMethod(null),
-  //               }
-  //             );
-  //           }}
-  //           isSubmitting={
-  //             editingPaymentMethod
-  //               ? updatePaymentMethod.isPending
-  //               : createPaymentMethod.isPending
-  //           }
-  //           editing={editingPaymentMethod}
-  //           onCancelEdit={() => setEditingPaymentMethod(null)}
-  //         />
-  //       </CardContent>
-  //     </Card>
-
-  //     <PaymentMethodTable
-  //       paymentMethods={paymentMethods}
-  //       isLoading={paymentMethodsLoading}
-  //       isFetching={paymentMethodsFetching}
-  //       deletingId={deletingPaymentMethodId}
-  //       onEdit={(pm) => setEditingPaymentMethod(pm)}
-  //       onDelete={(pm) => {
-  //         setDeletingPaymentMethodId(pm.id);
-  //         deletePaymentMethod.mutate(pm.id, {
-  //           onSettled: () => setDeletingPaymentMethodId(null),
-  //         });
-  //       }}
-  //     />
-  //   </div>
-  // );
 
   // const measurementUnitsView = (
   //   <div className="space-y-4">

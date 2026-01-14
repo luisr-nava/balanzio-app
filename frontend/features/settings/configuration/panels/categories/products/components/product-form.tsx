@@ -1,9 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import React from "react";
-import { useForm, UseFormReturn } from "react-hook-form";
-import { UseCategoryFormReturn } from "../../hooks/useCategoryForm";
+import { UseFormReturn } from "react-hook-form";
 import { User } from "@/features/auth/types";
 import { CreateCategoryProductDto } from "../types";
 
@@ -26,18 +24,8 @@ export default function CategoryProductForm({
   pending,
   handleCancelEdit,
 }: Props) {
-  const isOwner = user?.role === "OWNER";
   const { register, handleSubmit } = form;
 
-  // const toggleShop = (shopId: string) => {
-  //   setValue(
-  //     "shopIds",
-  //     shopIds.includes(shopId)
-  //       ? shopIds.filter((id) => id !== shopId)
-  //       : [...shopIds, shopId],
-  //     { shouldDirty: true }
-  //   );
-  // };
   const name = form.watch("name");
   const canSubmit = name?.trim().length > 0;
 
@@ -50,36 +38,6 @@ export default function CategoryProductForm({
           placeholder="Lacteos"
         />
       </div>
-
-      {/* {isOwner && (
-        <div className="space-y-2">
-          <Label>Tiendas</Label>
-
-          {shops.length === 0 ? (
-            <p className="text-muted-foreground text-sm">
-              No hay tiendas disponibles.
-            </p>
-          ) : (
-            <div className="flex flex-wrap gap-3">
-              {shops.map((shop) => {
-                const selected = shopIds.includes(shop.id);
-                return (
-                  <label
-                    key={shop.id}
-                    className="flex items-center gap-2 text-sm"
-                  >
-                    <Checkbox
-                      checked={selected}
-                      onCheckedChange={() => toggleShop(shop.id)}
-                    />
-                    <span>{shop.name}</span>
-                  </label>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )} */}
       <div className="flex gap-5">
         {isEditing && (
           <Button

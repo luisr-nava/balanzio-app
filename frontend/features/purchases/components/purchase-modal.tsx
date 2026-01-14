@@ -4,11 +4,9 @@ import { usePurchaseForm, usePurchaseModals } from "../hooks";
 import PurchaseForm from "./purchase-form";
 import { Product } from "../../products/types";
 import { useEffect } from "react";
-import { usePaymentMethods } from "@/app/(protected)/settings/payment-method/hooks";
-import { Button } from "@/components/ui/button";
 import PurchaseDelete from "./purchase-delete";
 import { Form } from "@/components/ui/form";
-import { PaymentMethod } from "@/app/(protected)/settings/payment-method/interfaces";
+import { PaymentMethod } from "@/features/settings/configuration/panels/resources/payment-methods/types";
 
 interface ModalPurchaseProps {
   cashRegisterId?: string;

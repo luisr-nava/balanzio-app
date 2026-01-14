@@ -32,7 +32,7 @@ export default function ProductCategoriesPanel() {
     handleCancelEdit
   );
   return (
-    <Card>
+    <Card className="max-h-90 min-h-90">
       {isLoadingCategory ? (
         <div className="mx-10 grid gap-5">
           <Skeleton className="h-5 w-full rounded-full" />

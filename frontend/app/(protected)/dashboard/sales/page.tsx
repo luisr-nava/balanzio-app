@@ -14,9 +14,9 @@ import {
 } from "@/features/sales/hooks";
 import { mapSaleToForm } from "@/features/sales/hooks/useMapSaleToForm";
 import { useProductQuery } from "@/features/products/hooks";
-import { usePaymentMethods } from "../../settings/payment-method/hooks";
 import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
+import { usePaymentMethods } from "@/features/settings/configuration/panels/resources/payment-methods/hooks";
 
 export default function SalesPage() {
   const form = useSaleForm();

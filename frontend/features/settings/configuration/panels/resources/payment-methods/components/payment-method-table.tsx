@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Edit3, Trash2 } from "lucide-react";
-import type { PaymentMethod } from "../interfaces";
+import { PaymentMethod } from "../types";
+import { BaseTable } from "@/components/table/BaseTable";
+import { usePaymentMethodColumns } from "./payment-method.columns";
 
 interface Props {
   paymentMethods: PaymentMethod[];
-  isLoading: boolean;
-  isFetching: boolean;
+  loading: boolean;
   onEdit: (pm: PaymentMethod) => void;
   onDelete: (pm: PaymentMethod) => void;
   deletingId?: string | null;
@@ -13,21 +14,11 @@ interface Props {
 
 export const PaymentMethodTable = ({
   paymentMethods,
-  isLoading,
-  isFetching,
+  loading,
   onEdit,
   onDelete,
   deletingId,
 }: Props) => {
-  if (isLoading) {
-    return (
-      <div className="text-muted-foreground flex items-center gap-2 text-sm">
-        <div className="border-primary h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
-        Cargando métodos de pago...
-      </div>
-    );
-  }
-
   if (!paymentMethods.length) {
     return (
       <p className="text-muted-foreground text-sm">
@@ -35,10 +26,34 @@ export const PaymentMethodTable = ({
       </p>
     );
   }
-
+  const paymentColums = usePaymentMethodColumns();
   return (
     <div className="overflow-hidden rounded-md border">
-      <table className="w-full text-sm">
+      <BaseTable<PaymentMethod>
+        data={paymentMethods}
+        getRowId={(e) => e.id}
+        columns={paymentColums}
+        actions={(e) => [
+          {
+            type: "edit",
+            onClick: () => {},
+          },
+          {
+            type: "delete",
+            onClick: () => {},
+          },
+        ]}
+        // pagination={{
+        //   page,
+        //   limit,
+        //   totalPages: pagination?.totalPages || 0,
+        //   totalItems: pagination?.total || 0,
+        //   isFetching,
+        //   onPageChange: setPage,
+        //   onLimitChange: setLimit,
+        // }}
+      />
+      {/* <table className="w-full text-sm">
         <thead className="bg-muted/50 text-muted-foreground text-xs uppercase">
           <tr>
             <th className="px-4 py-3 text-left font-medium">Nombre</th>
@@ -81,8 +96,8 @@ export const PaymentMethodTable = ({
             </tr>
           ))}
         </tbody>
-      </table>
-      {isFetching && (
+      </table> */}
+      {loading && (
         <div className="text-muted-foreground flex items-center gap-2 border-t px-4 py-3 text-xs">
           <div className="border-primary h-3 w-3 animate-spin rounded-full border-2 border-t-transparent" />
           Actualizando lista...

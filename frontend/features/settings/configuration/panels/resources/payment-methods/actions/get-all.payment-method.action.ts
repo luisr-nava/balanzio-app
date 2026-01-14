@@ -1,5 +1,5 @@
 import { kioscoApi } from "@/lib/kioscoApi";
-import type { GetPaymentMethodsResponse, PaymentMethod } from "../interfaces";
+import { GetPaymentMethodsResponse, PaymentMethod } from "../types";
 
 export const getPaymentMethodsAction = async (
   shopId: string

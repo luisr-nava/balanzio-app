@@ -1,5 +1,5 @@
 import { kioscoApi } from "@/lib/kioscoApi";
-import type { CreatePaymentMethodDto, PaymentMethod } from "../interfaces";
+import { CreatePaymentMethodDto, PaymentMethod } from "../types";
 
 export const updatePaymentMethodAction = async (
   id: string,

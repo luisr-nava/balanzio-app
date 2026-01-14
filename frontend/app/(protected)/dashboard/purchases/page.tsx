@@ -16,8 +16,8 @@ import {
 import { Purchase } from "@/features/purchases/types";
 import { usePaginationParams } from "@/src/hooks/usePaginationParams";
 import { useEffect, useState } from "react";
-import { usePaymentMethods } from "../../settings/payment-method/hooks";
 import { useSupplierQuery } from "@/features/suppliers/hooks";
+import { usePaymentMethods } from "@/features/settings/configuration/panels/resources/payment-methods/hooks";
 
 export default function ComprasPage() {
   const purchaseModals = usePurchaseModals();

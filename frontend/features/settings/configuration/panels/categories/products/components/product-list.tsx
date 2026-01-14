@@ -47,7 +47,7 @@ export default function CategoryProductList<T extends Item>({
         <p className="font-semibold">Listado de categorías</p>
       </div>
       <div
-        className="borderpr-1 max-h-40 min-h-40 overflow-y-auto"
+        className="borderpr-1 max-h-65 min-h-65 overflow-y-auto"
         onScroll={handleScroll}
       >
         {items.length === 0 ? (

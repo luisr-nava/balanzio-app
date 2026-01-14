@@ -1,8 +1,8 @@
 import { Modal } from "@/components/ui/modal";
 import { useExpenseForm, useExpenseModals } from "../hooks";
 import ExpenseForm from "./expense-form";
-import { usePaymentMethods } from "@/app/(protected)/settings/payment-method/hooks";
 import { Button } from "@/components/ui/button";
+import { usePaymentMethods } from "@/features/settings/configuration/panels/resources/payment-methods/hooks";
 
 interface ExpenseModalProps {
   cashRegisterId?: string;

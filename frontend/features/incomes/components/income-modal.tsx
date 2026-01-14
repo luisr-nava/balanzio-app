@@ -1,10 +1,9 @@
-import { usePaymentMethods } from "@/app/(protected)/settings/payment-method/hooks";
 import { Modal } from "@/components/ui/modal";
-import React, { useEffect } from "react";
 import { useIncomeForm } from "../hooks/useIncomeForm";
 import { useIncomeModals } from "../hooks";
 import IncomeForm from "./income-form";
 import { Button } from "@/components/ui/button";
+import { usePaymentMethods } from "@/features/settings/configuration/panels/resources/payment-methods/hooks";
 
 interface IncomeModalProps {
   cashRegisterId?: string;

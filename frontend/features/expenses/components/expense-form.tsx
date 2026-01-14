@@ -1,6 +1,5 @@
 import { Controller, UseFormReturn } from "react-hook-form";
 import { CreateExpenseDto } from "../types";
-import { PaymentMethod } from "@/app/(protected)/settings/payment-method/interfaces";
 import { BaseForm } from "@/components/form/BaseForm";
 import { FormGrid } from "@/components/form/FormGrid";
 import {
@@ -19,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PaymentMethod } from "@/features/settings/configuration/panels/resources/payment-methods/types";
 
 interface Props {
   form: UseFormReturn<CreateExpenseDto>;

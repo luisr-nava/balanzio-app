@@ -32,7 +32,7 @@ export default function SupplierCategoriesPanel() {
     handleCancelEdit
   );
   return (
-    <Card>
+    <Card className="max-h-90 min-h-90">
       {isLoadingCategory ? (
         <div className="mx-10 grid gap-5">
           <Skeleton className="h-5 w-full rounded-full" />
@@ -42,7 +42,7 @@ export default function SupplierCategoriesPanel() {
       ) : (
         <CardContent className="grid gap-6 md:grid-cols-2">
           <div>
-            <CardTitle className="pb-3">Categorias de Supplieros</CardTitle>
+            <CardTitle className="pb-3">Categorias de proveedores</CardTitle>
             <CategorySupplierForm
               user={user}
               shops={shops}
