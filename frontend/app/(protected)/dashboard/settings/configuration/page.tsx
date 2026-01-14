@@ -19,7 +19,7 @@ const BASE_UNIT_BY_CATEGORY: Record<
   WEIGHT: "KG",
   VOLUME: "L",
 };
-type ConfigurationTab = "categories" | "payment-methods" | "measurement-units";
+type ConfigurationTab = "categories" | "resources" | "measurement-units";
 export default function ConfigurationPage() {
   const TABS: {
     key: ConfigurationTab;
@@ -32,8 +32,8 @@ export default function ConfigurationPage() {
       Component: CategoriesPanel,
     },
     {
-      key: "payment-methods",
-      label: "Métodos de pago",
+      key: "resources",
+      label: "Recursos",
       Component: ResourcesPanel,
     },
   ];
@@ -67,57 +67,6 @@ export default function ConfigurationPage() {
       </main>
     </div>
   );
-  // const {
-  //   categoryProducts,
-  //   categoryProductsLoading,
-  //   categorySuppliers,
-  //   categorySuppliersLoading,
-  //   fetchNextProductCategories,
-  //   hasMoreProductCategories,
-  //   isFetchingNextProductCategories,
-  //   fetchNextSupplierCategories,
-  //   hasMoreSupplierCategories,
-  //   isFetchingNextSupplierCategories,
-  // } = useCategory();
-
-  // const {
-  //   isOwner,
-  //   shops,
-  //   registerProduct,
-  //   registerSupplier,
-  //   onSubmitProduct,
-  //   onSubmitSupplier,
-  //   toggleShopSelection,
-  //   handleEditProduct,
-  //   handleEditSupplier,
-  //   cancelProductEdit,
-  //   cancelSupplierEdit,
-  //   productShopIds,
-  //   supplierShopIds,
-  //   canCreateProduct,
-  //   canCreateSupplier,
-  //   editingProductId,
-  //   editingSupplierId,
-  //   productPending,
-  //   supplierPending,
-  // } = useCategoryForm();
-
-  // const { activeShopId } = useShopStore(
-  //   useShallow((state) => ({
-  //     activeShopId: state.activeShopId,
-  //   }))
-  // );
-
-  // const {
-  //   paymentMethods,
-  //   isLoading: paymentMethodsLoading,
-  //   isFetching: paymentMethodsFetching,
-  // } = usePaymentMethods();
-  // const {
-  //   createMutation: createPaymentMethod,
-  //   updateMutation: updatePaymentMethod,
-  //   deleteMutation: deletePaymentMethod,
-  // } = usePaymentMethodMutations();
 
   // const {
   //   measurementUnits,
@@ -218,11 +167,11 @@ export default function ConfigurationPage() {
   //         type="button"
   //         className={cn(
   //           "w-full rounded-md px-3 py-2 text-sm font-medium transition-colors",
-  //           panel === "payment-methods"
+  //           panel === "resources"
   //             ? "bg-white text-black shadow-sm"
   //             : "bg-muted text-muted-foreground hover:text-foreground"
   //         )}
-  //         onClick={() => setPanel("payment-methods")}
+  //         onClick={() => setPanel("resources")}
   //       >
   //         Métodos de pago
   //       </button>
@@ -243,7 +192,7 @@ export default function ConfigurationPage() {
   //     <div>
   //       {panel === "categories"
   //         ? categoriesView
-  //         : panel === "payment-methods"
+  //         : panel === "resources"
   //           ? paymentMethodsView
   //           : measurementUnitsView}
   //     </div>

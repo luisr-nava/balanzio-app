@@ -8,7 +8,6 @@ interface Props {
   loading: boolean;
   onEdit: (pm: PaymentMethod) => void;
   onDelete: (pm: PaymentMethod) => void;
-  deletingId?: string | null;
   hasNextPage?: boolean;
   fetchNextPage?: () => void;
   isFetchingNextPage?: boolean;
@@ -19,7 +18,6 @@ export const PaymentMethodTable = ({
   loading,
   onEdit,
   onDelete,
-  deletingId,
   hasNextPage,
   fetchNextPage,
   isFetchingNextPage,

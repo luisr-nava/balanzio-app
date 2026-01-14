@@ -18,13 +18,11 @@ export default function PaymentMethodPanel() {
     isFetchingNextPaymentMethods,
   } = usePaymentMethods();
 
-  console.log(paymentMethods);
-
-  const [editingCategory, setEditingCategory] = useState<
+  const [editingCategory, setEditingPayment] = useState<
     PaymentMethod | undefined
   >();
   const handleCancelEdit = () => {
-    setEditingCategory(undefined);
+    setEditingPayment(undefined);
   };
   const { form, onSubmit, isLoading, isEditing } = usePaymentMethodForm(
     editingCategory,
@@ -44,9 +42,8 @@ export default function PaymentMethodPanel() {
           <PaymentMethodTable
             onDelete={modals.openDelete}
             paymentMethods={paymentMethods}
-            deletingId={""}
             loading={isFetching && !isFetchingNextPaymentMethods}
-            onEdit={(category) => setEditingCategory(category)}
+            onEdit={(payment) => setEditingPayment(payment)}
             hasNextPage={hasMorePaymentMethods}
             fetchNextPage={fetchNextPaymentMethods}
             isFetchingNextPage={isFetchingNextPaymentMethods}

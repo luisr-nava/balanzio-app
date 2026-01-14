@@ -6,6 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
 interface Props<T> {
   row: T;
@@ -47,7 +48,13 @@ export function TableActions<T>({ row, actions }: Props<T>) {
                   action.onClick(row);
                 }
               }}
-              className="flex items-center gap-2"
+              className={cn(
+                "flex cursor-pointer items-center gap-2 transition-all duration-500",
+                action.type === "edit" &&
+                  "data-highlighted:bg-gray-600 data-highlighted:text-white",
+                action.type === "delete" &&
+                  "text-destructive data-highlighted:bg-red-200/10 data-highlighted:text-white"
+              )}
             >
               {action.type === "edit" && (
                 <>
