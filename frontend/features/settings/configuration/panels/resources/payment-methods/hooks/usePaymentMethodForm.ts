@@ -3,7 +3,6 @@ import { useEffect } from "react";
 import { CreatePaymentMethodDto, PaymentMethod } from "../types";
 import {
   usePaymentMethodCreateMutation,
-  usePaymentMethodDeleteMutation,
   usePaymentMethodUpdateMutation,
 } from "./usePaymentMethodMutations";
 import { useShopStore } from "@/features/shop/shop.store";
@@ -35,7 +34,6 @@ export const usePaymentMethodForm = (
 
   const createMutation = usePaymentMethodCreateMutation();
   const updateMutation = usePaymentMethodUpdateMutation();
-  const deleteMutation = usePaymentMethodDeleteMutation();
 
   const form = useForm<CreatePaymentMethodDto>({
     defaultValues: initialForm,
@@ -46,6 +44,40 @@ export const usePaymentMethodForm = (
       toast.error("No hay tienda activa");
       return;
     }
+    const basePayload: CreatePaymentMethodDto = {
+      ...values,
+      shopId: activeShopId,
+    };
+
+    if (editPaymentMethod) {
+      updateMutation.mutate(
+        {
+          id: editPaymentMethod.id,
+          payload: basePayload,
+        },
+        {
+          onSuccess: () => {
+            toast.success("Método de pago actualizado");
+            form.reset({ ...initialForm });
+            onEditDone?.();
+          },
+          onError: () => {
+            toast.error("No se pudo actualizar el método de pago");
+          },
+        }
+      );
+      return;
+    }
+
+    createMutation.mutate(basePayload, {
+      onSuccess: () => {
+        toast.success("Método de pago creado");
+        form.reset({ ...initialForm });
+      },
+      onError: () => {
+        toast.error("No se pudo crear el método de pago");
+      },
+    });
   };
   //   const basePayload: CreatePaymentMethodDto = {
   //     ...values,
