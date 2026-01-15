@@ -58,7 +58,7 @@ export function BaseHeader({
                 className="h-10"
                 onClick={onClearFilters}
               >
-                Borrar filtros
+                Limpiar búsqueda
               </Button>
             </div>
           )}

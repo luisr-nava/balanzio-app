@@ -135,15 +135,15 @@ export function Sidebar() {
   const baseNavClasses =
     "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-1";
   const collapsedJustify = collapsed
-    ? "justify-center group-hover:justify-start"
+    ? "justify-center group-hover:justify-start "
     : "justify-start";
   const getNavItemClasses = (isActive: boolean) =>
     cn(
       baseNavClasses,
       collapsedJustify,
       isActive
-        ? "bg-primary text-primary-foreground shadow-sm"
-        : "text-muted-foreground hover:bg-primary/15 hover:text-foreground focus-visible:text-foreground focus-visible:bg-primary/15"
+        ? "bg-primary text-primary-foreground shadow-sm "
+        : "text-muted-foreground hover:bg-primary/15 hover:text-foreground focus-visible:text-foreground focus-visible:bg-primary/15  "
     );
   const getNavIconClasses = () =>
     cn(
@@ -154,7 +154,7 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "bg-card group fixed inset-y-0 left-0 z-30 hidden border-r transition-all duration-300 md:block",
+        "bg-card group fixed inset-y-0 left-0 z-50 hidden border-r transition-all duration-300 md:block",
         collapsed ? "w-16 hover:w-64" : "w-64"
       )}
     >
@@ -184,7 +184,7 @@ export function Sidebar() {
           </div>
         </div>
 
-        <nav className="flex-1 space-y-1 overflow-y-auto px-2 pb-6">
+        <nav className="scrollbar-none flex-1 space-y-1 overflow-y-auto px-2 pb-6">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;

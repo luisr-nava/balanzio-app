@@ -9,13 +9,13 @@ export const useProductQuery = (
   const { activeShopId } = useShopStore();
 
   const query = useQuery({
-    queryKey: ["products", activeShopId],
+    queryKey: ["products", activeShopId, JSON.stringify(params)],
     queryFn: () =>
       GetAllProductAction({
         ...params,
         shopId: activeShopId!,
       }),
-    enabled: Boolean(activeShopId),
+    enabled: !!activeShopId,
     staleTime: 5000,
     refetchOnWindowFocus: false,
     retry: false,

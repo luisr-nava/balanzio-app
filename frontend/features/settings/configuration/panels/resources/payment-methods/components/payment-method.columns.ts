@@ -25,7 +25,7 @@ export function usePaymentMethodColumns(): TableColumn<PaymentMethod>[] {
     },
     {
       header: "Estado",
-      cell: (e) => e.isActive,
+      cell: (e) => (e.isActive ? "Activado" : "Desactivado"),
       sortable: true,
       sortKey: (e) => (e.isActive ? 1 : 0),
       align: "center",

@@ -2,9 +2,6 @@ import { useCallback, useMemo } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useDebounce } from "./useDebounce";
 
-/**
- * Parámetros de query comunes
- */
 export interface QueryParams {
   search?: string;
   page?: number;
@@ -12,19 +9,11 @@ export interface QueryParams {
   [key: string]: string | number | boolean | undefined;
 }
 
-/**
- * Opciones para el hook
- */
 interface UseQueryParamsOptions {
   debounceDelay?: number;
   debounceKeys?: string[];
 }
 
-/**
- * Hook personalizado para manejar query params con debounce
- * @param options - Opciones de configuración
- * @returns Objeto con valores y función de actualización
- */
 export function useQueryParams<T extends QueryParams = QueryParams>(
   options: UseQueryParamsOptions = {}
 ) {
@@ -49,11 +38,34 @@ export function useQueryParams<T extends QueryParams = QueryParams>(
     return result as T;
   }, [searchParams]);
 
-  /**
-   * Actualiza los query params en la URL
-   * @param updates - Objeto con los parámetros a actualizar
-   * @param options - Opciones adicionales
-   */
+  // const updateParams = useCallback(
+  //   (
+  //     updates: Partial<T>,
+  //     options?: { scroll?: boolean; replace?: boolean }
+  //   ) => {
+  //     const { scroll = false, replace = false } = options || {};
+
+  //     const newParams = new URLSearchParams(searchParams.toString());
+
+  //     // Actualizar o eliminar parámetros
+  //     Object.entries(updates).forEach(([key, value]) => {
+  //       if (value === undefined || value === null || value === "") {
+  //         newParams.delete(key);
+  //       } else {
+  //         newParams.set(key, String(value));
+  //       }
+  //     });
+
+  //     const newUrl = `${pathname}?${newParams.toString()}`;
+
+  //     if (replace) {
+  //       router.replace(newUrl, { scroll });
+  //     } else {
+  //       router.push(newUrl, { scroll });
+  //     }
+  //   },
+  //   [pathname, router, searchParams]
+  // );
   const updateParams = useCallback(
     (
       updates: Partial<T>,
@@ -63,7 +75,6 @@ export function useQueryParams<T extends QueryParams = QueryParams>(
 
       const newParams = new URLSearchParams(searchParams.toString());
 
-      // Actualizar o eliminar parámetros
       Object.entries(updates).forEach(([key, value]) => {
         if (value === undefined || value === null || value === "") {
           newParams.delete(key);
@@ -73,12 +84,13 @@ export function useQueryParams<T extends QueryParams = QueryParams>(
       });
 
       const newUrl = `${pathname}?${newParams.toString()}`;
+      const currentUrl = `${pathname}?${searchParams.toString()}`;
 
-      if (replace) {
-        router.replace(newUrl, { scroll });
-      } else {
-        router.push(newUrl, { scroll });
-      }
+      if (newUrl === currentUrl) return;
+
+      replace
+        ? router.replace(newUrl, { scroll })
+        : router.push(newUrl, { scroll });
     },
     [pathname, router, searchParams]
   );

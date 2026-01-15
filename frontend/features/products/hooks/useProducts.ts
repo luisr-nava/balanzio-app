@@ -1,15 +1,7 @@
 import { useProductQuery } from "@/features/products/hooks/useProductQuery";
+import { ProductQueryParams } from "../types";
 
-interface UseProductsParams {
-  search?: string;
-  categoryId?: string;
-  supplierId?: string;
-  page?: number;
-  limit?: number;
-  enabled?: boolean;
-}
-
-export const useProducts = ({ ...params }: UseProductsParams) => {
+export const useProducts = ({ ...params }: ProductQueryParams) => {
   const { products, pagination, productsLoading, isFetching, refetch } =
     useProductQuery(params);
 

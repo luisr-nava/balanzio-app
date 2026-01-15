@@ -90,6 +90,10 @@ export default function SalesHistoryPage() {
                   },
                 },
               ]}
+                renderExpandedContent={(e) => {
+                  console.log(e);
+                  
+                }}
               pagination={{
                 page,
                 limit,

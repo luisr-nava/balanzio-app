@@ -1,8 +1,4 @@
 "use client";
-import { useQuery } from "@tanstack/react-query";
-import { supplierApi } from "@/lib/api/supplier.api";
-import { useMeasurementUnits } from "@/app/(protected)/settings/measurement-unit/hooks";
-import { useShopStore } from "@/features/shop/shop.store";
 import { usePaginationParams } from "@/src/hooks/usePaginationParams";
 import { Loading } from "@/components/loading";
 import {
@@ -17,11 +13,15 @@ import { useProductModals, useProducts } from "@/features/products/hooks";
 import { BaseTable } from "@/components/table/BaseTable";
 import { BaseHeader } from "@/components/header/BaseHeader";
 import { useSupplierQuery } from "@/features/suppliers/hooks";
+import { useMeasurementUnits } from "@/features/settings/configuration/panels/resources/measurement-unit/hooks";
+import { ProductFiltersValue } from "@/features/products/components/product-filters";
 
 export default function ProductsPage() {
   const productsModals = useProductModals();
 
   const {
+    params,
+    updateParams,
     searchInput,
     debouncedSearch,
     page,
@@ -32,25 +32,34 @@ export default function ProductsPage() {
     reset,
   } = usePaginationParams(500);
 
-  const [filters, setFilters] = useState<{
-    categoryId?: string;
-    supplierId?: string;
-  }>({});
+  const filters: ProductFiltersValue = {
+    supplierId:
+      typeof params.supplierId === "string" ? params.supplierId : undefined,
+
+    categoryId:
+      typeof params.categoryId === "string" ? params.categoryId : undefined,
+
+    isActive:
+      params.isActive === undefined ? undefined : params.isActive === "true",
+
+    lowStock:
+      params.lowStock === undefined ? undefined : params.lowStock === "true",
+  };
 
   const { products, productsLoading, pagination, isFetching } = useProducts({
-    ...filters,
     search: debouncedSearch,
     page,
     limit,
+    ...filters,
   });
 
   const { suppliers } = useSupplierQuery({});
-  const { measurementUnits, isLoading: measurementUnitsLoading } =
+  const { measurementUnits, isLoadingMeasurement: measurementUnitsLoading } =
     useMeasurementUnits();
 
-  const hasActiveFilters = Boolean(
-    searchInput || filters.categoryId || filters.supplierId
-  );
+  const hasActiveFilters =
+    Boolean(debouncedSearch) ||
+    Object.values(filters).some((v) => v !== undefined);
 
   return (
     <div className="space-y-4">
@@ -61,8 +70,7 @@ export default function ProductsPage() {
           <ProductFilters
             value={filters}
             onChange={(next) => {
-              setFilters((prev) => ({ ...prev, ...next }));
-              setPage(1);
+              updateParams({ ...next, page: 1 });
             }}
             suppliers={suppliers}
           />
@@ -71,8 +79,8 @@ export default function ProductsPage() {
         showClearFilters={hasActiveFilters}
         onClearFilters={() => {
           reset();
-          setFilters({});
           setSearch("");
+          setPage(1);
         }}
         onCreate={productsModals.openCreate}
       />

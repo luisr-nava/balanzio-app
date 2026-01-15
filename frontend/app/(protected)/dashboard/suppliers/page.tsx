@@ -38,33 +38,30 @@ export default function SupplierPage() {
   const supplierColums = useSupplierColumns();
 
   useEffect(() => {
-    if (!pagination) return;
+    if (!pagination?.totalPages) return;
 
-    if (page > pagination.totalPages && pagination.totalPages > 0) {
+    if (page > pagination.totalPages) {
       setPage(pagination.totalPages);
     }
-  }, [pagination?.totalPages, page]);
+  }, [page, pagination?.totalPages, setPage]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
+
+  const hasActiveFilters =
+    !!debouncedSearch || Object.values(filters).some(Boolean);
 
   return (
     <div className="space-y-4">
       <BaseHeader
         search={searchInput}
         setSearch={setSearch}
-        // filters={
-        //   <ProductFilters
-        //     value={filters}
-        //     onChange={(next) => {
-        //       setFilters((prev) => ({ ...prev, ...next }));
-        //       setPage(1);
-        //     }}
-        //     suppliers={suppliers}
-        //   />
-        // }
+        searchPlaceholder="Buscar por nombre o email"
         createLabel={"Nuevo proveedor"}
-        // showClearFilters={hasActiveFilters}
+        showClearFilters={hasActiveFilters}
         onClearFilters={() => {
-          // reset();
-          // setFilters({});
+          setFilters({});
           setSearch("");
         }}
         onCreate={supplierModals.openCreate}
