@@ -123,7 +123,7 @@ export function Sidebar() {
     },
     {
       label: "Empleados",
-      href: "/dashboard/dashboard/employees",
+      href: "/dashboard/employees",
       icon: UsersRound,
     },
   ];

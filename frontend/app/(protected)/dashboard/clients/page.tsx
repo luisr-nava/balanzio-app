@@ -7,7 +7,6 @@ import {
   CustomerModal,
   customersColumns,
 } from "@/features/clients/components";
-import { useState } from "react";
 import { BaseHeader } from "@/components/header/BaseHeader";
 import { Customer } from "../../../../features/clients/types";
 import { BaseTable } from "@/components/table/BaseTable";

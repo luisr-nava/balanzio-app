@@ -1,31 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
 import { getEmployeesAction } from "../actions";
 import { useShopStore } from "@/features/shop/shop.store";
+import { EmployeeQueryParams } from "../types";
 
-interface UseEmployeeQueryParams {
-  search?: string;
-  page?: number;
-  limit?: number;
-}
-
-export const useEmployeeQuery = (params: UseEmployeeQueryParams) => {
+export const useEmployeeQuery = (params?: EmployeeQueryParams) => {
   const { activeShopId } = useShopStore();
 
   const query = useQuery({
-    queryKey: [
-      "employees",
-      activeShopId,
-      params.page,
-      params.limit,
-      params.search ?? "",
-    ],
+    queryKey: ["employees", activeShopId, JSON.stringify(params)],
     queryFn: () =>
       getEmployeesAction(activeShopId!, {
         ...params,
       }),
-    enabled: Boolean(activeShopId),
-    staleTime: 1000 * 30,
-    placeholderData: (prev) => prev,
+    enabled: !!activeShopId,
+    staleTime: 5000,
+    refetchOnWindowFocus: false,
+    retry: false,
   });
 
   const employees = query.data?.employees || [];

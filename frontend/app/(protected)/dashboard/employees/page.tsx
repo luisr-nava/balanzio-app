@@ -5,13 +5,13 @@ import { Loading } from "@/components/loading";
 import { BaseTable } from "@/components/table/BaseTable";
 import {
   EmployeeExpanded,
+  EmployeeFilters,
   ModalEmployee,
 } from "@/features/employees/components";
 import { employeeColumns } from "@/features/employees/employee.columns";
 import { useEmployeeModals, useEmployees } from "@/features/employees/hooks";
-import { Employee } from "@/features/employees/types";
+import { Employee, EmployeeFiltersValue } from "@/features/employees/types";
 import { usePaginationParams } from "@/src/hooks/usePaginationParams";
-import { useState } from "react";
 
 export default function EmployeesPage() {
   const employeeModals = useEmployeeModals();
@@ -23,25 +23,54 @@ export default function EmployeesPage() {
     limit,
     setPage,
     setLimit,
+    params,
+    reset,
+    updateParams,
   } = usePaginationParams(300);
-  const [filters, setFilters] = useState<{
-    categoryId?: string;
-    supplierId?: string;
-  }>({});
+  const filters: EmployeeFiltersValue = {
+    role: typeof params.role === "string" ? params.role : undefined,
+    isActive:
+      params.isActive === undefined ? undefined : params.isActive === "true",
+  };
   const { employees, employeesLoading, pagination, isFetching } = useEmployees({
-    ...filters,
     search: debouncedSearch,
     page,
     limit,
+    ...filters,
   });
 
+  const hasActiveFilters =
+    Boolean(debouncedSearch) ||
+    Object.values(filters).some((v) => v !== undefined);
   return (
     <div className="space-y-6">
       <BaseHeader
         search={searchInput}
         setSearch={setSearch}
         searchPlaceholder="Nombre o email"
+        filters={
+          <EmployeeFilters
+            value={filters}
+            onChange={(next) => {
+              updateParams({
+                ...params,
+                role: next.role,
+                isActive:
+                  next.isActive === undefined
+                    ? undefined
+                    : String(next.isActive),
+                page: 1,
+              });
+            }}
+          />
+        }
         createLabel="Nuevo empleado"
+        showClearFilters={hasActiveFilters}
+        onClearFilters={() => {
+          reset();
+          setSearch("");
+          setPage(1);
+        }}
         onCreate={employeeModals.openCreate}
       />
       {employeesLoading ? (

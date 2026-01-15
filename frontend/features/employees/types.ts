@@ -53,3 +53,18 @@ export interface GetAllEmployeesResponse {
   };
   data: Employee[];
 }
+
+export interface EmployeeFiltersValue {
+  role?: string;
+  search?: string;
+  isActive?: boolean;
+}
+
+export interface EmployeeQueryParams {
+  search?: string;
+  page: number;
+  limit?: number;
+  role?: string;
+  isActive?: boolean;
+  enabled?: boolean;
+}

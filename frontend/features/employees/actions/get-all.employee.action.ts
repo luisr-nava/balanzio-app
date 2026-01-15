@@ -8,6 +8,8 @@ export const getEmployeesAction = async (
     search?: string;
     limit?: number;
     page?: number;
+    role?: string;
+    isActive?: boolean;
   }
 ): Promise<{
   employees: Employee[];
@@ -20,6 +22,8 @@ export const getEmployeesAction = async (
         search: params.search,
         page: params.page ?? 1,
         limit: params.limit ?? 10,
+        role: params.role,
+        isActive: params.isActive,
       },
     }
   );
