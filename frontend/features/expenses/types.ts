@@ -41,3 +41,20 @@ export interface GetExpensesResponse {
     totalAmount?: number;
   };
 }
+
+export interface ExpenseFiltersValue {
+  paymentMethodId?: string;
+  categoryId?: string;
+  startDate?: string;
+  endDate?: string;
+}
+export interface ExpenseQueryParams extends ExpenseFiltersValue {
+  search?: string;
+  page: number;
+  limit?: number;
+  paymentMethodId?: string;
+  categoryId?: string;
+  startDate?: string;
+  endDate?: string;
+  enabled?: boolean;
+}

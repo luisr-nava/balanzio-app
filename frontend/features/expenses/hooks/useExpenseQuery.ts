@@ -1,31 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import { getExpensesAction } from "../actions";
 import { useShopStore } from "@/features/shop/shop.store";
+import { ExpenseQueryParams } from "../types";
 
-interface UseExpenseQueryParams {
-  search: string;
-  page: number;
-  limit?: number;
-  enabled?: boolean;
-}
-
-export const useExpenseQuery = ({
-  search,
-  page,
-  limit = 10,
-  enabled = true,
-}: UseExpenseQueryParams) => {
+export const useExpenseQuery = (params?: ExpenseQueryParams) => {
   const { activeShopId } = useShopStore();
 
   const query = useQuery({
-    queryKey: ["expenses", activeShopId, search, page, limit],
+    queryKey: ["expenses", activeShopId, JSON.stringify(params)],
     queryFn: () =>
       getExpensesAction(activeShopId!, {
-        search,
-        limit,
-        page,
+        ...params,
       }),
-    enabled: enabled && Boolean(activeShopId),
+    enabled: !!activeShopId,
     staleTime: 1000 * 30,
     placeholderData: (prev) => prev,
   });

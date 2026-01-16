@@ -48,7 +48,7 @@ export function BaseTable<T>({
   return (
     <div className="relative flex h-full w-full flex-col">
       {/* HEADER + BODY */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto rounded-t-md">
         <Table className="w-full min-w-max rounded-md border">
           {/* HEADER */}
           <TableHeader className="bg-muted sticky top-0 z-30">
@@ -166,7 +166,7 @@ export function BaseTable<T>({
         </Table>
       </div>
       {pagination && (
-        <div className="bg-muted sticky bottom-0 z-20 border-t py-3">
+        <div className="bg-muted sticky bottom-0 z-20 rounded-b-md border-t py-3">
           <Pagination
             page={pagination.page}
             limit={pagination.limit}

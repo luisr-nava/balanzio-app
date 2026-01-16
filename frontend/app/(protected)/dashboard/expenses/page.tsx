@@ -5,6 +5,7 @@ import { useCashRegisterStateQuery } from "@/features/cash-register/hooks/useCas
 import {
   useExpenseColumns,
   ExpenseModal,
+  ExpenseFilters,
 } from "@/features/expenses/components";
 import { useExpenseModals, useExpenses } from "@/features/expenses/hooks";
 import { usePaginationParams } from "@/src/hooks/usePaginationParams";
@@ -12,26 +13,48 @@ import { Loading } from "@/components/loading";
 import { useState } from "react";
 import { OpenCashRegisterModal } from "@/features/cash-register/components";
 import { BaseHeader } from "@/components/header/BaseHeader";
-import { Expense } from "../../../../features/expenses/types";
+import {
+  Expense,
+  ExpenseFiltersValue,
+} from "../../../../features/expenses/types";
 import { BaseTable } from "@/components/table/BaseTable";
+import { usePaymentMethods } from "../../../../features/settings/configuration/panels/resources/payment-methods/hooks/usePaymentMethods";
 
 export default function ExpensesPage() {
   const expenseModals = useExpenseModals();
   const {
     searchInput,
+    setSearch,
     debouncedSearch,
     page,
     limit,
-    setSearch,
     setPage,
     setLimit,
+    params,
     reset,
+    updateParams,
   } = usePaginationParams(500);
-  const { expenses, expensesLoading, pagination, isFetching } = useExpenses(
-    debouncedSearch,
+
+  const filters: ExpenseFiltersValue = {
+    paymentMethodId:
+      typeof params.paymentMethodId === "string"
+        ? params.paymentMethodId
+        : undefined,
+
+    categoryId:
+      typeof params.categoryId === "string" ? params.categoryId : undefined,
+
+    startDate:
+      typeof params.startDate === "string" ? params.startDate : undefined,
+
+    endDate: typeof params.endDate === "string" ? params.endDate : undefined,
+  };
+  const { expenses, expensesLoading, pagination, isFetching } = useExpenses({
+    search: debouncedSearch,
     page,
-    limit
-  );
+    limit,
+    ...filters,
+  });
 
   const { activeShopId } = useShopStore();
   const { data } = useCashRegisterStateQuery(activeShopId!);
@@ -49,18 +72,36 @@ export default function ExpensesPage() {
   };
 
   const columns = useExpenseColumns();
-
+  const hasActiveFilters =
+    Boolean(debouncedSearch) ||
+    Object.values(filters).some((v) => v !== undefined);
+    
+  const { paymentMethods } = usePaymentMethods();
   return (
     <div className="space-y-4">
       <BaseHeader
         search={searchInput}
         setSearch={setSearch}
+        filters={
+          <ExpenseFilters
+            paymentMethods={paymentMethods}
+            value={filters}
+            onChange={(next) => {
+              updateParams({
+                ...params,
+                ...next,
+                page: 1,
+              });
+            }}
+          />
+        }
         onCreate={handleCreateExpense}
         createLabel="Nuevo egreso"
-        showClearFilters={Boolean(searchInput)}
+        showClearFilters={hasActiveFilters}
         onClearFilters={() => {
           reset();
           setSearch("");
+          setPage(1);
         }}
       />
       {expensesLoading ? (

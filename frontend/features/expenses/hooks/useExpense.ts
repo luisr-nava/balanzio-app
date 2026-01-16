@@ -1,18 +1,9 @@
+import { ExpenseQueryParams } from "../types";
 import { useExpenseQuery } from "./useExpenseQuery";
 
-export const useExpenses = (
-  search: string,
-  page: number,
-  limit: number = 10,
-  enabled: boolean = true
-) => {
+export const useExpenses = ({ ...params }: ExpenseQueryParams) => {
   const { expenses, pagination, expensesLoading, isFetching, refetch } =
-    useExpenseQuery({
-      search,
-      page,
-      limit,
-      enabled,
-    });
+    useExpenseQuery(params);
 
   return {
     expenses,
