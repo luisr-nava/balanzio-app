@@ -40,3 +40,20 @@ export interface GetIncomesResponse {
     totalAmount?: number;
   };
 }
+
+export interface IncomeFiltersValue {
+  paymentMethodId?: string;
+  categoryId?: string;
+  startDate?: string;
+  endDate?: string;
+}
+export interface IncomeQueryParams {
+  search?: string;
+  page: number;
+  limit?: number;
+  paymentMethodId?: string;
+  categoryId?: string;
+  startDate?: string;
+  endDate?: string;
+  enabled?: boolean;
+}

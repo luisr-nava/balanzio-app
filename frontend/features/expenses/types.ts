@@ -48,7 +48,7 @@ export interface ExpenseFiltersValue {
   startDate?: string;
   endDate?: string;
 }
-export interface ExpenseQueryParams extends ExpenseFiltersValue {
+export interface ExpenseQueryParams {
   search?: string;
   page: number;
   limit?: number;

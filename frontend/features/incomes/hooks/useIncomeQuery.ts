@@ -1,30 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import { getIncomesAction } from "../actions";
 import { useShopStore } from "@/features/shop/shop.store";
+import { IncomeQueryParams } from "../types";
 
-interface UseIncomesQueryParams {
-  search: string;
-  page: number;
-  limit?: number;
-  enabled?: boolean;
-}
-export const useIncomeQuery = ({
-  search,
-  page,
-  limit = 10,
-  enabled = true,
-}: UseIncomesQueryParams) => {
+export const useIncomeQuery = (params?: IncomeQueryParams) => {
   const { activeShopId } = useShopStore();
 
   const query = useQuery({
-    queryKey: ["incomes", activeShopId, search, page, limit],
+    queryKey: ["incomes", activeShopId, JSON.stringify(params)],
     queryFn: () =>
       getIncomesAction(activeShopId!, {
-        search,
-        page,
-        limit,
+        ...params,
       }),
-    enabled: enabled && Boolean(activeShopId),
+    enabled: !!activeShopId,
     staleTime: 1000 * 30,
     placeholderData: (prev) => prev,
   });

@@ -1,18 +1,9 @@
+import { IncomeQueryParams } from "../types";
 import { useIncomeQuery } from "./useIncomeQuery";
 
-export const useIncomes = (
-  search: string,
-  page: number,
-  limit: number = 10,
-  enabled: boolean = true
-) => {
+export const useIncomes = ({ ...params }: IncomeQueryParams) => {
   const { incomes, pagination, incomesLoading, isFetching, refetch } =
-    useIncomeQuery({
-      search,
-      page,
-      limit,
-      enabled,
-    });
+    useIncomeQuery(params);
 
   return { incomes, pagination, incomesLoading, isFetching, refetch };
 };
